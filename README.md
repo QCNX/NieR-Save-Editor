@@ -31,9 +31,15 @@ npm test
 ```
 
 ```bash
-npm run build
 npm run tauri build
 ```
+
+On Windows this produces an NSIS installer and an MSI under:
+
+- `src-tauri/target/release/bundle/nsis/` (e.g. `*_x64-setup.exe`)
+- `src-tauri/target/release/bundle/msi/` (e.g. `*_x64_*.msi`)
+
+The release binary is also at `src-tauri/target/release/` (do not commit `src-tauri/target/`).
 
 Do **not** commit real `.dat` files under `fixtures/` (gitignored). Use synthetic fixtures in CI when possible.
 
