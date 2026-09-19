@@ -59,6 +59,18 @@ export {
   type WeaponItem,
 } from "./weapons";
 
+export {
+  EMPTY_PLUGIN_CHIP_ID,
+  minimumWeightForLevel,
+  parsePluginChips,
+  PluginChipsSizeError,
+  serializePluginChips,
+  setPluginChip,
+  type PluginChip,
+  type PluginChipId,
+  type PluginChipPatch,
+} from "./pluginChips";
+
 export { getMoney, setMoney } from "./money";
 export { getXp, setXp } from "./xp";
 export { levelFromXp, xpForLevel } from "./level";
