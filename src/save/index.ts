@@ -37,6 +37,7 @@ export {
   parseInventory,
   serializeInventory,
   setInventoryItem,
+  setInventoryItemId,
   type InventoryItem,
   type ItemStatus,
 } from "./inventory";
@@ -52,6 +53,7 @@ export {
   EMPTY_WEAPON_BYTES,
   parseWeaponItem,
   parseWeapons,
+  replaceWeaponId,
   serializeWeaponItem,
   serializeWeapons,
   WeaponSizeError,
@@ -64,8 +66,10 @@ export {
   minimumWeightForLevel,
   parsePluginChips,
   PluginChipsSizeError,
+  replacePluginChipType,
   serializePluginChips,
   setPluginChip,
+  VANILLA_PLUGIN_CHIP_IDS,
   type PluginChip,
   type PluginChipId,
   type PluginChipPatch,
@@ -74,9 +78,11 @@ export {
 export {
   EMPTY_POD_PROGRAM_ID,
   parsePodPrograms,
+  POD_PROGRAM_IDS,
   PodProgramsSizeError,
   replacePodProgram,
   serializePodPrograms,
+  setPodProgramId,
   type PodProgram,
 } from "./podPrograms";
 
