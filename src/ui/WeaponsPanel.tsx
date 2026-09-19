@@ -3,8 +3,12 @@ import { useState } from "react";
 import weaponsData from "../data/weapons.json";
 import { translate, useI18n, type Language } from "../i18n";
 import {
+  EMPTY_WEAPON_SLOT_ID,
+  parseWeaponSlot,
   parseWeapons,
   replaceWeaponId,
+  serializeWeaponSlot,
+  setWeaponSlotAttack,
   writeWeaponAt,
   type SlotData,
   type WeaponItem,
@@ -53,16 +57,97 @@ export function availableWeaponChoices(
     .map((id) => ({ id, label: lookupWeaponName(id, language) }));
 }
 
+export function availableEquipmentWeaponChoices(
+  weapons: readonly WeaponItem[],
+  language: Language,
+): IdChoice<number>[] {
+  const ownedIds = new Set(
+    weapons
+      .map((weapon) => weapon.id)
+      .filter((id) => id !== -1),
+  );
+
+  return [...ownedIds].map((id) => ({
+    id,
+    label: lookupWeaponName(id, language),
+  }));
+}
+
+type WeaponEquipmentSet = "weaponSlot1" | "weaponSlot2";
+type WeaponEquipmentAttack = "light" | "heavy";
+
+export function updateWeaponEquipment(
+  slot: SlotData,
+  set: WeaponEquipmentSet,
+  attack: WeaponEquipmentAttack,
+  id: number,
+): SlotData {
+  const changed = setWeaponSlotAttack(parseWeaponSlot(slot[set]), attack, id);
+  return { ...slot, [set]: serializeWeaponSlot(changed) };
+}
+
 export function WeaponsPanel({ slot, onSlotChange }: Props) {
   const { language, t } = useI18n();
   const [query, setQuery] = useState("");
   const [occupiedOnly, setOccupiedOnly] = useState(true);
   const allWeapons = parseWeapons(slot.weapons);
   const weapons = filterWeaponRows(allWeapons, query, occupiedOnly, language);
+  const equipmentChoices = availableEquipmentWeaponChoices(
+    allWeapons,
+    language,
+  );
+  const equipmentSets = [
+    {
+      key: "weaponSlot1" as const,
+      label: t("weapons.set1"),
+      value: parseWeaponSlot(slot.weaponSlot1),
+    },
+    {
+      key: "weaponSlot2" as const,
+      label: t("weapons.set2"),
+      value: parseWeaponSlot(slot.weaponSlot2),
+    },
+  ];
 
   return (
     <section className="panel" aria-labelledby="weapons-heading">
       <h2 id="weapons-heading">{t("tabs.weapons")}</h2>
+      <div className="weapon-equipment">
+        {equipmentSets.map((set) => (
+          <fieldset key={set.key}>
+            <legend>{set.label}</legend>
+            {(["light", "heavy"] as const).map((attack) => {
+              const attackLabel = t(`weapons.${attack}`);
+              const value =
+                attack === "light"
+                  ? set.value.lightAttack
+                  : set.value.heavyAttack;
+
+              return (
+                <label key={attack}>
+                  <span>{attackLabel}</span>
+                  <IdChoiceControl
+                    value={value}
+                    emptyValue={EMPTY_WEAPON_SLOT_ID}
+                    choices={equipmentChoices}
+                    labels={{
+                      select: `${set.label} ${attackLabel}`,
+                      clear: t("actions.clear"),
+                      empty: t("list.empty"),
+                      unknown: (id) => lookupWeaponName(id, language),
+                    }}
+                    onChange={(id) =>
+                      onSlotChange(
+                        updateWeaponEquipment(slot, set.key, attack, id),
+                      )
+                    }
+                  />
+                </label>
+              );
+            })}
+          </fieldset>
+        ))}
+      </div>
       <div className="settings-row">
         <label>
           <span>{t("list.search")}</span>
