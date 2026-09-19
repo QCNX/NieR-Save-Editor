@@ -4,6 +4,7 @@ import {
   INVENTORY_SIZE_BYTES,
   INVENTORY_SIZE_ITEMS,
   SAVEFILE_INVENTORY_START_BYTE,
+  SAVEFILE_CORPSE_INVENTORY_START_BYTE,
   SAVEFILE_SIZE_BYTES,
 } from "./constants";
 import {
@@ -11,6 +12,7 @@ import {
   ITEM_STATUS_INACTIVE,
   parseInventory,
   serializeInventory,
+  setInventoryItemId,
   setInventoryItem,
   type InventoryItem,
 } from "./inventory";
@@ -122,6 +124,24 @@ describe("InventoryItem parse/serialize (NieREdit 12-byte layout)", () => {
 });
 
 describe("Inventory region round-trip and edit", () => {
+  it("fills an empty slot as active with quantity one and clears it to EMPTY", () => {
+    const items = Array.from({ length: INVENTORY_SIZE_ITEMS }, (_, i) =>
+      emptyItem(i),
+    );
+
+    const filled = setInventoryItemId(items, 7, 0x32);
+    expect(filled[7]).toEqual({
+      position: 7,
+      id: 0x32,
+      status: ITEM_STATUS_ACTIVE,
+      quantity: 1,
+    });
+
+    const cleared = setInventoryItemId(filled, 7, -1);
+    expect(cleared[7]).toEqual(emptyItem(7));
+    expect(cleared.filter((item) => item !== items[item.position])).toHaveLength(1);
+  });
+
   it("round-trips an unedited inventory region byte-identically", () => {
     const items = Array.from({ length: INVENTORY_SIZE_ITEMS }, (_, i) => {
       if (i === 0) {
@@ -209,5 +229,33 @@ describe("Inventory region round-trip and edit", () => {
     const items = parseInventory(region);
     expect(items[0].id).toBe(1);
     expect(items[0].quantity).toBe(86);
+  });
+
+  it("editing a corpse empty slot changes only that corpse record", () => {
+    const empty = Array.from({ length: INVENTORY_SIZE_ITEMS }, (_, i) =>
+      emptyItem(i),
+    );
+    const input = syntheticSaveWithInventory(serializeInventory(empty));
+    input.set(serializeInventory(empty), SAVEFILE_CORPSE_INVENTORY_START_BYTE);
+    const slot = load(input);
+    const corpse = setInventoryItemId(
+      parseInventory(slot.corpseInventory),
+      5,
+      0x32,
+    );
+    const out = serialize({
+      ...slot,
+      corpseInventory: serializeInventory(corpse),
+    });
+    const start =
+      SAVEFILE_CORPSE_INVENTORY_START_BYTE +
+      5 * INVENTORY_ITEM_SIZE_BYTES;
+    const end = start + INVENTORY_ITEM_SIZE_BYTES;
+
+    expect(out.subarray(0, start)).toEqual(input.subarray(0, start));
+    expect(out.subarray(end)).toEqual(input.subarray(end));
+    expect(bytesToHex(out.subarray(start, end))).toBe(
+      "320000000000070001000000",
+    );
   });
 });

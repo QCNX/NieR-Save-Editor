@@ -133,3 +133,20 @@ export function setInventoryItem(
       : item,
   );
 }
+
+/**
+ * Replace the item carried by a slot using NieREdit's fill/clear semantics.
+ * A non-empty ID activates the slot with quantity 1; EMPTY resets the complete
+ * record so stale status and quantity bytes cannot leak into the save.
+ */
+export function setInventoryItemId(
+  items: InventoryItem[],
+  index: number,
+  id: number,
+): InventoryItem[] {
+  return setInventoryItem(items, index, {
+    id,
+    status: id === -1 ? ITEM_STATUS_INACTIVE : ITEM_STATUS_ACTIVE,
+    quantity: id === -1 ? 0 : 1,
+  });
+}
