@@ -34,6 +34,36 @@ describe("discoverHostSlotDataFiles", () => {
     ]);
   });
 
+  it("also probes a custom save root when provided", async () => {
+    const listed: string[] = [];
+    const host: DiscoveryHost = {
+      async env() {
+        return { home: "C:\\Users\\Player", platform: "windows" };
+      },
+      async listDir(path) {
+        listed.push(path);
+        if (path === "D:\\Games\\NieR_Automata") {
+          return {
+            status: "ok",
+            entries: [
+              { name: "SlotData_2.dat", kind: "file", mtimeMs: 7 },
+            ],
+          };
+        }
+        return { status: "missing" };
+      },
+    };
+
+    const slots = await discoverHostSlotDataFiles(host, {
+      extraRoots: ["  D:\\Games\\NieR_Automata  ", ""],
+    });
+
+    expect(listed).toContain("D:\\Games\\NieR_Automata");
+    expect(slots).toEqual([
+      { path: "D:\\Games\\NieR_Automata\\SlotData_2.dat", mtimeMs: 7 },
+    ]);
+  });
+
   it("probes Linux Proton and Flatpak roots when Documents is empty", async () => {
     const host: DiscoveryHost = {
       async env() {

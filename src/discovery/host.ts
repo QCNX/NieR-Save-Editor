@@ -33,13 +33,22 @@ function hostFs(host: DiscoveryHost): DiscoveryFs {
   };
 }
 
+export type DiscoverHostSlotDataFilesOptions = {
+  /** Extra dirs to probe (e.g. a user-configured custom save root). */
+  extraRoots?: string[];
+};
+
 /**
  * Discover SlotData files on the real host using injected env + fs commands.
  */
 export async function discoverHostSlotDataFiles(
   host: DiscoveryHost,
+  options?: DiscoverHostSlotDataFilesOptions,
 ): Promise<SlotFile[]> {
   const { home, platform } = await host.env();
-  const roots = candidateSaveDirs({ home, platform });
+  const extras = (options?.extraRoots ?? [])
+    .map((r) => r.trim())
+    .filter((r) => r.length > 0);
+  const roots = [...candidateSaveDirs({ home, platform }), ...extras];
   return discoverSlotDataFiles({ roots, fs: hostFs(host) });
 }

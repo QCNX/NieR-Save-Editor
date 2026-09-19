@@ -59,6 +59,10 @@ body {
   margin-bottom: 12px;
 }
 
+.app-toolbar--settings {
+  margin-top: -4px;
+}
+
 .app-toolbar button,
 .app-toolbar label.file-button {
   border: 1px solid #888;
@@ -68,8 +72,66 @@ body {
   cursor: pointer;
 }
 
+.app-toolbar button:disabled,
+.app-toolbar label.file-button:has(input:disabled) {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .app-toolbar label.file-button input {
   display: none;
+}
+
+.toolbar-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toolbar-field--grow {
+  flex: 1 1 240px;
+  min-width: 200px;
+}
+
+.toolbar-field span {
+  white-space: nowrap;
+  color: #444;
+}
+
+.toolbar-field select,
+.toolbar-field input[type="text"] {
+  font: inherit;
+  padding: 5px 8px;
+  border: 1px solid #888;
+  background: #fff;
+  min-width: 10rem;
+}
+
+.toolbar-field--grow input[type="text"] {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+}
+
+.path-chip,
+.dirty-chip {
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.dirty-chip {
+  color: #8a4b00;
+  font-weight: 600;
+}
+
+.app-alert {
+  margin: 0 0 8px;
+  color: #8b1a1a;
+}
+
+.app-status {
+  margin: 0 0 8px;
+  color: #255;
 }
 
 .app-empty {

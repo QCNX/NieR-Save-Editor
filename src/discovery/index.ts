@@ -4,7 +4,10 @@ export {
   isSlotDataFileName,
   PermissionDeniedError,
 } from "./discover";
-export { discoverHostSlotDataFiles } from "./host";
+export {
+  discoverHostSlotDataFiles,
+  type DiscoverHostSlotDataFilesOptions,
+} from "./host";
 export { createTauriDiscoveryHost } from "./tauriHost";
 export type { CandidateSaveDirsInput } from "./paths";
 export type { DiscoverSlotDataFilesInput } from "./discover";
