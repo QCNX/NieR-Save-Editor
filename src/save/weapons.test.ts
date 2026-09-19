@@ -11,6 +11,7 @@ import {
   EMPTY_WEAPON_BYTES,
   parseWeaponItem,
   parseWeapons,
+  replaceWeaponId,
   serializeWeaponItem,
   serializeWeapons,
   writeWeaponAt,
@@ -98,6 +99,19 @@ describe("WeaponItem parse/serialize", () => {
 
   it("rejects wrong-sized weapon record", () => {
     expect(() => parseWeaponItem(hexToBytes(CRUEL_HEX.slice(0, -2)), 0)).toThrow();
+  });
+
+  it("fills and clears a slot with NieREdit replacement defaults", () => {
+    const empty = parseWeaponItem(hexToBytes(EMPTY_HEX), 7);
+    const filled = replaceWeaponId(empty, 0x42e);
+
+    expect(bytesToHex(serializeWeaponItem(filled))).toBe(
+      "2e04000001000000010000000100000000000000",
+    );
+    expect(bytesToHex(serializeWeaponItem(replaceWeaponId(filled, -1)))).toBe(
+      EMPTY_HEX,
+    );
+    expect(filled.position).toBe(7);
   });
 });
 

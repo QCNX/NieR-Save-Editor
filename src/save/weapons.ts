@@ -96,6 +96,21 @@ export function serializeWeaponItem(item: WeaponItem): Uint8Array {
   return out;
 }
 
+/**
+ * Replace or clear a weapon slot using NieREdit's canonical EMPTY defaults.
+ * Changing the ID intentionally resets all ID-specific progress fields.
+ */
+export function replaceWeaponId(item: WeaponItem, id: number): WeaponItem {
+  return {
+    position: item.position,
+    id,
+    level: 1,
+    newItem: true,
+    newStory: true,
+    enemiesDefeated: 0,
+  };
+}
+
 /** Parse the full PC weapons region (80 × 20 bytes). */
 export function parseWeapons(region: Uint8Array): WeaponItem[] {
   if (region.length !== WEAPONS_SIZE_BYTES) {
