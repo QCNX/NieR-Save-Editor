@@ -6,7 +6,12 @@
   "permissions": [
     "core:default",
     "opener:default",
+    "dialog:allow-save",
     "allow-discovery-env",
-    "allow-discovery-list-dir"
+    "allow-discovery-list-dir",
+    "allow-persist-read-file",
+    "allow-persist-backup-file",
+    "allow-persist-write-file",
+    "allow-persist-save-as-dialog"
   ]
 }

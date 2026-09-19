@@ -1,0 +1,19 @@
+[[permission]]
+identifier = "allow-persist-read-file"
+description = "Allows reading bytes from an explicit user-selected SlotData path."
+commands.allow = ["persist_read_file"]
+
+[[permission]]
+identifier = "allow-persist-backup-file"
+description = "Allows copying a SlotData file into the sibling nier-save-editor-backup folder."
+commands.allow = ["persist_backup_file"]
+
+[[permission]]
+identifier = "allow-persist-write-file"
+description = "Allows writing serialized SlotData bytes to an explicit path."
+commands.allow = ["persist_write_file"]
+
+[[permission]]
+identifier = "allow-persist-save-as-dialog"
+description = "Allows opening a window-bound Save As dialog for SlotData files."
+commands.allow = ["persist_save_as_dialog"]
