@@ -63,7 +63,7 @@ export const EMPTY_PLUGIN_CHIP_ID: PluginChipId = {
  * EMPTY which is handled separately. Needed so level encoding matches the
  * reference editor on serialize.
  */
-const VANILLA_PLUGIN_CHIP_IDS: readonly PluginChipId[] = [
+export const VANILLA_PLUGIN_CHIP_IDS: readonly PluginChipId[] = [
   { baseCode: 0x00000000, baseId: 0x00000bb9, type: 0x01, weight: 4, hasLevels: true },
   { baseCode: 0x00000009, baseId: 0x00000bc2, type: 0x02, weight: 4, hasLevels: true },
   { baseCode: 0x00000012, baseId: 0x00000bcb, type: 0x03, weight: 4, hasLevels: true },
@@ -315,4 +315,42 @@ export function setPluginChip(
         }
       : chip,
   );
+}
+
+/**
+ * Replace a chip type with the same reset semantics as NieREdit's selector:
+ * level starts at zero, weight comes from the selected type, and equipment
+ * bookkeeping is cleared.
+ */
+export function replacePluginChipType(
+  chips: PluginChip[],
+  index: number,
+  id: PluginChipId,
+): PluginChip[] {
+  if (index < 0 || index >= PLUGIN_CHIPS_SIZE_ITEMS) {
+    throw new RangeError(
+      `Plugin chip index out of range: ${index} (expected 0..${PLUGIN_CHIPS_SIZE_ITEMS - 1})`,
+    );
+  }
+  if (chips.length !== PLUGIN_CHIPS_SIZE_ITEMS) {
+    throw new PluginChipsSizeError(
+      chips.length * PLUGIN_CHIPS_ITEM_SIZE_BYTES,
+    );
+  }
+
+  const next = chips.slice();
+  next[index] = {
+    position: index,
+    id: { ...id },
+    level: 0,
+    weight: id.weight,
+    slotA: -1,
+    slotB: -1,
+    slotC: -1,
+    corpseSlotA: -1,
+    corpseSlotB: -1,
+    corpseSlotC: -1,
+    destroyOnCorpseLostMaybe: 0,
+  };
+  return next;
 }

@@ -7,6 +7,12 @@ import {
 /** NieREdit PodProgramId.EMPTY id. */
 export const EMPTY_POD_PROGRAM_ID = -1;
 
+/** Named POD program IDs exposed by NieREdit (unused enum entries omitted). */
+export const POD_PROGRAM_IDS: readonly number[] = [
+  2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012,
+  2015, 2019, 2021, 2022, 2024,
+];
+
 /**
  * One POD program inventory slot (NieREdit PodProgram).
  * Layout: one (i32 LE) + id (i32 LE) = 8 bytes. `position` is the list index.
@@ -110,4 +116,19 @@ export function replacePodProgram(
   const next = programs.slice();
   next[index] = { position: index, one: fields.one, id: fields.id };
   return next;
+}
+
+/** Change one POD program ID while preserving the record's reference `one` field. */
+export function setPodProgramId(
+  programs: readonly PodProgram[],
+  index: number,
+  id: number,
+): PodProgram[] {
+  const current = programs[index];
+  if (!current) {
+    throw new RangeError(
+      `POD program index out of range: ${index} (expected 0..${POD_PROGRAMS_SIZE_ITEMS - 1})`,
+    );
+  }
+  return replacePodProgram(programs, index, { one: current.one, id });
 }

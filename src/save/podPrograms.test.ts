@@ -9,8 +9,8 @@ import {
 import {
   EMPTY_POD_PROGRAM_ID,
   parsePodPrograms,
-  replacePodProgram,
   serializePodPrograms,
+  setPodProgramId,
 } from "./podPrograms";
 import { load, serialize } from "./slotData";
 
@@ -40,6 +40,36 @@ function podRecordBytes(one: number, id: number): Uint8Array {
 }
 
 describe("POD programs parse/edit/serialize", () => {
+  it("fills, replaces, and clears a POD slot while preserving its one field", () => {
+    const region = new Uint8Array(POD_PROGRAMS_SIZE_BYTES);
+    for (let index = 0; index < POD_PROGRAMS_SIZE_ITEMS; index++) {
+      region.set(
+        podRecordBytes(index === 4 ? 7 : 1, EMPTY_POD_PROGRAM_ID),
+        index * POD_PROGRAMS_ITEM_SIZE_BYTES,
+      );
+    }
+
+    const empty = parsePodPrograms(region);
+    const filled = setPodProgramId(empty, 4, 2001);
+    expect(filled[4]).toEqual({ position: 4, one: 7, id: 2001 });
+
+    const replaced = setPodProgramId(filled, 4, 2024);
+    expect(replaced[4]).toEqual({ position: 4, one: 7, id: 2024 });
+
+    const cleared = setPodProgramId(replaced, 4, EMPTY_POD_PROGRAM_ID);
+    expect(cleared[4]).toEqual({
+      position: 4,
+      one: 7,
+      id: EMPTY_POD_PROGRAM_ID,
+    });
+    expect(
+      serializePodPrograms(cleared).subarray(
+        4 * POD_PROGRAMS_ITEM_SIZE_BYTES,
+        5 * POD_PROGRAMS_ITEM_SIZE_BYTES,
+      ),
+    ).toEqual(podRecordBytes(7, EMPTY_POD_PROGRAM_ID));
+  });
+
   it("parses the POD region as 32 × 8-byte records with NieREdit fields", () => {
     const region = new Uint8Array(POD_PROGRAMS_SIZE_BYTES);
     // Slot 0: empty (one=1, id=-1); slot 1: R010 Laser (one=1, id=2001)
@@ -72,7 +102,7 @@ describe("POD programs parse/edit/serialize", () => {
     const input = syntheticSave();
     const slot = load(input);
     const programs = parsePodPrograms(slot.podPrograms);
-    const edited = replacePodProgram(programs, 3, { one: 1, id: 2001 });
+    const edited = setPodProgramId(programs, 3, 2001);
     const podBytes = serializePodPrograms(edited);
     const out = serialize({ ...slot, podPrograms: podBytes });
 
@@ -85,7 +115,7 @@ describe("POD programs parse/edit/serialize", () => {
 
     const recordStart = start + 3 * POD_PROGRAMS_ITEM_SIZE_BYTES;
     expect(out.subarray(recordStart, recordStart + 8)).toEqual(
-      podRecordBytes(1, 2001),
+      podRecordBytes(programs[3]!.one, 2001),
     );
     // Other POD slots unchanged
     expect(out.subarray(start, recordStart)).toEqual(

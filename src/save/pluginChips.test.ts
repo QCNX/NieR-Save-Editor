@@ -10,8 +10,10 @@ import {
   EMPTY_PLUGIN_CHIP_ID,
   minimumWeightForLevel,
   parsePluginChips,
+  replacePluginChipType,
   serializePluginChips,
   setPluginChip,
+  VANILLA_PLUGIN_CHIP_IDS,
   type PluginChip,
 } from "./pluginChips";
 import { load, serialize } from "./slotData";
@@ -165,6 +167,68 @@ describe("PluginChip parse/serialize (NieREdit 48-byte layout)", () => {
 });
 
 describe("Plugin chips region round-trip and edit", () => {
+  it("fills and replaces a chip type with reference level, weight, and slot resets", () => {
+    const chips = Array.from({ length: PLUGIN_CHIPS_SIZE_ITEMS }, (_, i) =>
+      emptyChip(i),
+    );
+    const weaponAttack = VANILLA_PLUGIN_CHIP_IDS.find((id) => id.type === 1)!;
+    const itemScan = VANILLA_PLUGIN_CHIP_IDS.find((id) => id.type === 0x23)!;
+
+    const filled = replacePluginChipType(chips, 6, weaponAttack);
+    expect(filled[6]).toEqual({
+      ...emptyChip(6),
+      id: weaponAttack,
+      level: 0,
+      weight: 4,
+    });
+
+    const equipped = setPluginChip(filled, 6, {
+      level: 5,
+      weight: 12,
+      slotA: 3,
+      corpseSlotB: 8,
+      destroyOnCorpseLostMaybe: 1,
+    });
+    const replaced = replacePluginChipType(equipped, 6, itemScan);
+    expect(replaced[6]).toEqual({
+      ...emptyChip(6),
+      id: itemScan,
+      level: 0,
+      weight: 6,
+    });
+  });
+
+  it("clears a chip type using the reference EMPTY replacement semantics", () => {
+    const before = fullRegionFromHexSlots([
+      { index: 2, hex: WEAPON_ATK_L3_HEX },
+      { index: 3, hex: ITEM_SCAN_HEX },
+    ]);
+    const chips = parsePluginChips(before);
+    const cleared = replacePluginChipType(chips, 2, EMPTY_PLUGIN_CHIP_ID);
+
+    expect(cleared[2]).toEqual({
+      ...emptyChip(2),
+      level: 0,
+    });
+
+    const bytes = serializePluginChips(cleared);
+    const recordStart = 2 * PLUGIN_CHIPS_ITEM_SIZE_BYTES;
+    const recordEnd = recordStart + PLUGIN_CHIPS_ITEM_SIZE_BYTES;
+    expect(bytes.subarray(0, recordStart)).toEqual(
+      before.subarray(0, recordStart),
+    );
+    expect(bytes.subarray(recordEnd)).toEqual(before.subarray(recordEnd));
+    const view = new DataView(
+      bytes.buffer,
+      bytes.byteOffset + recordStart,
+      PLUGIN_CHIPS_ITEM_SIZE_BYTES,
+    );
+    expect(Array.from({ length: 10 }, (_, field) => view.getInt32(field * 4, true))).toEqual([
+      -1, -1, -1, 0, -1, -1, -1, -1, -1, -1,
+    ]);
+    expect(view.getInt32(44, true)).toBe(0);
+  });
+
   it("round-trips an unedited chips region byte-identically", () => {
     const input = fullRegionFromHexSlots([
       { index: 0, hex: WEAPON_ATK_L3_HEX },
