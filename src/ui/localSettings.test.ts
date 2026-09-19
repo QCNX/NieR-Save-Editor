@@ -22,24 +22,27 @@ function memoryStorage(initial: Record<string, string> = {}) {
 }
 
 describe("localSettings", () => {
-  it("returns empty settings when nothing is stored", () => {
-    expect(loadLocalSettings(memoryStorage())).toEqual({});
+  it("defaults deterministically to Simplified Chinese when nothing is stored", () => {
+    expect(loadLocalSettings(memoryStorage())).toEqual({ language: "zh-CN" });
   });
 
-  it("round-trips a custom save root for rediscovery", () => {
+  it("loads a legacy custom save root with the default language", () => {
     const storage = memoryStorage();
     const settings: LocalSettings = {
       customSaveRoot: "%USERPROFILE%\\Documents\\My Games\\NieR_Automata",
     };
     saveLocalSettings(storage, settings);
-    expect(loadLocalSettings(storage)).toEqual(settings);
+    expect(loadLocalSettings(storage)).toEqual({
+      language: "zh-CN",
+      customSaveRoot: settings.customSaveRoot,
+    });
   });
 
-  it("ignores corrupt JSON and returns empty settings", () => {
+  it("ignores corrupt JSON and returns default settings", () => {
     const storage = memoryStorage({
       "nier-save-editor.settings": "{not-json",
     });
-    expect(loadLocalSettings(storage)).toEqual({});
+    expect(loadLocalSettings(storage)).toEqual({ language: "zh-CN" });
   });
 
   it("clears customSaveRoot when saved as empty/whitespace", () => {
@@ -51,6 +54,27 @@ describe("localSettings", () => {
       "%USERPROFILE%\\Documents\\My Games\\NieR_Automata",
     );
     saveLocalSettings(storage, { customSaveRoot: "   " });
-    expect(loadLocalSettings(storage)).toEqual({});
+    expect(loadLocalSettings(storage)).toEqual({ language: "zh-CN" });
+  });
+
+  it("persists language changes without losing a legacy custom root", () => {
+    const root = "%USERPROFILE%\\Documents\\My Games\\NieR_Automata";
+    const storage = memoryStorage({
+      "nier-save-editor.settings": JSON.stringify({ customSaveRoot: root }),
+    });
+
+    saveLocalSettings(storage, { language: "en" });
+
+    expect(loadLocalSettings(storage)).toEqual({
+      language: "en",
+      customSaveRoot: root,
+    });
+  });
+
+  it("falls back to Simplified Chinese for an unsupported stored language", () => {
+    const storage = memoryStorage({
+      "nier-save-editor.settings": JSON.stringify({ language: "fr" }),
+    });
+    expect(loadLocalSettings(storage)).toEqual({ language: "zh-CN" });
   });
 });
