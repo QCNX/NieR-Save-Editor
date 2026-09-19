@@ -4,6 +4,8 @@ import { describe, expect, it } from "vitest";
 import { I18nProvider } from "../i18n";
 import {
   BETWEEN_WEAPON_SLOTS_AND_XP_SIZE_BYTES,
+  BETWEEN_XP_AND_POD_CONFIG_SIZE_BYTES,
+  POD_CONFIG_SIZE_BYTES,
   INVENTORY_SIZE_ITEMS,
   ITEM_STATUS_ACTIVE,
   ITEM_STATUS_INACTIVE,
@@ -62,7 +64,11 @@ function slot(): SlotData {
       BETWEEN_WEAPON_SLOTS_AND_XP_SIZE_BYTES,
     ),
     xp: new Uint8Array(4),
-    afterXp: new Uint8Array(),
+    betweenXpAndPodConfig: new Uint8Array(
+      BETWEEN_XP_AND_POD_CONFIG_SIZE_BYTES,
+    ),
+    podConfig: new Uint8Array(POD_CONFIG_SIZE_BYTES),
+    afterPodConfig: new Uint8Array(),
   };
 }
 

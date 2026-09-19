@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  BETWEEN_XP_AND_POD_CONFIG_SIZE_BYTES,
   BETWEEN_WEAPON_SLOTS_AND_XP_SIZE_BYTES,
+  POD_CONFIG_SIZE_BYTES,
   SAVEFILE_INVENTORY_START_BYTE,
   SAVEFILE_MONEY_START_BYTE,
+  SAVEFILE_POD_CONFIG_START_BYTE,
   SAVEFILE_SIZE_BYTES,
   SAVEFILE_WEAPON_SLOT_1_START_BYTE,
   SAVEFILE_WEAPON_SLOT_2_START_BYTE,
@@ -63,6 +66,19 @@ describe("SlotData load/serialize", () => {
     expect(slot.betweenWeaponSlotsAndXp.length).toBe(
       BETWEEN_WEAPON_SLOTS_AND_XP_SIZE_BYTES,
     );
+    expect(serialize(slot)).toEqual(input);
+  });
+
+  it("splits PodConfig at the frozen literal offset without changing any save byte", () => {
+    const input = syntheticSave();
+    const slot = load(input);
+
+    expect(SAVEFILE_POD_CONFIG_START_BYTE).toBe(231208);
+    expect(POD_CONFIG_SIZE_BYTES).toBe(24);
+    expect(slot.betweenXpAndPodConfig.length).toBe(
+      BETWEEN_XP_AND_POD_CONFIG_SIZE_BYTES,
+    );
+    expect(slot.podConfig).toEqual(input.slice(231208, 231232));
     expect(serialize(slot)).toEqual(input);
   });
 

@@ -1,20 +1,24 @@
 import {
-  AFTER_XP_SIZE_BYTES,
-  AFTER_XP_START_BYTE,
+  AFTER_POD_CONFIG_SIZE_BYTES,
+  AFTER_POD_CONFIG_START_BYTE,
   BETWEEN_CHIPS_AND_WEAPON_SLOTS_SIZE_BYTES,
   BETWEEN_CHIPS_AND_WEAPON_SLOTS_START_BYTE,
   BETWEEN_POD_AND_CHIPS_SIZE_BYTES,
   BETWEEN_POD_AND_CHIPS_START_BYTE,
   BETWEEN_WEAPON_SLOTS_AND_XP_SIZE_BYTES,
   BETWEEN_WEAPON_SLOTS_AND_XP_START_BYTE,
+  BETWEEN_XP_AND_POD_CONFIG_SIZE_BYTES,
+  BETWEEN_XP_AND_POD_CONFIG_START_BYTE,
   INVENTORY_SIZE_BYTES,
   MONEY_SIZE_BYTES,
   PLUGIN_CHIPS_SIZE_BYTES,
+  POD_CONFIG_SIZE_BYTES,
   POD_PROGRAMS_SIZE_BYTES,
   SAVEFILE_CORPSE_INVENTORY_START_BYTE,
   SAVEFILE_INVENTORY_START_BYTE,
   SAVEFILE_MONEY_START_BYTE,
   SAVEFILE_PLUGIN_CHIPS_START_BYTE,
+  SAVEFILE_POD_CONFIG_START_BYTE,
   SAVEFILE_POD_PROGRAMS_START_BYTE,
   SAVEFILE_SIZE_BYTES,
   SAVEFILE_WEAPON_SLOT_1_START_BYTE,
@@ -58,8 +62,12 @@ export type SlotData = {
   betweenWeaponSlotsAndXp: Uint8Array;
   /** Known field placeholder at XP offset (4 LE bytes). */
   xp: Uint8Array;
-  /** Opaque trailing region after XP. */
-  afterXp: Uint8Array;
+  /** Opaque region between XP and PodConfig. */
+  betweenXpAndPodConfig: Uint8Array;
+  /** Raw Pod A/B/C levels and equipped programs. */
+  podConfig: Uint8Array;
+  /** Opaque trailing region after PodConfig. */
+  afterPodConfig: Uint8Array;
 };
 
 export class SlotDataSizeError extends Error {
@@ -139,7 +147,21 @@ export function load(bytes: Uint8Array): SlotData {
       BETWEEN_WEAPON_SLOTS_AND_XP_SIZE_BYTES,
     ),
     xp: sliceCopy(bytes, SAVEFILE_XP_START_BYTE, XP_SIZE_BYTES),
-    afterXp: sliceCopy(bytes, AFTER_XP_START_BYTE, AFTER_XP_SIZE_BYTES),
+    betweenXpAndPodConfig: sliceCopy(
+      bytes,
+      BETWEEN_XP_AND_POD_CONFIG_START_BYTE,
+      BETWEEN_XP_AND_POD_CONFIG_SIZE_BYTES,
+    ),
+    podConfig: sliceCopy(
+      bytes,
+      SAVEFILE_POD_CONFIG_START_BYTE,
+      POD_CONFIG_SIZE_BYTES,
+    ),
+    afterPodConfig: sliceCopy(
+      bytes,
+      AFTER_POD_CONFIG_START_BYTE,
+      AFTER_POD_CONFIG_SIZE_BYTES,
+    ),
   };
 }
 
@@ -162,7 +184,9 @@ export function serialize(slot: SlotData): Uint8Array {
     slot.weaponSlot2,
     slot.betweenWeaponSlotsAndXp,
     slot.xp,
-    slot.afterXp,
+    slot.betweenXpAndPodConfig,
+    slot.podConfig,
+    slot.afterPodConfig,
   ];
 
   let total = 0;
