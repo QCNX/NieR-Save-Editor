@@ -1,0 +1,39 @@
+﻿# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Local save fixtures (may contain personal data)
+fixtures/
+*.dat
+.env
+.env.*
+
+# Private / machine-local docs — never publish
+ORCHESTRATOR.md
+DEV-ENV.md
+PLAN.md
+.scratch/
+
+# Tauri / Rust
+src-tauri/target/
