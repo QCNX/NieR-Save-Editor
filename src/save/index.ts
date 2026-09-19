@@ -82,5 +82,5 @@ export {
 
 export { getMoney, setMoney } from "./money";
 export { getXp, setXp } from "./xp";
-export { levelFromXp, xpForLevel } from "./level";
+export { levelFromXp, setLevel, xpForLevel } from "./level";
 export { MAX_LEVEL, XP_TABLE } from "./xpTable";

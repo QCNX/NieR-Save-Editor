@@ -3,6 +3,7 @@ import {
   getMoney,
   getXp,
   levelFromXp,
+  setLevel,
   setMoney,
   setXp,
 } from "../save";
@@ -47,11 +48,20 @@ export function SummaryPanel({ slot, onSlotChange }: Props) {
             }}
           />
         </label>
-        <div className="derived-level">
+        <label>
           <span>等级</span>
-          <strong>{level}</strong>
-          <em>（由经验推导，只读）</em>
-        </div>
+          <input
+            type="number"
+            min={1}
+            max={99}
+            step={1}
+            value={level}
+            onChange={(e) => {
+              const next = setLevel(slot, Number(e.currentTarget.value));
+              if (next !== slot) onSlotChange(next);
+            }}
+          />
+        </label>
       </div>
     </section>
   );

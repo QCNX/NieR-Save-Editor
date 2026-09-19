@@ -3,6 +3,7 @@ import {
   SAVEFILE_SIZE_BYTES,
   SAVEFILE_XP_START_BYTE,
 } from "./constants";
+import { setLevel } from "./index";
 import { levelFromXp, xpForLevel } from "./level";
 import { load, serialize } from "./slotData";
 import { getXp, setXp } from "./xp";
@@ -67,6 +68,21 @@ describe("xp get/set", () => {
 });
 
 describe("levelFromXp", () => {
+  it("setting level writes that level's XP threshold", () => {
+    const slot = load(syntheticSave());
+
+    expect(getXp(setLevel(slot, 30))).toBe(55412);
+  });
+
+  it.each([0, 100, 1.5, Number.NaN])(
+    "rejects invalid level %s without changing experience",
+    (level) => {
+      const slot = load(syntheticSave());
+
+      expect(setLevel(slot, level)).toBe(slot);
+    },
+  );
+
   it("matches NieREdit XP_TABLE thresholds at exact level boundaries", () => {
     expect(levelFromXp(0)).toBe(1);
     expect(levelFromXp(48)).toBe(2);
