@@ -3,11 +3,13 @@ import { describe, expect, it } from "vitest";
 
 import { I18nProvider } from "../i18n";
 import {
+  BETWEEN_WEAPON_SLOTS_AND_XP_SIZE_BYTES,
   INVENTORY_SIZE_ITEMS,
   ITEM_STATUS_ACTIVE,
   ITEM_STATUS_INACTIVE,
   parseInventory,
   serializeInventory,
+  WEAPON_SLOT_SIZE_BYTES,
   type InventoryItem,
   type SlotData,
 } from "../save";
@@ -53,7 +55,12 @@ function slot(): SlotData {
     podPrograms: new Uint8Array(),
     betweenPodAndChips: new Uint8Array(),
     pluginChips: new Uint8Array(),
-    betweenChipsAndXp: new Uint8Array(),
+    betweenChipsAndWeaponSlots: new Uint8Array(),
+    weaponSlot1: new Uint8Array(WEAPON_SLOT_SIZE_BYTES),
+    weaponSlot2: new Uint8Array(WEAPON_SLOT_SIZE_BYTES),
+    betweenWeaponSlotsAndXp: new Uint8Array(
+      BETWEEN_WEAPON_SLOTS_AND_XP_SIZE_BYTES,
+    ),
     xp: new Uint8Array(4),
     afterXp: new Uint8Array(),
   };

@@ -1,10 +1,12 @@
 import {
   AFTER_XP_SIZE_BYTES,
   AFTER_XP_START_BYTE,
-  BETWEEN_CHIPS_AND_XP_SIZE_BYTES,
-  BETWEEN_CHIPS_AND_XP_START_BYTE,
+  BETWEEN_CHIPS_AND_WEAPON_SLOTS_SIZE_BYTES,
+  BETWEEN_CHIPS_AND_WEAPON_SLOTS_START_BYTE,
   BETWEEN_POD_AND_CHIPS_SIZE_BYTES,
   BETWEEN_POD_AND_CHIPS_START_BYTE,
+  BETWEEN_WEAPON_SLOTS_AND_XP_SIZE_BYTES,
+  BETWEEN_WEAPON_SLOTS_AND_XP_START_BYTE,
   INVENTORY_SIZE_BYTES,
   MONEY_SIZE_BYTES,
   PLUGIN_CHIPS_SIZE_BYTES,
@@ -15,9 +17,12 @@ import {
   SAVEFILE_PLUGIN_CHIPS_START_BYTE,
   SAVEFILE_POD_PROGRAMS_START_BYTE,
   SAVEFILE_SIZE_BYTES,
+  SAVEFILE_WEAPON_SLOT_1_START_BYTE,
+  SAVEFILE_WEAPON_SLOT_2_START_BYTE,
   SAVEFILE_WEAPONS_START_BYTE,
   SAVEFILE_XP_START_BYTE,
   WEAPONS_SIZE_BYTES,
+  WEAPON_SLOT_SIZE_BYTES,
   XP_SIZE_BYTES,
 } from "./constants";
 
@@ -43,8 +48,14 @@ export type SlotData = {
   betweenPodAndChips: Uint8Array;
   /** Known field placeholder: plug-in chips block. */
   pluginChips: Uint8Array;
-  /** Opaque region from after chips through before XP. */
-  betweenChipsAndXp: Uint8Array;
+  /** Opaque region from after chips through before weapon equipment slots. */
+  betweenChipsAndWeaponSlots: Uint8Array;
+  /** Raw Set 1 weapon equipment IDs (light/heavy). */
+  weaponSlot1: Uint8Array;
+  /** Raw Set 2 weapon equipment IDs (light/heavy). */
+  weaponSlot2: Uint8Array;
+  /** Opaque region between weapon equipment slots and XP. */
+  betweenWeaponSlotsAndXp: Uint8Array;
   /** Known field placeholder at XP offset (4 LE bytes). */
   xp: Uint8Array;
   /** Opaque trailing region after XP. */
@@ -107,10 +118,25 @@ export function load(bytes: Uint8Array): SlotData {
       SAVEFILE_PLUGIN_CHIPS_START_BYTE,
       PLUGIN_CHIPS_SIZE_BYTES,
     ),
-    betweenChipsAndXp: sliceCopy(
+    betweenChipsAndWeaponSlots: sliceCopy(
       bytes,
-      BETWEEN_CHIPS_AND_XP_START_BYTE,
-      BETWEEN_CHIPS_AND_XP_SIZE_BYTES,
+      BETWEEN_CHIPS_AND_WEAPON_SLOTS_START_BYTE,
+      BETWEEN_CHIPS_AND_WEAPON_SLOTS_SIZE_BYTES,
+    ),
+    weaponSlot1: sliceCopy(
+      bytes,
+      SAVEFILE_WEAPON_SLOT_1_START_BYTE,
+      WEAPON_SLOT_SIZE_BYTES,
+    ),
+    weaponSlot2: sliceCopy(
+      bytes,
+      SAVEFILE_WEAPON_SLOT_2_START_BYTE,
+      WEAPON_SLOT_SIZE_BYTES,
+    ),
+    betweenWeaponSlotsAndXp: sliceCopy(
+      bytes,
+      BETWEEN_WEAPON_SLOTS_AND_XP_START_BYTE,
+      BETWEEN_WEAPON_SLOTS_AND_XP_SIZE_BYTES,
     ),
     xp: sliceCopy(bytes, SAVEFILE_XP_START_BYTE, XP_SIZE_BYTES),
     afterXp: sliceCopy(bytes, AFTER_XP_START_BYTE, AFTER_XP_SIZE_BYTES),
@@ -131,7 +157,10 @@ export function serialize(slot: SlotData): Uint8Array {
     slot.podPrograms,
     slot.betweenPodAndChips,
     slot.pluginChips,
-    slot.betweenChipsAndXp,
+    slot.betweenChipsAndWeaponSlots,
+    slot.weaponSlot1,
+    slot.weaponSlot2,
+    slot.betweenWeaponSlotsAndXp,
     slot.xp,
     slot.afterXp,
   ];

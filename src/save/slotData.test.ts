@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  BETWEEN_WEAPON_SLOTS_AND_XP_SIZE_BYTES,
   SAVEFILE_INVENTORY_START_BYTE,
   SAVEFILE_MONEY_START_BYTE,
   SAVEFILE_SIZE_BYTES,
+  SAVEFILE_WEAPON_SLOT_1_START_BYTE,
+  SAVEFILE_WEAPON_SLOT_2_START_BYTE,
   SAVEFILE_XP_START_BYTE,
+  WEAPON_SLOT_SIZE_BYTES,
 } from "./constants";
 import { load, serialize, SlotDataSizeError } from "./slotData";
 
@@ -32,6 +36,34 @@ describe("SlotData load/serialize", () => {
     const output = serialize(load(input));
     expect(output.length).toBe(SAVEFILE_SIZE_BYTES);
     expect(output).toEqual(input);
+  });
+
+  it("splits both weapon equipment slots without changing any save byte", () => {
+    const input = syntheticSave();
+    const slot = load(input);
+
+    expect(SAVEFILE_WEAPON_SLOT_1_START_BYTE).toBe(231156);
+    expect(SAVEFILE_WEAPON_SLOT_2_START_BYTE).toBe(231164);
+    expect(SAVEFILE_WEAPON_SLOT_2_START_BYTE).toBe(
+      SAVEFILE_WEAPON_SLOT_1_START_BYTE + 8,
+    );
+    expect(slot.weaponSlot1).toEqual(
+      input.slice(
+        SAVEFILE_WEAPON_SLOT_1_START_BYTE,
+        SAVEFILE_WEAPON_SLOT_1_START_BYTE + WEAPON_SLOT_SIZE_BYTES,
+      ),
+    );
+    expect(slot.weaponSlot2).toEqual(
+      input.slice(
+        SAVEFILE_WEAPON_SLOT_2_START_BYTE,
+        SAVEFILE_WEAPON_SLOT_2_START_BYTE + WEAPON_SLOT_SIZE_BYTES,
+      ),
+    );
+    expect(slot.betweenChipsAndWeaponSlots.length).toBe(10744);
+    expect(slot.betweenWeaponSlotsAndXp.length).toBe(
+      BETWEEN_WEAPON_SLOTS_AND_XP_SIZE_BYTES,
+    );
+    expect(serialize(slot)).toEqual(input);
   });
 
   it("separates known field placeholders from unknown blobs for later edits", () => {
