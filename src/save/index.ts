@@ -47,3 +47,40 @@ export {
   SlotDataSizeError,
   type SlotData,
 } from "./slotData";
+
+export {
+  EMPTY_WEAPON_BYTES,
+  parseWeaponItem,
+  parseWeapons,
+  serializeWeaponItem,
+  serializeWeapons,
+  WeaponSizeError,
+  writeWeaponAt,
+  type WeaponItem,
+} from "./weapons";
+
+export {
+  EMPTY_PLUGIN_CHIP_ID,
+  minimumWeightForLevel,
+  parsePluginChips,
+  PluginChipsSizeError,
+  serializePluginChips,
+  setPluginChip,
+  type PluginChip,
+  type PluginChipId,
+  type PluginChipPatch,
+} from "./pluginChips";
+
+export { getMoney, setMoney } from "./money";
+export { getXp, setXp } from "./xp";
+export { levelFromXp, xpForLevel } from "./level";
+export { MAX_LEVEL, XP_TABLE } from "./xpTable";
+
+export {
+  EMPTY_POD_PROGRAM_ID,
+  parsePodPrograms,
+  PodProgramsSizeError,
+  replacePodProgram,
+  serializePodPrograms,
+  type PodProgram,
+} from "./podPrograms";
