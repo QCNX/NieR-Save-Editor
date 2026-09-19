@@ -1,0 +1,1312 @@
+[
+  {
+    "enumName": "SMALL_RECOVERY",
+    "id": 0,
+    "en": "Small Recovery"
+  },
+  {
+    "enumName": "MEDIUM_RECOVERY",
+    "id": 1,
+    "en": "Medium Recovery"
+  },
+  {
+    "enumName": "LARGE_RECOVERY",
+    "id": 2,
+    "en": "Large Recovery"
+  },
+  {
+    "enumName": "FULL_RECOVERY",
+    "id": 3,
+    "en": "Full Recovery"
+  },
+  {
+    "enumName": "VISUAL_CURE",
+    "id": 60,
+    "en": "Visual Cure"
+  },
+  {
+    "enumName": "AURAL_CURE",
+    "id": 70,
+    "en": "Aural Cure"
+  },
+  {
+    "enumName": "MANIPULATION_CURE",
+    "id": 75,
+    "en": "Cure Manipulation"
+  },
+  {
+    "enumName": "ALL_CURE",
+    "id": 80,
+    "en": "Cure All Status"
+  },
+  {
+    "enumName": "ALL_CURE_HEAL",
+    "id": 90,
+    "en": "Cure All+Heal All"
+  },
+  {
+    "enumName": "VOLT_PROOF_SALVE",
+    "id": 50,
+    "en": "Volt-Proof Salve"
+  },
+  {
+    "enumName": "MELEE_ATTACK_UP_S",
+    "id": 100,
+    "en": "Melee Attack Up (S)"
+  },
+  {
+    "enumName": "MELEE_ATTACK_UP_L",
+    "id": 102,
+    "en": "Melee Attack Up (L)"
+  },
+  {
+    "enumName": "RANGED_ATTACK_UP_S",
+    "id": 110,
+    "en": "Ranged Attack Up (S)"
+  },
+  {
+    "enumName": "RANGED_ATTACK_UP_L",
+    "id": 112,
+    "en": "Ranged Attack Up (L)"
+  },
+  {
+    "enumName": "MELEE_DEFENSE_UP_S",
+    "id": 120,
+    "en": "Melee Defense Up (S)"
+  },
+  {
+    "enumName": "MELEE_DEFENSE_UP_L",
+    "id": 122,
+    "en": "Melee Defense Up (L)"
+  },
+  {
+    "enumName": "RANGED_DEFENSE_UP_S",
+    "id": 130,
+    "en": "Ranged Defense Up (S)"
+  },
+  {
+    "enumName": "RANGED_DEFENSE_UP_L",
+    "id": 132,
+    "en": "Ranged Defense Up (L)"
+  },
+  {
+    "enumName": "SKILL_SALVE_S",
+    "id": 140,
+    "en": "Skill Salve (S)"
+  },
+  {
+    "enumName": "SKILL_SALVE_L",
+    "id": 142,
+    "en": "Skill Salve (L)"
+  },
+  {
+    "enumName": "IMPACT_BRACER_S",
+    "id": 150,
+    "en": "Impact Bracer (S)"
+  },
+  {
+    "enumName": "IMPACT_BRACER_L",
+    "id": 152,
+    "en": "Impact Bracer (L)"
+  },
+  {
+    "enumName": "SPEED_SALVE_S",
+    "id": 160,
+    "en": "Speed Salve (S)"
+  },
+  {
+    "enumName": "SPEED_SALVE_L",
+    "id": 162,
+    "en": "Speed Salve (L)"
+  },
+  {
+    "enumName": "POPOLAS_BOOZE",
+    "id": 170,
+    "en": "Popola's Booze"
+  },
+  {
+    "enumName": "ANIMAL_BAIT",
+    "id": 300,
+    "en": "Animal Bait"
+  },
+  {
+    "enumName": "SMALL_G_LUCK",
+    "id": 330,
+    "en": "Small G Luck+"
+  },
+  {
+    "enumName": "LARGE_G_LUCK",
+    "id": 332,
+    "en": "Large G Luck+"
+  },
+  {
+    "enumName": "E_DRUG",
+    "id": 400,
+    "en": "E-Drug"
+  },
+  {
+    "enumName": "FORBIDDEN_FRUIT",
+    "id": 410,
+    "en": "Forbidden Fruit"
+  },
+  {
+    "enumName": "COPPER_ORE",
+    "id": 600,
+    "en": "Copper Ore"
+  },
+  {
+    "enumName": "IRON_ORE",
+    "id": 601,
+    "en": "Iron Ore"
+  },
+  {
+    "enumName": "SILVER_ORE",
+    "id": 602,
+    "en": "Silver Ore"
+  },
+  {
+    "enumName": "GOLD_ORE",
+    "id": 603,
+    "en": "Gold Ore"
+  },
+  {
+    "enumName": "RUSTED_CLUMP",
+    "id": 530,
+    "en": "Rusted Clump"
+  },
+  {
+    "enumName": "DENTED_PLATE",
+    "id": 610,
+    "en": "Dented Plate"
+  },
+  {
+    "enumName": "TITANIUM_ALLOY",
+    "id": 535,
+    "en": "Titanium Alloy"
+  },
+  {
+    "enumName": "MEMORY_ALLOY",
+    "id": 536,
+    "en": "Memory Alloy"
+  },
+  {
+    "enumName": "BEAST_HIDE",
+    "id": 510,
+    "en": "Beast Hide"
+  },
+  {
+    "enumName": "BROKEN_KEY",
+    "id": 540,
+    "en": "Broken Key"
+  },
+  {
+    "enumName": "WARPED_WIRE",
+    "id": 643,
+    "en": "Warped Wire"
+  },
+  {
+    "enumName": "STRETCHED_COIL",
+    "id": 644,
+    "en": "Stretched Coil"
+  },
+  {
+    "enumName": "BROKEN_CIRCUIT",
+    "id": 646,
+    "en": "Broken Circuit"
+  },
+  {
+    "enumName": "STRIPPED_SCREW",
+    "id": 520,
+    "en": "Stripped Screw"
+  },
+  {
+    "enumName": "PRISTINE_SCREW",
+    "id": 521,
+    "en": "Pristine Screw"
+  },
+  {
+    "enumName": "SMALL_GEAR",
+    "id": 525,
+    "en": "Small Gear"
+  },
+  {
+    "enumName": "LARGE_GEAR",
+    "id": 526,
+    "en": "Large Gear"
+  },
+  {
+    "enumName": "RUSTY_BOLT",
+    "id": 635,
+    "en": "Rusty Bolt"
+  },
+  {
+    "enumName": "NEW_BOLT",
+    "id": 555,
+    "en": "New Bolt"
+  },
+  {
+    "enumName": "CRUSHED_NUT",
+    "id": 636,
+    "en": "Crushed Nut"
+  },
+  {
+    "enumName": "CLEAN_NUT",
+    "id": 560,
+    "en": "Clean Nut"
+  },
+  {
+    "enumName": "DENTED_SOCKET",
+    "id": 645,
+    "en": "Dented Socket"
+  },
+  {
+    "enumName": "STURDY_SOCKET",
+    "id": 642,
+    "en": "Sturdy Socket"
+  },
+  {
+    "enumName": "SEVERED_CABLE",
+    "id": 550,
+    "en": "Severed Cable"
+  },
+  {
+    "enumName": "PRISTINE_CABLE",
+    "id": 551,
+    "en": "Pristine Cable"
+  },
+  {
+    "enumName": "BROKEN_BATTERY",
+    "id": 545,
+    "en": "Broken Battery"
+  },
+  {
+    "enumName": "LARGE_BATTERY",
+    "id": 546,
+    "en": "Large Battery"
+  },
+  {
+    "enumName": "MACHINE_ARM",
+    "id": 570,
+    "en": "Machine Arm"
+  },
+  {
+    "enumName": "MACHINE_LEG",
+    "id": 571,
+    "en": "Machine Leg"
+  },
+  {
+    "enumName": "MACHINE_TORSO",
+    "id": 572,
+    "en": "Machine Torso"
+  },
+  {
+    "enumName": "MACHINE_HEAD",
+    "id": 573,
+    "en": "Machine Head"
+  },
+  {
+    "enumName": "CRYSTAL",
+    "id": 680,
+    "en": "Crystal"
+  },
+  {
+    "enumName": "PEARL",
+    "id": 686,
+    "en": "Pearl"
+  },
+  {
+    "enumName": "BLACK_PEARL",
+    "id": 639,
+    "en": "Black Pearl"
+  },
+  {
+    "enumName": "PYRITE",
+    "id": 632,
+    "en": "Pyrite"
+  },
+  {
+    "enumName": "AMBER",
+    "id": 633,
+    "en": "Amber"
+  },
+  {
+    "enumName": "MOLDAVITE",
+    "id": 687,
+    "en": "Moldavite"
+  },
+  {
+    "enumName": "METEORITE",
+    "id": 688,
+    "en": "Meteorite"
+  },
+  {
+    "enumName": "METEORITE_SHARD",
+    "id": 531,
+    "en": "Meteorite Shard"
+  },
+  {
+    "enumName": "SIMPLE_GADGET",
+    "id": 580,
+    "en": "Simple Gadget"
+  },
+  {
+    "enumName": "ELABORATE_GADGET",
+    "id": 581,
+    "en": "Elaborate Gadget"
+  },
+  {
+    "enumName": "COMPLEX_GADGET",
+    "id": 582,
+    "en": "Complex Gadget"
+  },
+  {
+    "enumName": "POWERUP_PART_S",
+    "id": 583,
+    "en": "Powerup Part S"
+  },
+  {
+    "enumName": "POWERUP_PART_M",
+    "id": 584,
+    "en": "Powerup Part M"
+  },
+  {
+    "enumName": "POWERUP_PART_L",
+    "id": 585,
+    "en": "Powerup Part L"
+  },
+  {
+    "enumName": "TREE_SEED",
+    "id": 624,
+    "en": "Tree Seed"
+  },
+  {
+    "enumName": "PLANT_SEED",
+    "id": 621,
+    "en": "Plant Seed"
+  },
+  {
+    "enumName": "TREE_SAP",
+    "id": 622,
+    "en": "Tree Sap"
+  },
+  {
+    "enumName": "MUSHROOM",
+    "id": 626,
+    "en": "Mushroom"
+  },
+  {
+    "enumName": "EAGLE_EGGS",
+    "id": 638,
+    "en": "Eagle Eggs"
+  },
+  {
+    "enumName": "GIANT_EGG",
+    "id": 637,
+    "en": "Giant Egg"
+  },
+  {
+    "enumName": "TORN_BOOK",
+    "id": 627,
+    "en": "Torn Book"
+  },
+  {
+    "enumName": "TECH_MANUAL",
+    "id": 684,
+    "en": "Tech Manual"
+  },
+  {
+    "enumName": "THICK_DICTIONARY",
+    "id": 685,
+    "en": "Thick Dictionary"
+  },
+  {
+    "enumName": "PURE_WATER",
+    "id": 623,
+    "en": "Pure Water"
+  },
+  {
+    "enumName": "TANNING_AGENT",
+    "id": 629,
+    "en": "Tanning Agent"
+  },
+  {
+    "enumName": "DYE",
+    "id": 631,
+    "en": "Dye"
+  },
+  {
+    "enumName": "NATURAL_RUBBER",
+    "id": 634,
+    "en": "Natural Rubber"
+  },
+  {
+    "enumName": "MACHINE_OIL",
+    "id": 628,
+    "en": "Machine Oil"
+  },
+  {
+    "enumName": "FILLER_METAL",
+    "id": 630,
+    "en": "Filler Metal"
+  },
+  {
+    "enumName": "MOOSE_MEAT",
+    "id": 516,
+    "en": "Moose Meat"
+  },
+  {
+    "enumName": "BOAR_MEAT",
+    "id": 515,
+    "en": "Boar Meat"
+  },
+  {
+    "enumName": "W_MOOSE_MEAT",
+    "id": 518,
+    "en": "W. Moose Meat"
+  },
+  {
+    "enumName": "W_BOAR_MEAT",
+    "id": 517,
+    "en": "W. Boar Meat"
+  },
+  {
+    "enumName": "SHATTERED_EARRING",
+    "id": 640,
+    "en": "Shattered Earring"
+  },
+  {
+    "enumName": "DRAB_BRACELET",
+    "id": 641,
+    "en": "Drab Bracelet"
+  },
+  {
+    "enumName": "LOVELY_CHOKER",
+    "id": 681,
+    "en": "Lovely Choker"
+  },
+  {
+    "enumName": "PRECIOUS_EARRINGS",
+    "id": 683,
+    "en": "Precious Earrings"
+  },
+  {
+    "enumName": "DESERT_ROSE",
+    "id": 625,
+    "en": "Desert Rose"
+  },
+  {
+    "enumName": "ANCIENT_MASK",
+    "id": 682,
+    "en": "Ancient Mask"
+  },
+  {
+    "enumName": "MACHINE_CORE",
+    "id": 690,
+    "en": "Machine Core"
+  },
+  {
+    "enumName": "PASCALS_CORE",
+    "id": 691,
+    "en": "Pascal's Core"
+  },
+  {
+    "enumName": "CHILDRENS_CORES",
+    "id": 692,
+    "en": "Children's Cores"
+  },
+  {
+    "enumName": "PASCALS_BOOK",
+    "id": 693,
+    "en": "Pascal's Book"
+  },
+  {
+    "enumName": "ELEVATOR_KEY",
+    "id": 845,
+    "en": "Elevator Key"
+  },
+  {
+    "enumName": "BOOK_PENSEES",
+    "id": 850,
+    "en": "Book: \\"
+  },
+  {
+    "enumName": "FUEL_FILTER",
+    "id": 851,
+    "en": "Fuel Filter"
+  },
+  {
+    "enumName": "VISCOUS_OIL",
+    "id": 852,
+    "en": "Viscous Oil"
+  },
+  {
+    "enumName": "FOREST_ACCESS_KEY",
+    "id": 820,
+    "en": "Forest Access Key"
+  },
+  {
+    "enumName": "OCEAN_ACCESS_KEY",
+    "id": 821,
+    "en": "Ocean Access Key"
+  },
+  {
+    "enumName": "PARK_ACCESS_KEY",
+    "id": 822,
+    "en": "Park Access Key"
+  },
+  {
+    "enumName": "RUSTY_MUSIC_BOX",
+    "id": 750,
+    "en": "Rusty Music Box"
+  },
+  {
+    "enumName": "LETTER_FOR_SARTRE",
+    "id": 700,
+    "en": "Letter for Sartre"
+  },
+  {
+    "enumName": "BEAUTIFUL_GLASS",
+    "id": 701,
+    "en": "Beautiful Glass"
+  },
+  {
+    "enumName": "MACHINE_FOSSIL",
+    "id": 702,
+    "en": "Machine Fossil"
+  },
+  {
+    "enumName": "SARTRES_LETTER",
+    "id": 703,
+    "en": "Sartre's Letter"
+  },
+  {
+    "enumName": "MEMORY_CHIP",
+    "id": 715,
+    "en": "Memory Chip"
+  },
+  {
+    "enumName": "MANS_JOURNAL",
+    "id": 716,
+    "en": "Man's Journal"
+  },
+  {
+    "enumName": "DATA_CHIP_A",
+    "id": 720,
+    "en": "Data Chip A"
+  },
+  {
+    "enumName": "DATA_CHIP_B",
+    "id": 721,
+    "en": "Data Chip B"
+  },
+  {
+    "enumName": "DATA_CHIP_C",
+    "id": 722,
+    "en": "Data Chip C"
+  },
+  {
+    "enumName": "DATA_CHIP_D",
+    "id": 723,
+    "en": "Data Chip D"
+  },
+  {
+    "enumName": "DATA_CHIP_E",
+    "id": 724,
+    "en": "Data Chip E"
+  },
+  {
+    "enumName": "DESERT_PHOTO",
+    "id": 760,
+    "en": "Desert Photo"
+  },
+  {
+    "enumName": "AMUSEMENT_PARK_PHOTO",
+    "id": 761,
+    "en": "Amusement Park Photo"
+  },
+  {
+    "enumName": "FOREST_PHOTO",
+    "id": 762,
+    "en": "Forest Photo"
+  },
+  {
+    "enumName": "PACKAGE",
+    "id": 775,
+    "en": "Package"
+  },
+  {
+    "enumName": "BROKEN_TOY",
+    "id": 780,
+    "en": "Broken Toy"
+  },
+  {
+    "enumName": "ACCOUNTING_BOOK",
+    "id": 781,
+    "en": "Accounting Book"
+  },
+  {
+    "enumName": "SMALL_SHOE",
+    "id": 782,
+    "en": "Small Shoe"
+  },
+  {
+    "enumName": "TRI_COLOR_CABLE",
+    "id": 790,
+    "en": "Tri-color Cable"
+  },
+  {
+    "enumName": "FOUR_COLOR_CABLE",
+    "id": 791,
+    "en": "Four-color Cable"
+  },
+  {
+    "enumName": "FIVE_COLOR_CABLE",
+    "id": 792,
+    "en": "Five-color Cable"
+  },
+  {
+    "enumName": "TOOTHBRUSH",
+    "id": 793,
+    "en": "Toothbrush"
+  },
+  {
+    "enumName": "COSMETICS",
+    "id": 794,
+    "en": "Cosmetics"
+  },
+  {
+    "enumName": "DIETARY_GOODS",
+    "id": 795,
+    "en": "Dietary Goods"
+  },
+  {
+    "enumName": "WRITING_IMPLEMENT",
+    "id": 796,
+    "en": "Writing Implement"
+  },
+  {
+    "enumName": "MEDICAL_JOURNAL",
+    "id": 797,
+    "en": "Medical Journal"
+  },
+  {
+    "enumName": "MACHINE_PART",
+    "id": 832,
+    "en": "Machine Part"
+  },
+  {
+    "enumName": "STAMP",
+    "id": 833,
+    "en": "Stamp"
+  },
+  {
+    "enumName": "STAMP_CARD",
+    "id": 834,
+    "en": "Stamp Card"
+  },
+  {
+    "enumName": "AGED_STICK",
+    "id": 835,
+    "en": "Aged Stick"
+  },
+  {
+    "enumName": "COMMANDMENT_SLAB",
+    "id": 836,
+    "en": "Commandment Slab"
+  },
+  {
+    "enumName": "FILTHY_MASK",
+    "id": 837,
+    "en": "Filthy Mask"
+  },
+  {
+    "enumName": "STATUE_OF_A_GIRL",
+    "id": 838,
+    "en": "Statue of a Girl"
+  },
+  {
+    "enumName": "RIGID_TREE_BARK",
+    "id": 842,
+    "en": "Rigid Tree Bark"
+  },
+  {
+    "enumName": "TOY_MATERIAL",
+    "id": 839,
+    "en": "Toy Material"
+  },
+  {
+    "enumName": "STORAGE_ELEMENT",
+    "id": 840,
+    "en": "Storage Element"
+  },
+  {
+    "enumName": "PLUGIN_CHIP",
+    "id": 841,
+    "en": "Plug-in Chip"
+  },
+  {
+    "enumName": "RUSTY_DOG_TAG",
+    "id": 739,
+    "en": "Rusty Dog Tag"
+  },
+  {
+    "enumName": "DIRTY_DOG_TAG",
+    "id": 741,
+    "en": "Dirty Dog Tag"
+  },
+  {
+    "enumName": "DAMAGED_DOG_TAG",
+    "id": 742,
+    "en": "Damaged Dog Tag"
+  },
+  {
+    "enumName": "BLOODY_DOG_TAG",
+    "id": 743,
+    "en": "Bloody Dog Tag"
+  },
+  {
+    "enumName": "MEMBERSHIP_CARD",
+    "id": 843,
+    "en": "Membership Card"
+  },
+  {
+    "enumName": "DIRTY_BAG",
+    "id": 844,
+    "en": "Dirty Bag"
+  },
+  {
+    "enumName": "SACHET",
+    "id": 920,
+    "en": "Sachet"
+  },
+  {
+    "enumName": "QUALITY_SACHET",
+    "id": 921,
+    "en": "Quality Sachet"
+  },
+  {
+    "enumName": "CHOICE_SACHET",
+    "id": 922,
+    "en": "Choice Sachet"
+  },
+  {
+    "enumName": "SOUND_DATA_1",
+    "id": 930,
+    "en": "Sound Data 1"
+  },
+  {
+    "enumName": "SOUND_DATA_2",
+    "id": 931,
+    "en": "Sound Data 2"
+  },
+  {
+    "enumName": "SOUND_DATA_3",
+    "id": 932,
+    "en": "Sound Data 3"
+  },
+  {
+    "enumName": "SOUND_DATA_4",
+    "id": 933,
+    "en": "Sound Data 4"
+  },
+  {
+    "enumName": "SOUND_DATA_5",
+    "id": 934,
+    "en": "Sound Data 5"
+  },
+  {
+    "enumName": "RECORD_3C3C1D119440927",
+    "id": 935,
+    "en": "Record: 3C3C1D119440927"
+  },
+  {
+    "enumName": "RECORD_CEO",
+    "id": 936,
+    "en": "Record: CEO"
+  },
+  {
+    "enumName": "PLAY_SYSTEM_POD",
+    "id": 950,
+    "en": "Play System Pod"
+  },
+  {
+    "enumName": "GRIMOIRE_WEISS",
+    "id": 951,
+    "en": "Grimoire Weiss"
+  },
+  {
+    "enumName": "CARDBOARD_POD",
+    "id": 952,
+    "en": "Cardboard Pod"
+  },
+  {
+    "enumName": "BLUE_STRIPES_POD",
+    "id": 953,
+    "en": "Blue Stripes Pod"
+  },
+  {
+    "enumName": "RETRO_RED_POD",
+    "id": 954,
+    "en": "Retro Red Pod"
+  },
+  {
+    "enumName": "RETRO_WHITE_POD",
+    "id": 955,
+    "en": "Retro White Pod"
+  },
+  {
+    "enumName": "RETRO_BLACK_POD",
+    "id": 956,
+    "en": "Retro Black Pod"
+  },
+  {
+    "enumName": "RETRO_GRAY_POD",
+    "id": 957,
+    "en": "Retro Gray Pod"
+  },
+  {
+    "enumName": "RETRO_PURPLE_POD",
+    "id": 958,
+    "en": "Retro Purple Pod"
+  },
+  {
+    "enumName": "AMAZARASHI_HEAD",
+    "id": 959,
+    "en": "amazarashi Head"
+  },
+  {
+    "enumName": "EMIL_BULLETS",
+    "id": 960,
+    "en": "Emil Bullets"
+  },
+  {
+    "enumName": "CEO_BULLETS",
+    "id": 961,
+    "en": "CEO Bullets"
+  },
+  {
+    "enumName": "DRESS_MODULE",
+    "id": 980,
+    "en": "Dress Module"
+  },
+  {
+    "enumName": "HEAVY_ARMOR_A",
+    "id": 981,
+    "en": "Heavy Armor A"
+  },
+  {
+    "enumName": "HEAVY_ARMOR_B",
+    "id": 982,
+    "en": "Heavy Armor B"
+  },
+  {
+    "enumName": "REVEALING_OUTFIT",
+    "id": 983,
+    "en": "Revealing Outfit"
+  },
+  {
+    "enumName": "YOUNG_MANS_OUTFIT",
+    "id": 984,
+    "en": "Young Man's Outfit"
+  },
+  {
+    "enumName": "DESTROYER_OUTFIT",
+    "id": 985,
+    "en": "Destroyer Outfit"
+  },
+  {
+    "enumName": "PINK_RIBBON",
+    "id": 873,
+    "en": "Pink Ribbon"
+  },
+  {
+    "enumName": "BLUE_RIBBON",
+    "id": 874,
+    "en": "Blue Ribbon"
+  },
+  {
+    "enumName": "MACHINE_MASK",
+    "id": 990,
+    "en": "Machine Mask"
+  },
+  {
+    "enumName": "EMILS_HEAD",
+    "id": 991,
+    "en": "Emil's Head"
+  },
+  {
+    "enumName": "EMIL_MASK",
+    "id": 993,
+    "en": "Emil Mask"
+  },
+  {
+    "enumName": "LUNAR_TEAR",
+    "id": 992,
+    "en": "Lunar Tear"
+  },
+  {
+    "enumName": "ADAMS_GLASSES",
+    "id": 995,
+    "en": "Adam's Glasses"
+  },
+  {
+    "enumName": "ALIEN_MASK",
+    "id": 996,
+    "en": "Alien Mask"
+  },
+  {
+    "enumName": "CAMO_GOGGLES",
+    "id": 871,
+    "en": "Camouflage Goggles"
+  },
+  {
+    "enumName": "A2_WIG",
+    "id": 872,
+    "en": "A2 Wig"
+  },
+  {
+    "enumName": "SAND_MASK",
+    "id": 994,
+    "en": "Sand Mask"
+  },
+  {
+    "enumName": "VALVE_LEFT_EYE",
+    "id": 997,
+    "en": "Valve: Left Eye"
+  },
+  {
+    "enumName": "VALVE_RIGHT_EYE",
+    "id": 998,
+    "en": "Valve: Right Eye"
+  },
+  {
+    "enumName": "VALVE_BOTH_EYES",
+    "id": 999,
+    "en": "Valve: Both Eyes"
+  },
+  {
+    "enumName": "VALVE_HEAD",
+    "id": 870,
+    "en": "Valve: Head"
+  },
+  {
+    "enumName": "PROOF_OF_OATH",
+    "id": 875,
+    "en": "Proof of Oath"
+  },
+  {
+    "enumName": "MASAMUNE_MASK",
+    "id": 876,
+    "en": "Masamune Mask"
+  },
+  {
+    "enumName": "MATSUDA_MASK",
+    "id": 877,
+    "en": "Matsuda Mask"
+  },
+  {
+    "enumName": "SATO_MASK",
+    "id": 878,
+    "en": "Sato Mask"
+  },
+  {
+    "enumName": "WHITE_HAIR",
+    "id": 880,
+    "en": "White Hair"
+  },
+  {
+    "enumName": "BLACK_HAIR",
+    "id": 881,
+    "en": "Black Hair"
+  },
+  {
+    "enumName": "BROWN_HAIR",
+    "id": 882,
+    "en": "Brown Hair"
+  },
+  {
+    "enumName": "RED_HAIR",
+    "id": 883,
+    "en": "Red Hair"
+  },
+  {
+    "enumName": "BLUE_HAIR",
+    "id": 884,
+    "en": "Blue Hair"
+  },
+  {
+    "enumName": "GREEN_HAIR",
+    "id": 885,
+    "en": "Green Hair"
+  },
+  {
+    "enumName": "PURPLE_HAIR",
+    "id": 886,
+    "en": "Purple Hair"
+  },
+  {
+    "enumName": "ASH_HAIR",
+    "id": 887,
+    "en": "Ash Grey Hair"
+  },
+  {
+    "enumName": "GOLDEN_HAIR",
+    "id": 888,
+    "en": "Golden Hair"
+  },
+  {
+    "enumName": "PASTEL_PINK_HAIR",
+    "id": 889,
+    "en": "Pastel Pink Hair"
+  },
+  {
+    "enumName": "LIGHT_BLUE_HAIR",
+    "id": 890,
+    "en": "Light Blue Hair"
+  },
+  {
+    "enumName": "LIME_GREEN_HAIR",
+    "id": 891,
+    "en": "Lime Green Hair"
+  },
+  {
+    "enumName": "LIGHT_PURPLE_HAIR",
+    "id": 892,
+    "en": "Light Purple Hair"
+  },
+  {
+    "enumName": "NEON_WHITE_HAIR",
+    "id": 893,
+    "en": "Neon White Hair"
+  },
+  {
+    "enumName": "NEON_YELLOW_HAIR",
+    "id": 894,
+    "en": "Neon Yellow Hair"
+  },
+  {
+    "enumName": "NEON_PINK_HAIR",
+    "id": 895,
+    "en": "Neon Pink Hair"
+  },
+  {
+    "enumName": "NEON_BLUE_HAIR",
+    "id": 896,
+    "en": "Neon Blue Hair"
+  },
+  {
+    "enumName": "NEON_GREEN_HAIR",
+    "id": 897,
+    "en": "Neon Green Hair"
+  },
+  {
+    "enumName": "NEON_PURPLE_HAIR",
+    "id": 898,
+    "en": "Neon Purple Hair"
+  },
+  {
+    "enumName": "AROWANA",
+    "id": 8001,
+    "en": "Arowana"
+  },
+  {
+    "enumName": "TWINFISH",
+    "id": 8002,
+    "en": "Twinfish"
+  },
+  {
+    "enumName": "KILLIFISH",
+    "id": 8003,
+    "en": "Killifish"
+  },
+  {
+    "enumName": "CARP",
+    "id": 8004,
+    "en": "Carp"
+  },
+  {
+    "enumName": "BLOAT",
+    "id": 8005,
+    "en": "Bloat Fish"
+  },
+  {
+    "enumName": "KOI_CARP",
+    "id": 8006,
+    "en": "Koi Carp"
+  },
+  {
+    "enumName": "FUR_CARP",
+    "id": 8007,
+    "en": "Fur Carp"
+  },
+  {
+    "enumName": "FRESHWATER_RAY",
+    "id": 8008,
+    "en": "Freshwater Ray"
+  },
+  {
+    "enumName": "ARAPAIMA",
+    "id": 8009,
+    "en": "Arapaima"
+  },
+  {
+    "enumName": "OIL_SARDINE",
+    "id": 8010,
+    "en": "Oil Sardine"
+  },
+  {
+    "enumName": "WATER_FLEA",
+    "id": 8011,
+    "en": "Water Flea"
+  },
+  {
+    "enumName": "TWOFACE",
+    "id": 8012,
+    "en": "Twoface"
+  },
+  {
+    "enumName": "COELACANTH",
+    "id": 8013,
+    "en": "Coelacanth"
+  },
+  {
+    "enumName": "BLOWFISH",
+    "id": 8014,
+    "en": "Blowfish"
+  },
+  {
+    "enumName": "SWORDFISH",
+    "id": 8015,
+    "en": "Swordfish"
+  },
+  {
+    "enumName": "MACKEREL",
+    "id": 8016,
+    "en": "Mackerel"
+  },
+  {
+    "enumName": "HORSESHOE_CRAB",
+    "id": 8017,
+    "en": "Horseshoe Crab"
+  },
+  {
+    "enumName": "BEETLE_FISH",
+    "id": 8018,
+    "en": "Beetle Fish"
+  },
+  {
+    "enumName": "STARFISH",
+    "id": 8019,
+    "en": "Starfish"
+  },
+  {
+    "enumName": "BREAM",
+    "id": 8020,
+    "en": "Bream"
+  },
+  {
+    "enumName": "BASKING_SHARK",
+    "id": 8021,
+    "en": "Basking Shark"
+  },
+  {
+    "enumName": "KILLIFISH_MACHINE",
+    "id": 8022,
+    "en": "Killifish Machine"
+  },
+  {
+    "enumName": "KOI_CARP_MACHINE",
+    "id": 8023,
+    "en": "Koi Carp Machine"
+  },
+  {
+    "enumName": "ARAPAIMA_MACHINE",
+    "id": 8024,
+    "en": "Arapaima Machine"
+  },
+  {
+    "enumName": "CARP_MACHINE",
+    "id": 8025,
+    "en": "Carp Machine"
+  },
+  {
+    "enumName": "BLOAT_FISH_MACHINE",
+    "id": 8026,
+    "en": "Bloat Fish Machine"
+  },
+  {
+    "enumName": "BLOWFISH_MACHINE",
+    "id": 8027,
+    "en": "Blowfish Machine"
+  },
+  {
+    "enumName": "SWORDFISH_MACHINE",
+    "id": 8028,
+    "en": "Swordfish Machine"
+  },
+  {
+    "enumName": "STARFISH_MACHINE",
+    "id": 8029,
+    "en": "Starfish Machine"
+  },
+  {
+    "enumName": "BREAM_MACHINE",
+    "id": 8030,
+    "en": "Bream Machine"
+  },
+  {
+    "enumName": "COELACANTH_MACHINE",
+    "id": 8031,
+    "en": "Coelacanth Machine"
+  },
+  {
+    "enumName": "MACKEREL_MACHINE",
+    "id": 8032,
+    "en": "Mackerel Machine"
+  },
+  {
+    "enumName": "HORSESHOE_CRAB_MACHINE",
+    "id": 8033,
+    "en": "Horseshoe Crab Machine"
+  },
+  {
+    "enumName": "AROWANA_MACHINE",
+    "id": 8034,
+    "en": "Arowana Machine"
+  },
+  {
+    "enumName": "BASKING_SHARK_MACHINE",
+    "id": 8035,
+    "en": "Basking Shark Machine"
+  },
+  {
+    "enumName": "FRESHWATER_RAY_MACHINE",
+    "id": 8036,
+    "en": "Freshwater Ray MAchine"
+  },
+  {
+    "enumName": "MACHINE_LIFEFORM_HEAD",
+    "id": 8037,
+    "en": "Machine Lifeform Head"
+  },
+  {
+    "enumName": "TIRE",
+    "id": 8038,
+    "en": "Tire"
+  },
+  {
+    "enumName": "GAS_CYLINDER",
+    "id": 8039,
+    "en": "Gas Cylinder"
+  },
+  {
+    "enumName": "BATTERY",
+    "id": 8040,
+    "en": "Battery"
+  },
+  {
+    "enumName": "BROKEN_FIREARM",
+    "id": 8041,
+    "en": "Broken Firearm"
+  }
+]

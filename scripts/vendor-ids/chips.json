@@ -1,0 +1,387 @@
+[
+  {
+    "enumName": "WEAPON_ATTACK_UP",
+    "baseCode": 0,
+    "baseId": 3001,
+    "type": 1,
+    "en": "Weapon Attack Up"
+  },
+  {
+    "enumName": "DOWN_ATTACK_UP",
+    "baseCode": 9,
+    "baseId": 3010,
+    "type": 2,
+    "en": "Down Attack Up"
+  },
+  {
+    "enumName": "CRITICAL_UP",
+    "baseCode": 18,
+    "baseId": 3019,
+    "type": 3,
+    "en": "Critical Up"
+  },
+  {
+    "enumName": "RANGED_ATTACK_UP",
+    "baseCode": 27,
+    "baseId": 3028,
+    "type": 4,
+    "en": "Ranged Attack Up"
+  },
+  {
+    "enumName": "FAST_COOLDOWN",
+    "baseCode": 163,
+    "baseId": 3037,
+    "type": 5,
+    "en": "Fast Cooldown"
+  },
+  {
+    "enumName": "MELEE_DEFENSE_UP",
+    "baseCode": 73,
+    "baseId": 3046,
+    "type": 6,
+    "en": "Melee Defense Up"
+  },
+  {
+    "enumName": "RANGED_DEFENSE_UP",
+    "baseCode": 82,
+    "baseId": 3055,
+    "type": 7,
+    "en": "Ranged Defense Up"
+  },
+  {
+    "enumName": "ANTI_CHAIN_DAMAGE",
+    "baseCode": 91,
+    "baseId": 3064,
+    "type": 8,
+    "en": "Anti Chain Damage"
+  },
+  {
+    "enumName": "MAX_HP_UP",
+    "baseCode": 109,
+    "baseId": 3073,
+    "type": 9,
+    "en": "Max Hp Up"
+  },
+  {
+    "enumName": "OFFENSIVE_HEAL",
+    "baseCode": 118,
+    "baseId": 3082,
+    "type": 10,
+    "en": "Offensive Heal"
+  },
+  {
+    "enumName": "DEADLY_HEAL",
+    "baseCode": 127,
+    "baseId": 3091,
+    "type": 11,
+    "en": "Deadly Heal"
+  },
+  {
+    "enumName": "AUTO_HEAL",
+    "baseCode": 136,
+    "baseId": 3100,
+    "type": 12,
+    "en": "Auto Heal"
+  },
+  {
+    "enumName": "EVADE_RANGE_UP",
+    "baseCode": 172,
+    "baseId": 3109,
+    "type": 13,
+    "en": "Evade Range Up"
+  },
+  {
+    "enumName": "MOVING_SPEED_UP",
+    "baseCode": 181,
+    "baseId": 3118,
+    "type": 14,
+    "en": "Moving Speed Up"
+  },
+  {
+    "enumName": "DROP_RATE_UP",
+    "baseCode": 190,
+    "baseId": 3127,
+    "type": 15,
+    "en": "Drop Rate Up"
+  },
+  {
+    "enumName": "EXP_GAIN_UP",
+    "baseCode": 199,
+    "baseId": 3136,
+    "type": 16,
+    "en": "Exp Gain Up"
+  },
+  {
+    "enumName": "SHOCK_WAVE",
+    "baseCode": 36,
+    "baseId": 3145,
+    "type": 17,
+    "en": "Shock Wave"
+  },
+  {
+    "enumName": "LAST_STAND",
+    "baseCode": 45,
+    "baseId": 3154,
+    "type": 18,
+    "en": "Last Stand"
+  },
+  {
+    "enumName": "DAMAGE_ABSORD",
+    "baseCode": 145,
+    "baseId": 3163,
+    "type": 19,
+    "en": "Damage Absord"
+  },
+  {
+    "enumName": "VENGEANCE",
+    "baseCode": 208,
+    "baseId": 3172,
+    "type": 20,
+    "en": "Vengeance"
+  },
+  {
+    "enumName": "RESET",
+    "baseCode": 154,
+    "baseId": 3181,
+    "type": 21,
+    "en": "Reset"
+  },
+  {
+    "enumName": "OVERCLOCK",
+    "baseCode": 217,
+    "baseId": 3190,
+    "type": 22,
+    "en": "Overclock"
+  },
+  {
+    "enumName": "RESILIENCE",
+    "baseCode": 100,
+    "baseId": 3199,
+    "type": 23,
+    "en": "Resilience"
+  },
+  {
+    "enumName": "COUNTER",
+    "baseCode": 54,
+    "baseId": 3217,
+    "type": 24,
+    "en": "Counter"
+  },
+  {
+    "enumName": "TAUNT_UP",
+    "baseCode": 226,
+    "baseId": 3226,
+    "type": 25,
+    "en": "Taunt Up"
+  },
+  {
+    "enumName": "CHARGE_ATTACK",
+    "baseCode": 63,
+    "baseId": 3235,
+    "type": 26,
+    "en": "Charge Attack"
+  },
+  {
+    "enumName": "AUTO_USE_ITEM",
+    "baseCode": 235,
+    "baseId": 3244,
+    "type": 27,
+    "en": "Auto Use Item"
+  },
+  {
+    "enumName": "HIJACK_BOOST",
+    "baseCode": 253,
+    "baseId": 3262,
+    "type": 29,
+    "en": "Hijack Boost"
+  },
+  {
+    "enumName": "STUN",
+    "baseCode": 262,
+    "baseId": 3289,
+    "type": 30,
+    "en": "Stun"
+  },
+  {
+    "enumName": "COMBUST",
+    "baseCode": 271,
+    "baseId": 3298,
+    "type": 31,
+    "en": "Combust"
+  },
+  {
+    "enumName": "HEAL_DROPS_UP",
+    "baseCode": 280,
+    "baseId": 3325,
+    "type": 34,
+    "en": "Heal Drops Up"
+  },
+  {
+    "enumName": "ITEM_SCAN",
+    "baseCode": 245,
+    "baseId": 3208,
+    "type": 35,
+    "en": "Item Scan"
+  },
+  {
+    "enumName": "DEATH_RATTLE",
+    "baseCode": 289,
+    "baseId": 3334,
+    "type": 38,
+    "en": "Death Rattle"
+  },
+  {
+    "enumName": "HUD_HP_GUAGE",
+    "baseCode": 291,
+    "baseId": 3335,
+    "type": 39,
+    "en": "Hud Hp Guage"
+  },
+  {
+    "enumName": "HUD_SOUND_WAVES",
+    "baseCode": 301,
+    "baseId": 3336,
+    "type": 40,
+    "en": "Hud Sound Waves"
+  },
+  {
+    "enumName": "HUD_ENEMY_DATA",
+    "baseCode": 294,
+    "baseId": 3337,
+    "type": 41,
+    "en": "Hud Enemy Data"
+  },
+  {
+    "enumName": "OS",
+    "baseCode": 290,
+    "baseId": 3338,
+    "type": 42,
+    "en": "Os"
+  },
+  {
+    "enumName": "EVASIVE_SYSTEM",
+    "baseCode": 246,
+    "baseId": 3339,
+    "type": 44,
+    "en": "Evasive System"
+  },
+  {
+    "enumName": "CONTINUOUS_COMBO",
+    "baseCode": 72,
+    "baseId": 3340,
+    "type": 45,
+    "en": "Continuous Combo"
+  },
+  {
+    "enumName": "BULLET_DETONATION",
+    "baseCode": 247,
+    "baseId": 3341,
+    "type": 46,
+    "en": "Bullet Detonation"
+  },
+  {
+    "enumName": "AUTO_COLLECT_ITEMS",
+    "baseCode": 244,
+    "baseId": 3342,
+    "type": 47,
+    "en": "Auto Collect Items"
+  },
+  {
+    "enumName": "HUD_SKILL_GUAGE",
+    "baseCode": 293,
+    "baseId": 3343,
+    "type": 48,
+    "en": "Hud Skill Guage"
+  },
+  {
+    "enumName": "HUD_TEXT_LOG",
+    "baseCode": 297,
+    "baseId": 3344,
+    "type": 49,
+    "en": "Hud Text Log"
+  },
+  {
+    "enumName": "HUD_MINI_MAP",
+    "baseCode": 295,
+    "baseId": 3345,
+    "type": 50,
+    "en": "Hud Mini Map"
+  },
+  {
+    "enumName": "HUD_EXP_GUAGE",
+    "baseCode": 292,
+    "baseId": 3346,
+    "type": 51,
+    "en": "Hud Exp Guage"
+  },
+  {
+    "enumName": "HUD_SAVE_POINTS",
+    "baseCode": 298,
+    "baseId": 3347,
+    "type": 52,
+    "en": "Hud Save Points"
+  },
+  {
+    "enumName": "HUD_DAMAGE_VALUES",
+    "baseCode": 300,
+    "baseId": 3348,
+    "type": 53,
+    "en": "Hud Damage Values"
+  },
+  {
+    "enumName": "HUD_OBJECTIVES",
+    "baseCode": 296,
+    "baseId": 3349,
+    "type": 54,
+    "en": "Hud Objectives"
+  },
+  {
+    "enumName": "HUD_CONTROL",
+    "baseCode": 302,
+    "baseId": 3350,
+    "type": 55,
+    "en": "Hud Control"
+  },
+  {
+    "enumName": "HUD_FISHING_SPOTS",
+    "baseCode": 299,
+    "baseId": 3353,
+    "type": 58,
+    "en": "Hud Fishing Spots"
+  },
+  {
+    "enumName": "AUTO_ATTACK",
+    "baseCode": 248,
+    "baseId": 3354,
+    "type": 59,
+    "en": "Auto Attack"
+  },
+  {
+    "enumName": "AUTO_FIRE",
+    "baseCode": 249,
+    "baseId": 3355,
+    "type": 60,
+    "en": "Auto Fire"
+  },
+  {
+    "enumName": "AUTO_EVADE",
+    "baseCode": 250,
+    "baseId": 3356,
+    "type": 61,
+    "en": "Auto Evade"
+  },
+  {
+    "enumName": "AUTO_PROGRAM",
+    "baseCode": 251,
+    "baseId": 3357,
+    "type": 62,
+    "en": "Auto Program"
+  },
+  {
+    "enumName": "AUTO_WEAPON_SWITCH",
+    "baseCode": 252,
+    "baseId": 3358,
+    "type": 63,
+    "en": "Auto Weapon Switch"
+  }
+]

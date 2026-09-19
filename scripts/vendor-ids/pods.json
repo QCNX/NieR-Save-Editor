@@ -1,0 +1,87 @@
+[
+  {
+    "enumName": "R010_LASER",
+    "id": 2001,
+    "en": "R010: Laser"
+  },
+  {
+    "enumName": "R020_MIRAGE",
+    "id": 2002,
+    "en": "R020: Mirage"
+  },
+  {
+    "enumName": "R030_HAMMER",
+    "id": 2003,
+    "en": "R030: Hammer"
+  },
+  {
+    "enumName": "R040_BLADE",
+    "id": 2004,
+    "en": "R040: Blade"
+  },
+  {
+    "enumName": "R050_SPEAR",
+    "id": 2005,
+    "en": "R050: Spear"
+  },
+  {
+    "enumName": "R070_M_SHIELD",
+    "id": 2006,
+    "en": "R070: M Shield"
+  },
+  {
+    "enumName": "A060_P_SHIELD",
+    "id": 2007,
+    "en": "A060: P Shield"
+  },
+  {
+    "enumName": "A080_WAVE",
+    "id": 2008,
+    "en": "A080: Wave"
+  },
+  {
+    "enumName": "A090_WIRE",
+    "id": 2009,
+    "en": "A090: Wire"
+  },
+  {
+    "enumName": "A100_DECOY",
+    "id": 2010,
+    "en": "A100: Decoy"
+  },
+  {
+    "enumName": "A110_SLOW",
+    "id": 2011,
+    "en": "A110: Slow"
+  },
+  {
+    "enumName": "A120_REPAIR",
+    "id": 2012,
+    "en": "A120: Repair"
+  },
+  {
+    "enumName": "A130_BOMB",
+    "id": 2015,
+    "en": "A130: Bomb"
+  },
+  {
+    "enumName": "A140_GRAVITY",
+    "id": 2019,
+    "en": "A140: Gravity"
+  },
+  {
+    "enumName": "A150_VOLT",
+    "id": 2021,
+    "en": "A150: Volt"
+  },
+  {
+    "enumName": "A160_MISSILE",
+    "id": 2022,
+    "en": "A160: Missile"
+  },
+  {
+    "enumName": "A170_SCANNER",
+    "id": 2024,
+    "en": "A170: Scanner"
+  }
+]

@@ -1,0 +1,1050 @@
+{
+  "0": {
+    "en": "Small Recovery",
+    "zh": "回复药：小"
+  },
+  "1": {
+    "en": "Medium Recovery",
+    "zh": "回复药：中"
+  },
+  "2": {
+    "en": "Large Recovery",
+    "zh": "回复药：大"
+  },
+  "3": {
+    "en": "Full Recovery",
+    "zh": "回复药：全"
+  },
+  "50": {
+    "en": "Volt-Proof Salve",
+    "zh": "耐电药"
+  },
+  "60": {
+    "en": "Visual Cure",
+    "zh": "回复异常状态：视觉"
+  },
+  "70": {
+    "en": "Aural Cure",
+    "zh": "回复异常状态：听觉"
+  },
+  "75": {
+    "en": "Cure Manipulation",
+    "zh": "回复异常状态：操作"
+  },
+  "80": {
+    "en": "Cure All Status",
+    "zh": "回复异常状态：全体"
+  },
+  "90": {
+    "en": "Cure All+Heal All",
+    "zh": "回复全HP‧全异常状态"
+  },
+  "100": {
+    "en": "Melee Attack Up (S)",
+    "zh": "物理攻击力UP：小"
+  },
+  "102": {
+    "en": "Melee Attack Up (L)",
+    "zh": "物理攻击力UP：大"
+  },
+  "110": {
+    "en": "Ranged Attack Up (S)",
+    "zh": "射击攻击力UP：小"
+  },
+  "112": {
+    "en": "Ranged Attack Up (L)",
+    "zh": "射击攻击力UP：大"
+  },
+  "120": {
+    "en": "Melee Defense Up (S)",
+    "zh": "减轻物理伤害：小"
+  },
+  "122": {
+    "en": "Melee Defense Up (L)",
+    "zh": "减轻物理伤害：大"
+  },
+  "130": {
+    "en": "Ranged Defense Up (S)",
+    "zh": "减轻射击伤害：小"
+  },
+  "132": {
+    "en": "Ranged Defense Up (L)",
+    "zh": "减轻射击伤害：大"
+  },
+  "140": {
+    "en": "Skill Salve (S)",
+    "zh": "技能回复速度UP：小"
+  },
+  "142": {
+    "en": "Skill Salve (L)",
+    "zh": "技能回复速度UP：大"
+  },
+  "150": {
+    "en": "Impact Bracer (S)",
+    "zh": "抗震：小"
+  },
+  "152": {
+    "en": "Impact Bracer (L)",
+    "zh": "抗震：大"
+  },
+  "160": {
+    "en": "Speed Salve (S)",
+    "zh": "高速运行：小"
+  },
+  "162": {
+    "en": "Speed Salve (L)",
+    "zh": "高速运行：大"
+  },
+  "170": {
+    "en": "Popola's Booze",
+    "zh": "波波拉的酒"
+  },
+  "300": {
+    "en": "Animal Bait",
+    "zh": "动物诱饵"
+  },
+  "330": {
+    "en": "Small G Luck+",
+    "zh": "金钱掉落率UP：小"
+  },
+  "332": {
+    "en": "Large G Luck+",
+    "zh": "金钱掉落率UP：大"
+  },
+  "400": {
+    "en": "E-Drug",
+    "zh": "电子药品"
+  },
+  "410": {
+    "en": "Forbidden Fruit",
+    "zh": "禁果"
+  },
+  "510": {
+    "en": "Beast Hide",
+    "zh": "兽皮"
+  },
+  "515": {
+    "en": "Boar Meat",
+    "zh": "野猪肉"
+  },
+  "516": {
+    "en": "Moose Meat",
+    "zh": "鹿肉"
+  },
+  "517": {
+    "en": "W. Boar Meat",
+    "zh": "白野猪肉"
+  },
+  "518": {
+    "en": "W. Moose Meat",
+    "zh": "白鹿肉"
+  },
+  "520": {
+    "en": "Stripped Screw",
+    "zh": "磨损螺丝"
+  },
+  "521": {
+    "en": "Pristine Screw",
+    "zh": "新的螺丝"
+  },
+  "525": {
+    "en": "Small Gear",
+    "zh": "小齿轮"
+  },
+  "526": {
+    "en": "Large Gear",
+    "zh": "大齿轮"
+  },
+  "530": {
+    "en": "Rusted Clump",
+    "zh": "生锈碎块"
+  },
+  "531": {
+    "en": "Meteorite Shard",
+    "zh": "陨石碎片"
+  },
+  "535": {
+    "en": "Titanium Alloy",
+    "zh": "钛合金"
+  },
+  "536": {
+    "en": "Memory Alloy",
+    "zh": "记形合金"
+  },
+  "540": {
+    "en": "Broken Key",
+    "zh": "损坏的发条"
+  },
+  "545": {
+    "en": "Broken Battery",
+    "zh": "损坏的电池"
+  },
+  "546": {
+    "en": "Large Battery",
+    "zh": "大电池"
+  },
+  "550": {
+    "en": "Severed Cable",
+    "zh": "断掉的电缆"
+  },
+  "551": {
+    "en": "Pristine Cable",
+    "zh": "整齐的电缆"
+  },
+  "555": {
+    "en": "New Bolt",
+    "zh": "新的螺栓"
+  },
+  "560": {
+    "en": "Clean Nut",
+    "zh": "干净的螺帽"
+  },
+  "570": {
+    "en": "Machine Arm",
+    "zh": "机械生物的手臂"
+  },
+  "571": {
+    "en": "Machine Leg",
+    "zh": "机械生物的脚部"
+  },
+  "572": {
+    "en": "Machine Torso",
+    "zh": "机械生物的躯体"
+  },
+  "573": {
+    "en": "Machine Head",
+    "zh": "机械生物的头"
+  },
+  "580": {
+    "en": "Simple Gadget",
+    "zh": "简单机械"
+  },
+  "581": {
+    "en": "Elaborate Gadget",
+    "zh": "精致机械"
+  },
+  "582": {
+    "en": "Complex Gadget",
+    "zh": "复杂机械"
+  },
+  "583": {
+    "en": "Powerup Part S",
+    "zh": "强化零件：小"
+  },
+  "584": {
+    "en": "Powerup Part M",
+    "zh": "强化零件：中"
+  },
+  "585": {
+    "en": "Powerup Part L",
+    "zh": "强化零件：大"
+  },
+  "600": {
+    "en": "Copper Ore",
+    "zh": "铜矿"
+  },
+  "601": {
+    "en": "Iron Ore",
+    "zh": "铁矿"
+  },
+  "602": {
+    "en": "Silver Ore",
+    "zh": "银矿"
+  },
+  "603": {
+    "en": "Gold Ore",
+    "zh": "金矿"
+  },
+  "610": {
+    "en": "Dented Plate",
+    "zh": "凹陷金属板"
+  },
+  "621": {
+    "en": "Plant Seed",
+    "zh": "植物种子"
+  },
+  "622": {
+    "en": "Tree Sap",
+    "zh": "树汁"
+  },
+  "623": {
+    "en": "Pure Water",
+    "zh": "干净的水"
+  },
+  "624": {
+    "en": "Tree Seed",
+    "zh": "果实"
+  },
+  "625": {
+    "en": "Desert Rose",
+    "zh": "沙漠玫瑰"
+  },
+  "626": {
+    "en": "Mushroom",
+    "zh": "蘑菇"
+  },
+  "627": {
+    "en": "Torn Book",
+    "zh": "脏掉的书本"
+  },
+  "628": {
+    "en": "Machine Oil",
+    "zh": "机械油"
+  },
+  "629": {
+    "en": "Tanning Agent",
+    "zh": "鞣剂"
+  },
+  "630": {
+    "en": "Filler Metal",
+    "zh": "焊接填充金属"
+  },
+  "631": {
+    "en": "Dye",
+    "zh": "染料"
+  },
+  "632": {
+    "en": "Pyrite",
+    "zh": "黄铁矿"
+  },
+  "633": {
+    "en": "Amber",
+    "zh": "琥珀"
+  },
+  "634": {
+    "en": "Natural Rubber",
+    "zh": "天然橡胶"
+  },
+  "635": {
+    "en": "Rusty Bolt",
+    "zh": "生锈的螺栓"
+  },
+  "636": {
+    "en": "Crushed Nut",
+    "zh": "压扁的螺帽"
+  },
+  "637": {
+    "en": "Giant Egg",
+    "zh": "巨大的蛋"
+  },
+  "638": {
+    "en": "Eagle Eggs",
+    "zh": "鹫的蛋"
+  },
+  "639": {
+    "en": "Black Pearl",
+    "zh": "黑珍珠"
+  },
+  "640": {
+    "en": "Shattered Earring",
+    "zh": "碎裂的耳环"
+  },
+  "641": {
+    "en": "Drab Bracelet",
+    "zh": "黯淡的手环"
+  },
+  "642": {
+    "en": "Sturdy Socket",
+    "zh": "坚固的插座"
+  },
+  "643": {
+    "en": "Warped Wire",
+    "zh": "扭曲的铁丝"
+  },
+  "644": {
+    "en": "Stretched Coil",
+    "zh": "松弛的线圈"
+  },
+  "645": {
+    "en": "Dented Socket",
+    "zh": "凹陷的插座"
+  },
+  "646": {
+    "en": "Broken Circuit",
+    "zh": "损坏的回路"
+  },
+  "680": {
+    "en": "Crystal",
+    "zh": "水晶"
+  },
+  "681": {
+    "en": "Lovely Choker",
+    "zh": "漂亮的项链"
+  },
+  "682": {
+    "en": "Ancient Mask",
+    "zh": "老旧面具"
+  },
+  "683": {
+    "en": "Precious Earrings",
+    "zh": "贵金属耳环"
+  },
+  "684": {
+    "en": "Tech Manual",
+    "zh": "某种工具书"
+  },
+  "685": {
+    "en": "Thick Dictionary",
+    "zh": "厚重的辞典"
+  },
+  "686": {
+    "en": "Pearl",
+    "zh": "珍珠"
+  },
+  "687": {
+    "en": "Moldavite",
+    "zh": "绿玻陨石"
+  },
+  "688": {
+    "en": "Meteorite",
+    "zh": "陨石"
+  },
+  "690": {
+    "en": "Machine Core",
+    "zh": "机械生物的核心"
+  },
+  "691": {
+    "en": "Pascal's Core",
+    "zh": "帕斯卡的核心"
+  },
+  "692": {
+    "en": "Children's Cores",
+    "zh": "孩子们的核心"
+  },
+  "693": {
+    "en": "Pascal's Book",
+    "zh": "帕斯卡的爱书"
+  },
+  "700": {
+    "en": "Letter for Sartre",
+    "zh": "给沙特的信"
+  },
+  "701": {
+    "en": "Beautiful Glass",
+    "zh": "美丽的玻璃"
+  },
+  "702": {
+    "en": "Machine Fossil",
+    "zh": "机械化石"
+  },
+  "703": {
+    "en": "Sartre's Letter",
+    "zh": "沙特留下的信"
+  },
+  "715": {
+    "en": "Memory Chip",
+    "zh": "记忆芯片"
+  },
+  "716": {
+    "en": "Man's Journal",
+    "zh": "男人的日记"
+  },
+  "720": {
+    "en": "Data Chip A",
+    "zh": "记忆卡A"
+  },
+  "721": {
+    "en": "Data Chip B",
+    "zh": "记忆卡B"
+  },
+  "722": {
+    "en": "Data Chip C",
+    "zh": "记忆卡C"
+  },
+  "723": {
+    "en": "Data Chip D",
+    "zh": "记忆卡D"
+  },
+  "724": {
+    "en": "Data Chip E",
+    "zh": "记忆卡E"
+  },
+  "739": {
+    "en": "Rusty Dog Tag",
+    "zh": "生锈的识别牌"
+  },
+  "741": {
+    "en": "Dirty Dog Tag",
+    "zh": "脏掉的识别牌"
+  },
+  "742": {
+    "en": "Damaged Dog Tag",
+    "zh": "受损的识别牌"
+  },
+  "743": {
+    "en": "Bloody Dog Tag",
+    "zh": "染血的识别牌"
+  },
+  "750": {
+    "en": "Rusty Music Box",
+    "zh": "生锈的八音盒"
+  },
+  "760": {
+    "en": "Desert Photo",
+    "zh": "沙漠某处的照片"
+  },
+  "761": {
+    "en": "Amusement Park Photo",
+    "zh": "游乐园某处的照片"
+  },
+  "762": {
+    "en": "Forest Photo",
+    "zh": "森林某处的照片"
+  },
+  "775": {
+    "en": "Package",
+    "zh": "待送货物"
+  },
+  "780": {
+    "en": "Broken Toy",
+    "zh": "坏掉的玩具"
+  },
+  "781": {
+    "en": "Accounting Book",
+    "zh": "脏掉的家用账本"
+  },
+  "782": {
+    "en": "Small Shoe",
+    "zh": "小鞋子"
+  },
+  "790": {
+    "en": "Tri-color Cable",
+    "zh": "３色电缆"
+  },
+  "791": {
+    "en": "Four-color Cable",
+    "zh": "４色电缆"
+  },
+  "792": {
+    "en": "Five-color Cable",
+    "zh": "５色电缆"
+  },
+  "793": {
+    "en": "Toothbrush",
+    "zh": "牙刷"
+  },
+  "794": {
+    "en": "Cosmetics",
+    "zh": "化妆品"
+  },
+  "795": {
+    "en": "Dietary Goods",
+    "zh": "减肥产品"
+  },
+  "796": {
+    "en": "Writing Implement",
+    "zh": "笔记用具"
+  },
+  "797": {
+    "en": "Medical Journal",
+    "zh": "医学书"
+  },
+  "820": {
+    "en": "Forest Access Key",
+    "zh": "通行钥匙：森林地带"
+  },
+  "821": {
+    "en": "Ocean Access Key",
+    "zh": "通行钥匙：沉没都市"
+  },
+  "822": {
+    "en": "Park Access Key",
+    "zh": "通行钥匙：游乐园"
+  },
+  "832": {
+    "en": "Machine Part",
+    "zh": "机械生物的零件"
+  },
+  "833": {
+    "en": "Stamp",
+    "zh": "印章"
+  },
+  "834": {
+    "en": "Stamp Card",
+    "zh": "集点卡"
+  },
+  "835": {
+    "en": "Aged Stick",
+    "zh": "老旧的手杖"
+  },
+  "836": {
+    "en": "Commandment Slab",
+    "zh": "刻有戒律的石板"
+  },
+  "837": {
+    "en": "Filthy Mask",
+    "zh": "脏掉的面具"
+  },
+  "838": {
+    "en": "Statue of a Girl",
+    "zh": "少女石像"
+  },
+  "839": {
+    "en": "Toy Material",
+    "zh": "游戏器材的材料"
+  },
+  "840": {
+    "en": "Storage Element",
+    "zh": "记忆零件的材料"
+  },
+  "841": {
+    "en": "Plug-in Chip",
+    "zh": "插入式机密芯片"
+  },
+  "842": {
+    "en": "Rigid Tree Bark",
+    "zh": "坚韧植物树皮"
+  },
+  "843": {
+    "en": "Membership Card",
+    "zh": "会员证"
+  },
+  "844": {
+    "en": "Dirty Bag",
+    "zh": "脏掉的背包"
+  },
+  "845": {
+    "en": "Elevator Key",
+    "zh": "升降机钥匙"
+  },
+  "850": {
+    "en": "Book: \\",
+    "zh": "哲学书《思想录》"
+  },
+  "851": {
+    "en": "Fuel Filter",
+    "zh": "燃料过滤器"
+  },
+  "852": {
+    "en": "Viscous Oil",
+    "zh": "高黏度机油"
+  },
+  "870": {
+    "en": "Valve: Head",
+    "zh": "阀门：头"
+  },
+  "871": {
+    "en": "Camouflage Goggles",
+    "zh": "光学迷彩式眼带"
+  },
+  "872": {
+    "en": "A2 Wig",
+    "zh": "Ａ２的假发"
+  },
+  "873": {
+    "en": "Pink Ribbon",
+    "zh": "粉红缎带"
+  },
+  "874": {
+    "en": "Blue Ribbon",
+    "zh": "水蓝缎带"
+  },
+  "875": {
+    "en": "Proof of Oath",
+    "zh": "制约之证"
+  },
+  "876": {
+    "en": "Masamune Mask",
+    "zh": "正宗的面具"
+  },
+  "877": {
+    "en": "Matsuda Mask",
+    "zh": "松田社长的面具"
+  },
+  "878": {
+    "en": "Sato Mask",
+    "zh": "佐藤社长的面具"
+  },
+  "880": {
+    "en": "White Hair",
+    "zh": "发色：白"
+  },
+  "881": {
+    "en": "Black Hair",
+    "zh": "发色：黑"
+  },
+  "882": {
+    "en": "Brown Hair",
+    "zh": "发色：棕"
+  },
+  "883": {
+    "en": "Red Hair",
+    "zh": "发色：红"
+  },
+  "884": {
+    "en": "Blue Hair",
+    "zh": "发色：蓝"
+  },
+  "885": {
+    "en": "Green Hair",
+    "zh": "发色：绿"
+  },
+  "886": {
+    "en": "Purple Hair",
+    "zh": "发色：紫"
+  },
+  "887": {
+    "en": "Ash Grey Hair",
+    "zh": "发色：灰白"
+  },
+  "888": {
+    "en": "Golden Hair",
+    "zh": "发色：金"
+  },
+  "889": {
+    "en": "Pastel Pink Hair",
+    "zh": "发色：浅粉"
+  },
+  "890": {
+    "en": "Light Blue Hair",
+    "zh": "发色：浅蓝"
+  },
+  "891": {
+    "en": "Lime Green Hair",
+    "zh": "发色：浅绿"
+  },
+  "892": {
+    "en": "Light Purple Hair",
+    "zh": "发色：浅紫"
+  },
+  "893": {
+    "en": "Neon White Hair",
+    "zh": "发色：荧光白"
+  },
+  "894": {
+    "en": "Neon Yellow Hair",
+    "zh": "发色：荧光黄"
+  },
+  "895": {
+    "en": "Neon Pink Hair",
+    "zh": "发色：荧光粉"
+  },
+  "896": {
+    "en": "Neon Blue Hair",
+    "zh": "发色：荧光蓝"
+  },
+  "897": {
+    "en": "Neon Green Hair",
+    "zh": "发色：荧光绿"
+  },
+  "898": {
+    "en": "Neon Purple Hair",
+    "zh": "发色：荧光紫"
+  },
+  "920": {
+    "en": "Sachet",
+    "zh": "香包"
+  },
+  "921": {
+    "en": "Quality Sachet",
+    "zh": "高级香包"
+  },
+  "922": {
+    "en": "Choice Sachet",
+    "zh": "特级香包"
+  },
+  "930": {
+    "en": "Sound Data 1",
+    "zh": "唱片：第一集"
+  },
+  "931": {
+    "en": "Sound Data 2",
+    "zh": "唱片：第二集"
+  },
+  "932": {
+    "en": "Sound Data 3",
+    "zh": "唱片：第三集"
+  },
+  "933": {
+    "en": "Sound Data 4",
+    "zh": "唱片：第四集"
+  },
+  "934": {
+    "en": "Sound Data 5",
+    "zh": "唱片：第五集"
+  },
+  "935": {
+    "en": "Record: 3C3C1D119440927",
+    "zh": "唱片：3C3C1D119440927"
+  },
+  "936": {
+    "en": "Record: CEO",
+    "zh": "唱片：社长"
+  },
+  "950": {
+    "en": "Play System Pod",
+    "zh": "游戏机"
+  },
+  "951": {
+    "en": "Grimoire Weiss",
+    "zh": "白书"
+  },
+  "952": {
+    "en": "Cardboard Pod",
+    "zh": "配送用纸箱"
+  },
+  "953": {
+    "en": "Blue Stripes Pod",
+    "zh": "蓝条纹"
+  },
+  "954": {
+    "en": "Retro Red Pod",
+    "zh": "怀旧‧红"
+  },
+  "955": {
+    "en": "Retro White Pod",
+    "zh": "怀旧‧白"
+  },
+  "956": {
+    "en": "Retro Black Pod",
+    "zh": "怀旧‧黑"
+  },
+  "957": {
+    "en": "Retro Gray Pod",
+    "zh": "怀旧‧灰"
+  },
+  "958": {
+    "en": "Retro Purple Pod",
+    "zh": "怀旧‧紫"
+  },
+  "959": {
+    "en": "amazarashi Head",
+    "zh": "amazarashi头"
+  },
+  "960": {
+    "en": "Emil Bullets",
+    "zh": "特殊弹：艾米尔"
+  },
+  "961": {
+    "en": "CEO Bullets",
+    "zh": "特殊弹：社长"
+  },
+  "980": {
+    "en": "Dress Module",
+    "zh": "穿脱服装模块"
+  },
+  "981": {
+    "en": "Heavy Armor A",
+    "zh": "重装盔甲：Ａ"
+  },
+  "982": {
+    "en": "Heavy Armor B",
+    "zh": "重装盔甲：Ｂ"
+  },
+  "983": {
+    "en": "Revealing Outfit",
+    "zh": "暴露的女性服装"
+  },
+  "984": {
+    "en": "Young Man's Outfit",
+    "zh": "年轻人套装"
+  },
+  "985": {
+    "en": "Destroyer Outfit",
+    "zh": "毁灭者套装"
+  },
+  "990": {
+    "en": "Machine Mask",
+    "zh": "机械生物的头巾"
+  },
+  "991": {
+    "en": "Emil's Head",
+    "zh": "艾米尔的头巾"
+  },
+  "992": {
+    "en": "Lunar Tear",
+    "zh": "月之泪花饰品"
+  },
+  "993": {
+    "en": "Emil Mask",
+    "zh": "艾米尔的面具"
+  },
+  "994": {
+    "en": "Sand Mask",
+    "zh": "沙之面具"
+  },
+  "995": {
+    "en": "Adam's Glasses",
+    "zh": "亚当的眼镜"
+  },
+  "996": {
+    "en": "Alien Mask",
+    "zh": "外星人的面具"
+  },
+  "997": {
+    "en": "Valve: Left Eye",
+    "zh": "阀门：左眼"
+  },
+  "998": {
+    "en": "Valve: Right Eye",
+    "zh": "阀门：右眼"
+  },
+  "999": {
+    "en": "Valve: Both Eyes",
+    "zh": "阀门：双眼"
+  },
+  "8001": {
+    "en": "Arowana",
+    "zh": "龙鱼"
+  },
+  "8002": {
+    "en": "Twinfish",
+    "zh": "两头鱼"
+  },
+  "8003": {
+    "en": "Killifish",
+    "zh": "稻田鱼"
+  },
+  "8004": {
+    "en": "Carp",
+    "zh": "鲫鱼"
+  },
+  "8005": {
+    "en": "Bloat Fish",
+    "zh": "达摩鱼"
+  },
+  "8006": {
+    "en": "Koi Carp",
+    "zh": "鲤鱼"
+  },
+  "8007": {
+    "en": "Fur Carp",
+    "zh": "毛鲤"
+  },
+  "8008": {
+    "en": "Freshwater Ray",
+    "zh": "淡水魟"
+  },
+  "8009": {
+    "en": "Arapaima",
+    "zh": "巨骨舌鱼"
+  },
+  "8010": {
+    "en": "Oil Sardine",
+    "zh": "油鱼"
+  },
+  "8011": {
+    "en": "Water Flea",
+    "zh": "水蚤"
+  },
+  "8012": {
+    "en": "Twoface",
+    "zh": "双面鱼"
+  },
+  "8013": {
+    "en": "Coelacanth",
+    "zh": "腔棘鱼"
+  },
+  "8014": {
+    "en": "Blowfish",
+    "zh": "河豚"
+  },
+  "8015": {
+    "en": "Swordfish",
+    "zh": "旗鱼"
+  },
+  "8016": {
+    "en": "Mackerel",
+    "zh": "竹筴鱼"
+  },
+  "8017": {
+    "en": "Horseshoe Crab",
+    "zh": "三棘鲎"
+  },
+  "8018": {
+    "en": "Beetle Fish",
+    "zh": "甲虫鱼"
+  },
+  "8019": {
+    "en": "Starfish",
+    "zh": "海星"
+  },
+  "8020": {
+    "en": "Bream",
+    "zh": "鲷鱼"
+  },
+  "8021": {
+    "en": "Basking Shark",
+    "zh": "象鲛"
+  },
+  "8022": {
+    "en": "Killifish Machine",
+    "zh": "稻田鱼型机械生物"
+  },
+  "8023": {
+    "en": "Koi Carp Machine",
+    "zh": "鲤鱼型机械生物"
+  },
+  "8024": {
+    "en": "Arapaima Machine",
+    "zh": "巨骨舌鱼型机械生物"
+  },
+  "8025": {
+    "en": "Carp Machine",
+    "zh": "鲫鱼型机械生物"
+  },
+  "8026": {
+    "en": "Bloat Fish Machine",
+    "zh": "达摩鱼型机械生物"
+  },
+  "8027": {
+    "en": "Blowfish Machine",
+    "zh": "河豚型机械生物"
+  },
+  "8028": {
+    "en": "Swordfish Machine",
+    "zh": "旗鱼型机械生物"
+  },
+  "8029": {
+    "en": "Starfish Machine",
+    "zh": "海星型机械生物"
+  },
+  "8030": {
+    "en": "Bream Machine",
+    "zh": "鲷鱼型机械生物"
+  },
+  "8031": {
+    "en": "Coelacanth Machine",
+    "zh": "腔棘鱼型机械生物"
+  },
+  "8032": {
+    "en": "Mackerel Machine",
+    "zh": "竹筴鱼型机械生物"
+  },
+  "8033": {
+    "en": "Horseshoe Crab Machine",
+    "zh": "三棘鲎型机械生物"
+  },
+  "8034": {
+    "en": "Arowana Machine",
+    "zh": "龙鱼型机械生物"
+  },
+  "8035": {
+    "en": "Basking Shark Machine",
+    "zh": "象鲛型机械生物"
+  },
+  "8036": {
+    "en": "Freshwater Ray MAchine",
+    "zh": "淡水魟型机械生物"
+  },
+  "8037": {
+    "en": "Machine Lifeform Head",
+    "zh": "机械生物的头部"
+  },
+  "8038": {
+    "en": "Tire",
+    "zh": "轮胎"
+  },
+  "8039": {
+    "en": "Gas Cylinder",
+    "zh": "瓦斯罐"
+  },
+  "8040": {
+    "en": "Battery",
+    "zh": "电池"
+  },
+  "8041": {
+    "en": "Broken Firearm",
+    "zh": "坏掉的枪械"
+  }
+}

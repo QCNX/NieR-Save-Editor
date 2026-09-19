@@ -1,0 +1,222 @@
+{
+  "3001": {
+    "en": "Weapon Attack Up",
+    "zh": "武器攻击力UP"
+  },
+  "3010": {
+    "en": "Down Attack Up",
+    "zh": "倒地攻击力UP"
+  },
+  "3019": {
+    "en": "Critical Up",
+    "zh": "暴击UP"
+  },
+  "3028": {
+    "en": "Ranged Attack Up",
+    "zh": "射击攻击力UP"
+  },
+  "3037": {
+    "en": "Fast Cooldown",
+    "zh": "冷却高速化"
+  },
+  "3046": {
+    "en": "Melee Defense Up",
+    "zh": "减少物理伤害"
+  },
+  "3055": {
+    "en": "Ranged Defense Up",
+    "zh": "减少射击伤害"
+  },
+  "3064": {
+    "en": "Anti Chain Damage",
+    "zh": "防止连续伤害"
+  },
+  "3073": {
+    "en": "Max Hp Up",
+    "zh": "HP最大值UP"
+  },
+  "3082": {
+    "en": "Offensive Heal",
+    "zh": "攻击时回复HP"
+  },
+  "3091": {
+    "en": "Deadly Heal",
+    "zh": "击破时回复HP"
+  },
+  "3100": {
+    "en": "Auto Heal",
+    "zh": "自动回复HP"
+  },
+  "3109": {
+    "en": "Evade Range Up",
+    "zh": "闪避行动距离UP"
+  },
+  "3118": {
+    "en": "Moving Speed Up",
+    "zh": "移动速度UP"
+  },
+  "3127": {
+    "en": "Drop Rate Up",
+    "zh": "掉落率UP"
+  },
+  "3136": {
+    "en": "Exp Gain Up",
+    "zh": "取得经验值UP"
+  },
+  "3145": {
+    "en": "Shock Wave",
+    "zh": "冲击波"
+  },
+  "3154": {
+    "en": "Last Stand",
+    "zh": "濒死时攻击力UP"
+  },
+  "3163": {
+    "en": "Damage Absord",
+    "zh": "吸收伤害"
+  },
+  "3172": {
+    "en": "Vengeance",
+    "zh": "复仇"
+  },
+  "3181": {
+    "en": "Reset",
+    "zh": "重新启动"
+  },
+  "3190": {
+    "en": "Overclock",
+    "zh": "超频"
+  },
+  "3199": {
+    "en": "Resilience",
+    "zh": "抗震控制"
+  },
+  "3208": {
+    "en": "Item Scan",
+    "zh": "道具扫描"
+  },
+  "3217": {
+    "en": "Counter",
+    "zh": "反击"
+  },
+  "3226": {
+    "en": "Taunt Up",
+    "zh": "强化挑衅"
+  },
+  "3235": {
+    "en": "Charge Attack",
+    "zh": "蓄力攻击"
+  },
+  "3244": {
+    "en": "Auto Use Item",
+    "zh": "自动道具"
+  },
+  "3262": {
+    "en": "Hijack Boost",
+    "zh": "强化远程控制"
+  },
+  "3289": {
+    "en": "Stun",
+    "zh": "昏眩"
+  },
+  "3298": {
+    "en": "Combust",
+    "zh": "燃烧"
+  },
+  "3325": {
+    "en": "Heal Drops Up",
+    "zh": "掉落回复道具"
+  },
+  "3334": {
+    "en": "Death Rattle",
+    "zh": "临终"
+  },
+  "3335": {
+    "en": "Hud Hp Guage",
+    "zh": "HUD：HP量表"
+  },
+  "3336": {
+    "en": "Hud Sound Waves",
+    "zh": "HUD：声音分析"
+  },
+  "3337": {
+    "en": "Hud Enemy Data",
+    "zh": "HUD：显示敌人情报"
+  },
+  "3338": {
+    "en": "Os",
+    "zh": "ＯＳ芯片"
+  },
+  "3339": {
+    "en": "Evasive System",
+    "zh": "闪避枪弹系统"
+  },
+  "3340": {
+    "en": "Continuous Combo",
+    "zh": "继续连段"
+  },
+  "3341": {
+    "en": "Bullet Detonation",
+    "zh": "诱爆敌弹"
+  },
+  "3342": {
+    "en": "Auto Collect Items",
+    "zh": "自动吸附道具"
+  },
+  "3343": {
+    "en": "Hud Skill Guage",
+    "zh": "HUD：技能量表"
+  },
+  "3344": {
+    "en": "Hud Text Log",
+    "zh": "HUD：履历"
+  },
+  "3345": {
+    "en": "Hud Mini Map",
+    "zh": "HUD：迷你地图"
+  },
+  "3346": {
+    "en": "Hud Exp Guage",
+    "zh": "HUD：经验值量表"
+  },
+  "3347": {
+    "en": "Hud Save Points",
+    "zh": "HUD：显示可保存"
+  },
+  "3348": {
+    "en": "Hud Damage Values",
+    "zh": "HUD：伤害数值"
+  },
+  "3349": {
+    "en": "Hud Objectives",
+    "zh": "HUD：显示目的地"
+  },
+  "3350": {
+    "en": "Hud Control",
+    "zh": "HUD：控制自动显示"
+  },
+  "3353": {
+    "en": "Hud Fishing Spots",
+    "zh": "HUD：显示可钓鱼"
+  },
+  "3354": {
+    "en": "Auto Attack",
+    "zh": "自动攻击"
+  },
+  "3355": {
+    "en": "Auto Fire",
+    "zh": "自动射击"
+  },
+  "3356": {
+    "en": "Auto Evade",
+    "zh": "自动闪避"
+  },
+  "3357": {
+    "en": "Auto Program",
+    "zh": "自动程序"
+  },
+  "3358": {
+    "en": "Auto Weapon Switch",
+    "zh": "自动切换武器"
+  }
+}

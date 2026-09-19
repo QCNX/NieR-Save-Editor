@@ -1,0 +1,197 @@
+[
+  {
+    "enumName": "FAITH",
+    "id": 1003,
+    "en": "Faith"
+  },
+  {
+    "enumName": "IRON_PIPE",
+    "id": 1013,
+    "en": "Iron Pipe"
+  },
+  {
+    "enumName": "BEASTBANE",
+    "id": 1020,
+    "en": "Beastbane"
+  },
+  {
+    "enumName": "PHOENIX_DAGGER",
+    "id": 1040,
+    "en": "Phoenix Dagger"
+  },
+  {
+    "enumName": "ANCIENT_OVERLORD",
+    "id": 1030,
+    "en": "Ancient Overlord"
+  },
+  {
+    "enumName": "TYPE_40_SWORD",
+    "id": 1050,
+    "en": "Type-4O Sword"
+  },
+  {
+    "enumName": "TYPE_3_SWORD",
+    "id": 1060,
+    "en": "Type-3 Sword"
+  },
+  {
+    "enumName": "VIRTUOUS_CONTRACT",
+    "id": 1070,
+    "en": "Virtuous Contract"
+  },
+  {
+    "enumName": "CRUEL_OATH",
+    "id": 1071,
+    "en": "Cruel Oath"
+  },
+  {
+    "enumName": "YORHA_ISSUE_BLADE",
+    "id": 1080,
+    "en": "YoRHa-issue Blade"
+  },
+  {
+    "enumName": "MACHINE_SWORD",
+    "id": 1090,
+    "en": "Machine Sword"
+  },
+  {
+    "enumName": "IRON_WILL",
+    "id": 1203,
+    "en": "Iron Will"
+  },
+  {
+    "enumName": "FANG_OF_THE_TWINS",
+    "id": 1213,
+    "en": "Fang of the Twins"
+  },
+  {
+    "enumName": "BEASTLORD",
+    "id": 1220,
+    "en": "Beastlord"
+  },
+  {
+    "enumName": "PHOENIX_SWORD",
+    "id": 1230,
+    "en": "Phoenix Sword"
+  },
+  {
+    "enumName": "TYPE_40_BLADE",
+    "id": 1240,
+    "en": "Type-4O Blade"
+  },
+  {
+    "enumName": "TYPE_3_BLADE",
+    "id": 1250,
+    "en": "Type-3 Blade"
+  },
+  {
+    "enumName": "VIRTUOUS_TREATY",
+    "id": 1260,
+    "en": "Virtuous Treaty"
+  },
+  {
+    "enumName": "CRUEL_BLOOD_OATH",
+    "id": 1261,
+    "en": "Cruel Blood Oath"
+  },
+  {
+    "enumName": "MACHINE_AXE",
+    "id": 1270,
+    "en": "Machine Axe"
+  },
+  {
+    "enumName": "PHOENIX_LANCE",
+    "id": 1400,
+    "en": "Phoenix Lance"
+  },
+  {
+    "enumName": "BEASTCURSE",
+    "id": 1420,
+    "en": "Beastcurse"
+  },
+  {
+    "enumName": "DRAGOON_LANCE",
+    "id": 1430,
+    "en": "Dragoon Lance"
+  },
+  {
+    "enumName": "SPEAR_OF_THE_USURPER",
+    "id": 1440,
+    "en": "Spear of the Usurper"
+  },
+  {
+    "enumName": "TYPE_40_LANCE",
+    "id": 1450,
+    "en": "Type-4O Lance"
+  },
+  {
+    "enumName": "TYPE_3_LANCE",
+    "id": 1460,
+    "en": "Type-3 Lance"
+  },
+  {
+    "enumName": "VIRTUOUS_DIGNITY",
+    "id": 1470,
+    "en": "Virtuous Dignity"
+  },
+  {
+    "enumName": "CRUEL_ARROGANCE",
+    "id": 1471,
+    "en": "Cruel Arrogance"
+  },
+  {
+    "enumName": "MACHINE_SPEAR",
+    "id": 1480,
+    "en": "Machine Spear"
+  },
+  {
+    "enumName": "ANGELS_FOLLY",
+    "id": 1640,
+    "en": "Angel's Folly"
+  },
+  {
+    "enumName": "DEMONS_CRY",
+    "id": 1630,
+    "en": "Demon's Cry"
+  },
+  {
+    "enumName": "TYPE_40_FISTS",
+    "id": 1610,
+    "en": "Type-4O Fists"
+  },
+  {
+    "enumName": "TYPE_3_FISTS",
+    "id": 1600,
+    "en": "Type-3 Fists"
+  },
+  {
+    "enumName": "VIRTUOUS_GRIEF",
+    "id": 1620,
+    "en": "Virtuous Grief"
+  },
+  {
+    "enumName": "CRUEL_LAMENT",
+    "id": 1621,
+    "en": "Cruel Lament"
+  },
+  {
+    "enumName": "MACHINE_HEADS",
+    "id": 1650,
+    "en": "Machine Heads"
+  },
+  {
+    "enumName": "ENGINE_BLADE",
+    "id": 1875,
+    "en": "Engine Blade"
+  },
+  {
+    "enumName": "CYPRESS_STICK",
+    "id": 1876,
+    "en": "Cypress Stick"
+  },
+  {
+    "enumName": "EMIL_HEADS",
+    "id": 1877,
+    "en": "Emil Heads"
+  }
+]
