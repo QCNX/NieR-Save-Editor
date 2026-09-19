@@ -14,19 +14,15 @@ body {
   margin: 0;
 }
 
-.app-root,
-.editor-shell {
+.app-root {
   max-width: 1280px;
+  min-height: 800px;
   margin: 0 auto;
   padding: 12px 16px 24px;
 }
 
-.app-root {
-  min-height: 800px;
-}
-
 .editor-shell {
-  padding: 0;
+  min-width: 0;
 }
 
 .editor-header {
@@ -59,8 +55,8 @@ body {
   margin-bottom: 12px;
 }
 
-.app-toolbar--settings {
-  margin-top: -4px;
+.language-switch {
+  margin-left: auto;
 }
 
 .app-toolbar button,
@@ -141,21 +137,68 @@ body {
   color: #333;
 }
 
-.editor-layout {
+.editor-tabs {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  gap: 4px;
+  overflow-x: auto;
+  border-bottom: 1px solid #aaa;
 }
 
-.editor-columns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+.editor-tabs button {
+  flex: 0 0 auto;
+  border: 1px solid #aaa;
+  border-bottom: 0;
+  border-radius: 4px 4px 0 0;
+  background: #ddd;
+  padding: 7px 16px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.editor-tabs button[aria-selected="true"] {
+  background: #f7f7f7;
+  font-weight: 650;
+}
+
+.editor-tabs button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.editor-tab-panel {
+  min-height: 260px;
+  max-height: calc(100vh - 230px);
+  overflow: auto;
+  padding-top: 12px;
+}
+
+.settings-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
+}
+
+.settings-row button {
+  border: 1px solid #888;
+  background: #fafafa;
+  padding: 6px 12px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.settings-row button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 @media (max-width: 900px) {
-  .editor-columns {
-    grid-template-columns: 1fr;
+  .language-switch {
+    margin-left: 0;
+  }
+
+  .editor-tab-panel {
+    max-height: none;
   }
 }
 

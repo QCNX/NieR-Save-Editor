@@ -44,4 +44,44 @@ describe("i18n public API", () => {
     expect(translate("zh-CN", "list.occupiedOnly")).toBe("仅显示占用");
     expect(translate("en", "actions.clear")).toBe("Clear");
   });
+
+  it("provides English text for every save-workflow and empty-state message", () => {
+    const workflowKeys = [
+      "status.preview",
+      "status.noSlotsFound",
+      "status.slotsFound",
+      "errors.permissionDenied",
+      "errors.scanFailed",
+      "errors.pathReadUnavailable",
+      "errors.invalidSize",
+      "status.loaded",
+      "errors.loadFailed",
+      "confirm.switchSlot",
+      "errors.noReloadPath",
+      "confirm.reload",
+      "errors.overwriteUnavailable",
+      "confirm.overwrite",
+      "status.overwriteSuccess",
+      "errors.backupFailed",
+      "errors.overwriteFailed",
+      "errors.saveAsUnavailable",
+      "status.saveAsCancelled",
+      "status.savedAs",
+      "errors.saveAsFailed",
+      "confirm.openFile",
+      "status.openedFileNoPath",
+      "confirm.close",
+      "errors.settingsUnavailable",
+      "status.customRootSaved",
+      "status.customRootCleared",
+      "empty.intro",
+      "empty.backup",
+    ] as const;
+
+    for (const key of workflowKeys) {
+      const message = translate("en", key);
+      expect(message, key).not.toBe(key);
+      expect(message, key).not.toMatch(/[\u3400-\u9fff]/u);
+    }
+  });
 });

@@ -1,9 +1,22 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import {
   SAVEFILE_SIZE_BYTES,
   load,
   type SlotData,
 } from "./save";
+import {
+  I18nProvider,
+  useI18n,
+  type Language,
+  type MessageKey,
+} from "./i18n";
 import {
   createTauriDiscoveryHost,
   discoverHostSlotDataFiles,
@@ -17,8 +30,12 @@ import {
   saveAsSave,
   type PersistHost,
 } from "./persist";
-import { EditorShell } from "./ui/EditorShell";
-import { loadLocalSettings, saveLocalSettings } from "./ui/localSettings";
+import { EditorShell, type EditorTab } from "./ui/EditorShell";
+import { SettingsPanel } from "./ui/SettingsPanel";
+import {
+  loadLocalSettings,
+  saveLocalSettings,
+} from "./ui/localSettings";
 import {
   applyClosed,
   applyEditedSlot,
@@ -51,14 +68,61 @@ function defaultStorage(): Storage | null {
   }
 }
 
-function App() {
-  const [state, setState] = useState<EditorAppState>(() =>
-    createInitialEditorState(),
+export type AppShellState = {
+  language: Language;
+  activeTab: EditorTab;
+  workflow: EditorAppState;
+};
+
+export function changeAppLanguage(
+  state: AppShellState,
+  language: Language,
+): AppShellState {
+  return { ...state, language };
+}
+
+function formatMessage(
+  template: string,
+  values: Record<string, string | number>,
+): string {
+  return Object.entries(values).reduce(
+    (message, [key, value]) =>
+      message.split(`{${key}}`).join(String(value)),
+    template,
   );
+}
+
+type AppMessage =
+  | { key: MessageKey; values?: Record<string, string | number> }
+  | { text: string };
+
+function renderAppMessage(
+  message: AppMessage,
+  t: (key: string) => string,
+): string {
+  return "text" in message
+    ? message.text
+    : formatMessage(t(message.key), message.values ?? {});
+}
+
+type AppContentProps = {
+  shellState: AppShellState;
+  onActiveTabChange: (tab: EditorTab) => void;
+  onWorkflowChange: Dispatch<SetStateAction<EditorAppState>>;
+};
+
+function AppContent({
+  shellState,
+  onActiveTabChange,
+  onWorkflowChange,
+}: AppContentProps) {
+  const { language, setLanguage, t } = useI18n();
+  const { activeTab, workflow: state } = shellState;
+  const setState = onWorkflowChange;
   const [slots, setSlots] = useState<SlotFile[]>([]);
   const [selectedSlotPath, setSelectedSlotPath] = useState("");
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<AppMessage | null>(null);
+  const [errorMessage, setErrorMessage] = useState<AppMessage | null>(null);
   const [discoverBusy, setDiscoverBusy] = useState(false);
   const [ioBusy, setIoBusy] = useState(false);
   const [customSaveRoot, setCustomSaveRoot] = useState(() => {
@@ -77,7 +141,7 @@ function App() {
     setErrorMessage(null);
     if (!tauri) {
       setSlots([]);
-      setStatusMessage("当前为浏览器预览：请用「打开存档…」加载文件；槽位发现需 Tauri 桌面端。");
+      setStatusMessage({ key: "status.preview" });
       return;
     }
     setDiscoverBusy(true);
@@ -90,8 +154,8 @@ function App() {
       setSlots(found);
       setStatusMessage(
         found.length === 0
-          ? "未找到 SlotData_*.dat（可设置自定义存档目录后重新扫描）。"
-          : `已发现 ${found.length} 个槽位存档。`,
+          ? { key: "status.noSlotsFound" }
+          : { key: "status.slotsFound", values: { count: found.length } },
       );
       setSelectedSlotPath((prev) => {
         if (prev && found.some((s) => s.path === prev)) {
@@ -101,10 +165,15 @@ function App() {
       });
     } catch (err) {
       if (err instanceof PermissionDeniedError) {
-        setErrorMessage(`无法读取存档目录（权限不足）：${err.path}`);
+        setErrorMessage({
+          key: "errors.permissionDenied",
+          values: { path: err.path },
+        });
       } else {
         setErrorMessage(
-          err instanceof Error ? err.message : "扫描存档目录失败",
+          err instanceof Error
+            ? { text: err.message }
+            : { key: "errors.scanFailed" },
         );
       }
       setSlots([]);
@@ -138,7 +207,7 @@ function App() {
 
   async function loadBytesFromPath(path: string): Promise<boolean> {
     if (!persistHost) {
-      setErrorMessage("当前环境无法按路径读取存档（需要 Tauri）。");
+      setErrorMessage({ key: "errors.pathReadUnavailable" });
       return false;
     }
     setIoBusy(true);
@@ -146,21 +215,30 @@ function App() {
     try {
       const result = await reloadSave(persistHost, path);
       if (result.status !== "ok") {
-        setErrorMessage(result.message);
+        setErrorMessage({ text: result.message });
         return false;
       }
       if (result.bytes.length !== SAVEFILE_SIZE_BYTES) {
-        setErrorMessage(
-          `存档大小无效：需要 ${SAVEFILE_SIZE_BYTES} 字节，实际 ${result.bytes.length} 字节。`,
-        );
+        setErrorMessage({
+          key: "errors.invalidSize",
+          values: {
+            expected: SAVEFILE_SIZE_BYTES,
+            actual: result.bytes.length,
+          },
+        });
         return false;
       }
       const slot = load(result.bytes);
       setState((prev) => applyLoadedSlot(prev, path, slot));
-      setStatusMessage(`已加载：${fileNameFromPath(path)}`);
+      setStatusMessage({
+        key: "status.loaded",
+        values: { name: fileNameFromPath(path) },
+      });
       return true;
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "加载存档失败");
+      setErrorMessage(
+        err instanceof Error ? { text: err.message } : { key: "errors.loadFailed" },
+      );
       return false;
     } finally {
       setIoBusy(false);
@@ -174,7 +252,7 @@ function App() {
     if (
       !confirmIfNeeded(
         "switch-slot",
-        "当前有未保存的修改。切换槽位将丢弃这些修改，是否继续？",
+        t("confirm.switchSlot"),
       )
     ) {
       return;
@@ -184,13 +262,13 @@ function App() {
 
   async function onReload() {
     if (!state.currentPath) {
-      setErrorMessage("没有可重新加载的路径（请先从槽位列表加载，或另存为后再操作）。");
+      setErrorMessage({ key: "errors.noReloadPath" });
       return;
     }
     if (
       !confirmIfNeeded(
         "reload",
-        "当前有未保存的修改。重新加载将丢弃这些修改，是否继续？",
+        t("confirm.reload"),
       )
     ) {
       return;
@@ -200,13 +278,13 @@ function App() {
 
   async function onOverwrite() {
     if (!persistHost || !state.currentPath || !state.slotData) {
-      setErrorMessage("无法覆盖写入：需要已加载的槽位路径与存档数据（Tauri 桌面端）。");
+      setErrorMessage({ key: "errors.overwriteUnavailable" });
       return;
     }
     if (
       !confirmIfNeeded(
         "overwrite",
-        `即将备份并覆盖写入：\n${state.currentPath}\n\n是否继续？`,
+        formatMessage(t("confirm.overwrite"), { path: state.currentPath }),
       )
     ) {
       return;
@@ -221,18 +299,26 @@ function App() {
       );
       if (result.status === "ok") {
         setState((prev) => applyOverwriteSuccess(prev));
-        setStatusMessage(
-          `已覆盖写入（备份：${fileNameFromPath(result.backupPath)}）。`,
-        );
+        setStatusMessage({
+          key: "status.overwriteSuccess",
+          values: { name: fileNameFromPath(result.backupPath) },
+        });
         return;
       }
       if (result.status === "backup") {
-        setErrorMessage(`备份失败，已中止写入：${result.message}`);
+        setErrorMessage({
+          key: "errors.backupFailed",
+          values: { message: result.message },
+        });
         return;
       }
-      setErrorMessage(result.message);
+      setErrorMessage({ text: result.message });
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "覆盖写入失败");
+      setErrorMessage(
+        err instanceof Error
+          ? { text: err.message }
+          : { key: "errors.overwriteFailed" },
+      );
     } finally {
       setIoBusy(false);
     }
@@ -240,7 +326,7 @@ function App() {
 
   async function onSaveAs() {
     if (!persistHost || !state.slotData) {
-      setErrorMessage("无法另存为：需要已加载的存档数据（Tauri 桌面端）。");
+      setErrorMessage({ key: "errors.saveAsUnavailable" });
       return;
     }
     setIoBusy(true);
@@ -253,17 +339,24 @@ function App() {
         defaultName,
       });
       if (result.status === "cancelled") {
-        setStatusMessage("已取消另存为。");
+        setStatusMessage({ key: "status.saveAsCancelled" });
         return;
       }
       if (result.status === "ok") {
         setState((prev) => applySaveAsSuccess(prev, result.path));
-        setStatusMessage(`已另存为：${fileNameFromPath(result.path)}`);
+        setStatusMessage({
+          key: "status.savedAs",
+          values: { name: fileNameFromPath(result.path) },
+        });
         return;
       }
-      setErrorMessage(result.message);
+      setErrorMessage({ text: result.message });
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "另存为失败");
+      setErrorMessage(
+        err instanceof Error
+          ? { text: err.message }
+          : { key: "errors.saveAsFailed" },
+      );
     } finally {
       setIoBusy(false);
     }
@@ -276,7 +369,7 @@ function App() {
     if (
       !confirmIfNeeded(
         "open-file",
-        "当前有未保存的修改。打开新文件将丢弃这些修改，是否继续？",
+        t("confirm.openFile"),
       )
     ) {
       return;
@@ -284,18 +377,24 @@ function App() {
     clearAlerts();
     const bytes = new Uint8Array(await file.arrayBuffer());
     if (bytes.length !== SAVEFILE_SIZE_BYTES) {
-      setErrorMessage(
-        `存档大小无效：需要 ${SAVEFILE_SIZE_BYTES} 字节，实际 ${bytes.length} 字节。`,
-      );
+      setErrorMessage({
+        key: "errors.invalidSize",
+        values: { expected: SAVEFILE_SIZE_BYTES, actual: bytes.length },
+      });
       return;
     }
     try {
       const slot = load(bytes);
       // Browser file input has no absolute path — overwrite/reload need discovery or Save As.
       setState((prev) => applyLoadedSlot(prev, null, slot));
-      setStatusMessage(`已打开：${file.name}（无磁盘路径；可另存为或从槽位列表加载以启用覆盖/重载）`);
+      setStatusMessage({
+        key: "status.openedFileNoPath",
+        values: { name: file.name },
+      });
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "无法加载存档");
+      setErrorMessage(
+        err instanceof Error ? { text: err.message } : { key: "errors.loadFailed" },
+      );
     }
   }
 
@@ -303,7 +402,7 @@ function App() {
     if (
       !confirmIfNeeded(
         "close",
-        "当前有未保存的修改。关闭将丢弃这些修改，是否继续？",
+        t("confirm.close"),
       )
     ) {
       return;
@@ -315,17 +414,15 @@ function App() {
   function onSaveCustomRoot() {
     const storage = defaultStorage();
     if (!storage) {
-      setErrorMessage("无法写入本地设置（localStorage 不可用）。");
+      setErrorMessage({ key: "errors.settingsUnavailable" });
       return;
     }
     const next = rootDraft.trim();
     saveLocalSettings(storage, { customSaveRoot: next });
     setCustomSaveRoot(next);
-    setStatusMessage(
-      next
-        ? "已保存自定义存档目录，正在重新扫描…"
-        : "已清除自定义存档目录，正在重新扫描…",
-    );
+    setStatusMessage({
+      key: next ? "status.customRootSaved" : "status.customRootCleared",
+    });
   }
 
   const busy = discoverBusy || ioBusy;
@@ -334,138 +431,187 @@ function App() {
 
   return (
     <main className="app-root">
-      <div className="app-toolbar">
-        <label className="toolbar-field">
-          <span>槽位</span>
-          <select
-            value={selectedSlotPath}
-            disabled={busy || slots.length === 0}
-            onChange={(e) => setSelectedSlotPath(e.currentTarget.value)}
-          >
-            {slots.length === 0 ? (
-              <option value="">（无 SlotData）</option>
-            ) : (
-              slots.map((slot) => (
-                <option key={slot.path} value={slot.path}>
-                  {fileNameFromPath(slot.path)}
-                </option>
-              ))
-            )}
-          </select>
-        </label>
-        <button
-          type="button"
-          disabled={busy || !selectedSlotPath}
-          onClick={() => {
-            void onSelectSlot();
-          }}
-        >
-          加载槽位
-        </button>
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => {
-            void refreshSlots();
-          }}
-        >
-          重新扫描
-        </button>
-        <button
-          type="button"
-          disabled={busy || !canPathIo}
-          onClick={() => {
-            void onReload();
-          }}
-        >
-          重新加载
-        </button>
-        <button
-          type="button"
-          disabled={busy || !canPathIo}
-          onClick={() => {
-            void onOverwrite();
-          }}
-        >
-          覆盖写入
-        </button>
-        <button
-          type="button"
-          disabled={busy || !canSaveAs}
-          onClick={() => {
-            void onSaveAs();
-          }}
-        >
-          另存为…
-        </button>
-        <label className="file-button">
-          打开存档…
-          <input
-            type="file"
-            accept=".dat,application/octet-stream"
-            disabled={busy}
-            onChange={(e) => {
-              void onPickFile(e.currentTarget.files?.[0]);
-              e.currentTarget.value = "";
-            }}
+      <EditorShell
+        activeTab={activeTab}
+        dirty={state.dirty}
+        onSlotChange={applySlotEdit}
+        onTabChange={onActiveTabChange}
+        slot={state.slotData}
+        toolbar={
+          <div className="app-toolbar" aria-label={t("app.title")}>
+            <label className="toolbar-field">
+              <span>{t("toolbar.slot")}</span>
+              <select
+                value={selectedSlotPath}
+                disabled={busy || slots.length === 0}
+                onChange={(event) =>
+                  setSelectedSlotPath(event.currentTarget.value)
+                }
+              >
+                {slots.length === 0 ? (
+                  <option value="">{t("toolbar.noSlots")}</option>
+                ) : (
+                  slots.map((slot) => (
+                    <option key={slot.path} value={slot.path}>
+                      {fileNameFromPath(slot.path)}
+                    </option>
+                  ))
+                )}
+              </select>
+            </label>
+            <button
+              type="button"
+              disabled={busy || !selectedSlotPath}
+              onClick={() => void onSelectSlot()}
+            >
+              {t("toolbar.loadSlot")}
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void refreshSlots()}
+            >
+              {t("toolbar.rescan")}
+            </button>
+            <button
+              type="button"
+              disabled={busy || !canPathIo}
+              onClick={() => void onReload()}
+            >
+              {t("toolbar.reload")}
+            </button>
+            <button
+              type="button"
+              disabled={busy || !canPathIo}
+              onClick={() => void onOverwrite()}
+            >
+              {t("toolbar.overwrite")}
+            </button>
+            <button
+              type="button"
+              disabled={busy || !canSaveAs}
+              onClick={() => void onSaveAs()}
+            >
+              {t("toolbar.saveAs")}
+            </button>
+            <label className="file-button">
+              {t("toolbar.open")}
+              <input
+                type="file"
+                accept=".dat,application/octet-stream"
+                disabled={busy}
+                onChange={(event) => {
+                  void onPickFile(event.currentTarget.files?.[0]);
+                  event.currentTarget.value = "";
+                }}
+              />
+            </label>
+            <button
+              type="button"
+              disabled={busy || !state.slotData}
+              onClick={onClose}
+            >
+              {t("toolbar.close")}
+            </button>
+            <label className="toolbar-field language-switch">
+              <span>{t(`language.${language}`)}</span>
+              <select
+                value={language}
+                onChange={(event) => setLanguage(event.currentTarget.value as Language)}
+              >
+                <option value="zh-CN">{t("language.zh-CN")}</option>
+                <option value="en">{t("language.en")}</option>
+              </select>
+            </label>
+            {state.currentPath ? (
+              <span className="path-chip" title={state.currentPath}>
+                {t("status.current")}：{fileNameFromPath(state.currentPath)}
+              </span>
+            ) : state.slotData ? (
+              <span className="path-chip">
+                {t("status.current")}：{t("status.inMemory")}
+              </span>
+            ) : null}
+            {state.dirty ? (
+              <span className="dirty-chip">{t("status.dirty")}</span>
+            ) : null}
+          </div>
+        }
+        notices={
+          <>
+            {errorMessage ? (
+              <p className="app-alert" role="alert">
+                {renderAppMessage(errorMessage, t)}
+              </p>
+            ) : null}
+            {statusMessage ? (
+              <p className="app-status">{renderAppMessage(statusMessage, t)}</p>
+            ) : null}
+          </>
+        }
+        settings={
+          <SettingsPanel
+            busy={busy}
+            rootDraft={rootDraft}
+            onRootDraftChange={setRootDraft}
+            onSaveCustomRoot={onSaveCustomRoot}
           />
-        </label>
-        <button type="button" disabled={busy || !state.slotData} onClick={onClose}>
-          关闭存档
-        </button>
-      </div>
-
-      <div className="app-toolbar app-toolbar--settings">
-        <label className="toolbar-field toolbar-field--grow">
-          <span>自定义存档目录</span>
-          <input
-            type="text"
-            value={rootDraft}
-            placeholder="%USERPROFILE%\Documents\My Games\NieR_Automata"
-            disabled={busy}
-            onChange={(e) => setRootDraft(e.currentTarget.value)}
-          />
-        </label>
-        <button type="button" disabled={busy} onClick={onSaveCustomRoot}>
-          保存目录并扫描
-        </button>
-        {state.currentPath ? (
-          <span className="path-chip" title={state.currentPath}>
-            当前：{fileNameFromPath(state.currentPath)}
-          </span>
-        ) : state.slotData ? (
-          <span className="path-chip">当前：内存中（无路径）</span>
-        ) : null}
-        {state.dirty ? <span className="dirty-chip">已修改</span> : null}
-      </div>
-
-      {errorMessage ? (
-        <p className="app-alert" role="alert">
-          {errorMessage}
-        </p>
-      ) : null}
-      {statusMessage ? <p className="app-status">{statusMessage}</p> : null}
-
-      {state.slotData ? (
-        <EditorShell
-          slot={state.slotData}
-          dirty={state.dirty}
-          onSlotChange={applySlotEdit}
-        />
-      ) : (
-        <div className="app-empty">
-          <h1>尼尔：自动人形 存档编辑器</h1>
-          <p>
-            从上方选择已发现的 SlotData 槽位并加载，或打开任意 PC
-            存档文件以编辑金钱、经验、物品、武器与技能。
-          </p>
-          <p>
-            覆盖写入会先备份到存档目录旁的{" "}
-            <code>nier-save-editor-backup/</code>；浏览器预览仅支持内存编辑。
-          </p>
-        </div>
-      )}
+        }
+        empty={
+          <div className="app-empty">
+            <p>{t("empty.intro")}</p>
+            <p>{t("empty.backup")}</p>
+          </div>
+        }
+      />
     </main>
+  );
+}
+
+function App() {
+  const [shellState, setShellState] = useState<AppShellState>(() => {
+    const storage = defaultStorage();
+    return {
+      language: storage ? loadLocalSettings(storage).language : "zh-CN",
+      activeTab: "general",
+      workflow: createInitialEditorState(),
+    };
+  });
+
+  const changeLanguage = useCallback((nextLanguage: Language) => {
+    const storage = defaultStorage();
+    if (storage) {
+      saveLocalSettings(storage, { language: nextLanguage });
+    }
+    setShellState((current) => changeAppLanguage(current, nextLanguage));
+  }, []);
+
+  const changeActiveTab = useCallback((activeTab: EditorTab) => {
+    setShellState((current) => ({ ...current, activeTab }));
+  }, []);
+
+  const changeWorkflow: Dispatch<SetStateAction<EditorAppState>> = useCallback(
+    (update) => {
+      setShellState((current) => ({
+        ...current,
+        workflow:
+          typeof update === "function" ? update(current.workflow) : update,
+      }));
+    },
+    [],
+  );
+
+  return (
+    <I18nProvider
+      language={shellState.language}
+      onLanguageChange={changeLanguage}
+    >
+      <AppContent
+        shellState={shellState}
+        onActiveTabChange={changeActiveTab}
+        onWorkflowChange={changeWorkflow}
+      />
+    </I18nProvider>
   );
 }
 
