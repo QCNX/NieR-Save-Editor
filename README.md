@@ -40,4 +40,4 @@ Do **not** commit real `.dat` files under `fixtures/` (gitignored). Use syntheti
 
 ## License
 
-TBD (set before public release).
+[MIT](./LICENSE)
