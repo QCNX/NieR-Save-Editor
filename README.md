@@ -43,6 +43,10 @@ The release binary is also at `src-tauri/target/release/` (do not commit `src-ta
 
 Do **not** commit real `.dat` files under `fixtures/` (gitignored). Use synthetic fixtures in CI when possible.
 
+## Steam Deck (Flatpak)
+
+Steam Deck delivery is via **Flatpak** in Desktop Mode. See **[docs/flatpak.md](./docs/flatpak.md)** for high-level install/run expectations and Proton save paths (Steam app id `524220`, including Flatpak Steam under `~/.var/app/com.valvesoftware.Steam/...`). The Flatpak manifest itself is forthcoming (MVP ticket 15).
+
 ## Credits
 
 - Save layout reference: [NieREdit](https://codeberg.org/mxNieR/NieREdit) by mxNieR  
