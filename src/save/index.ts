@@ -71,6 +71,15 @@ export {
   type PluginChipPatch,
 } from "./pluginChips";
 
+export {
+  EMPTY_POD_PROGRAM_ID,
+  parsePodPrograms,
+  PodProgramsSizeError,
+  replacePodProgram,
+  serializePodPrograms,
+  type PodProgram,
+} from "./podPrograms";
+
 export { getMoney, setMoney } from "./money";
 export { getXp, setXp } from "./xp";
 export { levelFromXp, xpForLevel } from "./level";

@@ -1,35 +1,81 @@
 import { useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import "./App.css";
+import {
+  SAVEFILE_SIZE_BYTES,
+  load,
+  type SlotData,
+} from "./save";
+import { EditorShell } from "./ui/EditorShell";
+import "./ui/editor.css";
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+  const [slotData, setSlotData] = useState<SlotData | null>(null);
+  const [dirty, setDirty] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  async function greet() {
-    setGreetMsg(await invoke("greet", { name }));
+  function applySlot(next: SlotData) {
+    setSlotData(next);
+    setDirty(true);
+  }
+
+  async function onPickFile(file: File | undefined) {
+    setLoadError(null);
+    if (!file) return;
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    if (bytes.length !== SAVEFILE_SIZE_BYTES) {
+      setLoadError(
+        `存档大小无效：需要 ${SAVEFILE_SIZE_BYTES} 字节，实际 ${bytes.length} 字节。`,
+      );
+      return;
+    }
+    try {
+      setSlotData(load(bytes));
+      setDirty(false);
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : "无法加载存档");
+    }
   }
 
   return (
-    <main className="container">
-      <h1>NieR Save Editor</h1>
-      <p>Tauri 2 + React + TypeScript 脚手架已就绪。</p>
+    <main className="app-root">
+      <div className="app-toolbar">
+        <label className="file-button">
+          打开存档…
+          <input
+            type="file"
+            accept=".dat,application/octet-stream"
+            onChange={(e) => {
+              void onPickFile(e.currentTarget.files?.[0]);
+              e.currentTarget.value = "";
+            }}
+          />
+        </label>
+        <button
+          type="button"
+          disabled={!slotData}
+          onClick={() => {
+            setSlotData(null);
+            setDirty(false);
+            setLoadError(null);
+          }}
+        >
+          关闭存档
+        </button>
+        {loadError ? <span role="alert">{loadError}</span> : null}
+      </div>
 
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="环境自检：输入任意文字"
+      {slotData ? (
+        <EditorShell
+          slot={slotData}
+          dirty={dirty}
+          onSlotChange={applySlot}
         />
-        <button type="submit">调用 Rust greet</button>
-      </form>
-      <p>{greetMsg}</p>
+      ) : (
+        <div className="app-empty">
+          <h1>尼尔：自动人形 存档编辑器</h1>
+          <p>请打开 PC 槽位存档以编辑金钱、经验、物品、武器与技能。</p>
+          <p>本版本仅在内存中编辑，不会写入磁盘。</p>
+        </div>
+      )}
     </main>
   );
 }
