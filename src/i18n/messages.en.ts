@@ -54,6 +54,7 @@ export const messagesEn: Record<MessageKey, string> = {
   "empty.intro": "Choose a discovered SlotData save above, or open any PC save file to edit money, experience, items, weapons, and skills.",
   "empty.backup": "Overwrite creates a backup in nier-save-editor-backup/ beside the save folder. Browser preview supports in-memory editing only.",
   "actions.clear": "Clear",
+  "entity.unknown": "Unknown",
   "list.search": "Search",
   "list.occupiedOnly": "Show occupied only",
   "list.empty": "(Empty)",

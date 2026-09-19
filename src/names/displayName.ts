@@ -2,32 +2,52 @@ import items from "../data/items.json";
 import weapons from "../data/weapons.json";
 import pods from "../data/pods.json";
 import chips from "../data/chips.json";
+import {
+  DEFAULT_LANGUAGE,
+  translate,
+  type Language,
+} from "../i18n/core";
 
 type NameEntry = { en: string; zh: string };
 type NameMap = Record<string, NameEntry>;
 
-/** Format an unmapped id as `未知 (0x…)` (u32 hex, lowercase). */
-export function formatUnknownId(id: number): string {
-  return `未知 (0x${(id >>> 0).toString(16)})`;
+/** Format an unmapped id as a localized label plus u32 lowercase hex. */
+export function formatUnknownId(
+  id: number,
+  language: Language = DEFAULT_LANGUAGE,
+): string {
+  return `${translate(language, "entity.unknown")} (0x${(id >>> 0).toString(16)})`;
 }
 
-function lookupZh(map: NameMap, id: number): string {
+function lookupName(map: NameMap, id: number, language: Language): string {
   const entry = map[String(id)];
-  return entry?.zh ?? formatUnknownId(id);
+  return entry?.[language === "zh-CN" ? "zh" : "en"] ?? formatUnknownId(id, language);
 }
 
-export function lookupItemName(id: number): string {
-  return lookupZh(items as NameMap, id);
+export function lookupItemName(
+  id: number,
+  language: Language = DEFAULT_LANGUAGE,
+): string {
+  return lookupName(items as NameMap, id, language);
 }
 
-export function lookupWeaponName(id: number): string {
-  return lookupZh(weapons as NameMap, id);
+export function lookupWeaponName(
+  id: number,
+  language: Language = DEFAULT_LANGUAGE,
+): string {
+  return lookupName(weapons as NameMap, id, language);
 }
 
-export function lookupPodName(id: number): string {
-  return lookupZh(pods as NameMap, id);
+export function lookupPodName(
+  id: number,
+  language: Language = DEFAULT_LANGUAGE,
+): string {
+  return lookupName(pods as NameMap, id, language);
 }
 
-export function lookupChipName(baseId: number): string {
-  return lookupZh(chips as NameMap, baseId);
+export function lookupChipName(
+  baseId: number,
+  language: Language = DEFAULT_LANGUAGE,
+): string {
+  return lookupName(chips as NameMap, baseId, language);
 }

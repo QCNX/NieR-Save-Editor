@@ -43,6 +43,8 @@ describe("i18n public API", () => {
     expect(translate("en", "tabs.settings")).toBe("Settings");
     expect(translate("zh-CN", "list.occupiedOnly")).toBe("仅显示占用");
     expect(translate("en", "actions.clear")).toBe("Clear");
+    expect(translate("zh-CN", "entity.unknown")).toBe("未知");
+    expect(translate("en", "entity.unknown")).toBe("Unknown");
   });
 
   it("provides English text for every save-workflow and empty-state message", () => {

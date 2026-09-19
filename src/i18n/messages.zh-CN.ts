@@ -52,6 +52,7 @@ export const messagesZhCN = {
   "empty.intro": "从上方选择已发现的 SlotData 槽位并加载，或打开任意 PC 存档文件以编辑金钱、经验、物品、武器与技能。",
   "empty.backup": "覆盖写入会先备份到存档目录旁的 nier-save-editor-backup/；浏览器预览仅支持内存编辑。",
   "actions.clear": "清空",
+  "entity.unknown": "未知",
   "list.search": "搜索",
   "list.occupiedOnly": "仅显示占用",
   "list.empty": "（空）",
