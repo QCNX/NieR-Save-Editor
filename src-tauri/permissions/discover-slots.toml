@@ -1,0 +1,9 @@
+[[permission]]
+identifier = "allow-discovery-env"
+description = "Allows resolving the user home and OS family for SlotData path discovery."
+commands.allow = ["discovery_env"]
+
+[[permission]]
+identifier = "allow-discovery-list-dir"
+description = "Allows listing a candidate NieR Automata save directory with mtime metadata."
+commands.allow = ["discovery_list_dir"]
