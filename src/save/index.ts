@@ -30,6 +30,18 @@ export {
 } from "./constants";
 
 export {
+  InventoryItemStatusError,
+  InventorySizeError,
+  ITEM_STATUS_ACTIVE,
+  ITEM_STATUS_INACTIVE,
+  parseInventory,
+  serializeInventory,
+  setInventoryItem,
+  type InventoryItem,
+  type ItemStatus,
+} from "./inventory";
+
+export {
   load,
   serialize,
   SlotDataSizeError,
