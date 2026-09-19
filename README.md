@@ -27,6 +27,10 @@ npm run tauri dev
 ```
 
 ```bash
+npm test
+```
+
+```bash
 npm run build
 npm run tauri build
 ```
