@@ -1,0 +1,70 @@
+# Flatpak manifest — NieR Save Editor (x86_64)
+#
+# App id aligns with Tauri identifier `com.niersaveeditor.desktop`.
+# Runtime: org.gnome.Platform/Sdk 47 (Freedesktop 24.08 base) — ships
+# WebKitGTK 4.1 required by Tauri 2 on Linux. Build notes: docs/flatpak.md
+#
+# Validation of `flatpak-builder` is deferred to a Linux/x86_64 host
+# (e.g. Steam Deck Desktop Mode). This file is authored for that builder.
+
+id: com.niersaveeditor.desktop
+runtime: org.gnome.Platform
+runtime-version: "47"
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.node20
+  - org.freedesktop.Sdk.Extension.rust-stable
+command: nier-save-editor
+finish-args:
+  # Display: Wayland preferred, X11 fallback (Steam Deck Desktop Mode)
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # File dialogs / Save As use xdg-desktop-portal (no blanket home write).
+  # Precise grants for automatic SlotData discovery + overwrite of known roots:
+  - --filesystem=xdg-documents/My Games/NieR_Automata:create
+  - --filesystem=~/.local/share/Steam/steamapps/compatdata/524220:rw
+  - --filesystem=~/.steam/steam/steamapps/compatdata/524220:rw
+  - --filesystem=~/.var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps/compatdata/524220:rw
+cleanup:
+  - /include
+  - /lib/pkgconfig
+  - /share/man
+  - "*.a"
+  - "*.la"
+modules:
+  - name: nier-save-editor
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/node20/bin:/usr/lib/sdk/rust-stable/bin
+      env:
+        CARGO_HOME: /run/build/nier-save-editor/cargo
+        npm_config_cache: /run/build/nier-save-editor/npm
+      build-args:
+        - --share=network
+    build-commands:
+      - |
+        set -eu
+        . /usr/lib/sdk/node20/enable.sh
+        . /usr/lib/sdk/rust-stable/enable.sh
+        npm ci
+        npm run tauri build -- --bundles none
+      - install -Dm755 src-tauri/target/release/nier-save-editor /app/bin/nier-save-editor
+      - install -Dm644 flatpak/com.niersaveeditor.desktop.desktop /app/share/applications/com.niersaveeditor.desktop.desktop
+      - install -Dm644 flatpak/com.niersaveeditor.desktop.metainfo.xml /app/share/metainfo/com.niersaveeditor.desktop.metainfo.xml
+      - install -Dm644 src-tauri/icons/32x32.png /app/share/icons/hicolor/32x32/apps/com.niersaveeditor.desktop.png
+      - install -Dm644 src-tauri/icons/128x128.png /app/share/icons/hicolor/128x128/apps/com.niersaveeditor.desktop.png
+      - install -Dm644 src-tauri/icons/icon.png /app/share/icons/hicolor/512x512/apps/com.niersaveeditor.desktop.png
+    sources:
+      - type: dir
+        path: ..
+        skip:
+          - .git
+          - .scratch
+          - node_modules
+          - src-tauri/target
+          - dist
+          - build-dir
+          - repo
+          - .flatpak-builder

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.niersaveeditor.desktop</id>
+  <name>NieR Save Editor</name>
+  <summary>Edit NieR:Automata PC SlotData saves</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <description>
+    <p>
+      A NieR:Automata PC save editor for Windows and Steam Deck (Flatpak).
+      Load and write fixed-size SlotData .dat saves, with slot discovery for
+      native Documents and Steam Proton paths (including Flatpak Steam).
+    </p>
+    <p>
+      Back up your saves before editing. Do not distribute real player .dat
+      fixtures with private Steam progress.
+    </p>
+  </description>
+  <launchable type="desktop-id">com.niersaveeditor.desktop.desktop</launchable>
+  <categories>
+    <category>Utility</category>
+    <category>Game</category>
+  </categories>
+  <recommends>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </recommends>
+  <content_rating type="oars-1.1" />
+</component>

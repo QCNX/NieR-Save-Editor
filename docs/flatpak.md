@@ -5,9 +5,55 @@ This app’s **Steam Deck** delivery path is a **Flatpak** package (Desktop Mode
 > Back up your saves before editing.  
 > Do **not** commit real `.dat` saves (they can contain private Steam progress). Prefer synthetic fixtures for tests and CI.
 
-## Install and run (high level)
+## Manifest and runtime
 
-A Flatpak **manifest is forthcoming** (tracked as MVP ticket 15). Expect it under something like `flatpak/` in this repo once added. Until then, treat the steps below as the intended user flow—not a working build recipe.
+In-repo Flatpak manifest (x86_64):
+
+- [`flatpak/com.niersaveeditor.desktop.yml`](../flatpak/com.niersaveeditor.desktop.yml)
+
+| Pin | Value | Why |
+| --- | --- | --- |
+| App id | `com.niersaveeditor.desktop` | Matches Tauri `identifier` in `src-tauri/tauri.conf.json` |
+| Runtime / SDK | `org.gnome.Platform` / `org.gnome.Sdk` **47** | GNOME 47 (Freedesktop **24.08** base) ships **WebKitGTK 4.1**, which Tauri 2 needs on Linux |
+| SDK extensions | `org.freedesktop.Sdk.Extension.node20`, `org.freedesktop.Sdk.Extension.rust-stable` | Node + Rust toolchains for the in-sandbox Tauri build |
+| Arch | **x86_64** | Steam Deck Desktop Mode |
+
+**finish-args (sandbox):** Wayland + X11 fallback (`--socket=wayland`, `--socket=fallback-x11`, `--share=ipc`, `--device=dri`). Save access prefers portals for file dialogs / Save As, plus precise filesystem grants for SlotData discovery (Documents + Proton `compatdata/524220` roots, including Flatpak Steam)—not blanket home write.
+
+Supporting files next to the manifest: `.desktop` launcher and AppStream `metainfo.xml`.
+
+## Build a local `.flatpak` (Linux x86_64)
+
+Run these on a **Linux x86_64** machine (Steam Deck Desktop Mode, or any builder with Flatpak). Do **not** put LAN hostnames, SSH targets, usernames, or machine-specific paths into the repo.
+
+1. Install Flatpak tooling and add Flathub (once per user):
+   ```bash
+   # Distro package names vary; examples: flatpak, flatpak-builder
+   flatpak remote-add --if-not-exists --user flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+   ```
+2. From the **repository root**:
+   ```bash
+   flatpak-builder --user --force-clean --install-deps-from=flathub \
+     build-dir flatpak/com.niersaveeditor.desktop.yml
+   ```
+3. Export a single-file bundle (optional but handy for copying to a Deck):
+   ```bash
+   flatpak-builder --user --force-clean --repo=repo \
+     build-dir flatpak/com.niersaveeditor.desktop.yml
+   flatpak build-bundle repo nier-save-editor.flatpak com.niersaveeditor.desktop --arch=x86_64
+   ```
+4. Install and run:
+   ```bash
+   flatpak install --user ./nier-save-editor.flatpak
+   flatpak run com.niersaveeditor.desktop
+   ```
+   Or, after a successful `--install` build with flatpak-builder, launch with `flatpak run com.niersaveeditor.desktop` without a separate bundle step.
+
+Do not commit `build-dir/`, `repo/`, `.flatpak-builder/`, or `.flatpak` bundles.
+
+**Validation note:** Authoring happened on Windows; `flatpak-builder` success and Deck Desktop Mode smoke (open Proton saves, overwrite with backup) are deferred to a Linux builder.
+
+## Install and run (end user)
 
 When a local `.flatpak` bundle (or a Flathub/remote listing) exists:
 
@@ -16,13 +62,10 @@ When a local `.flatpak` bundle (or a Flathub/remote listing) exists:
    ```bash
    flatpak install --user ./nier-save-editor.flatpak
    ```
-   (Exact filename and app id will match the manifest; the Tauri identifier is `com.niersaveeditor.desktop`.)
 3. Launch from the application menu, or:
    ```bash
    flatpak run com.niersaveeditor.desktop
    ```
-
-Building the Flatpak from source requires a Linux/x86_64 builder and the pinned runtime from the manifest—details land with ticket 15. Public docs and the manifest must stay free of private LAN hosts, SSH targets, and machine-specific paths.
 
 ## Save discovery (Desktop Mode + Proton)
 
@@ -49,4 +92,4 @@ Notes:
 ## Privacy
 
 - Do not commit real `.dat` fixtures or private Steam data.
-- Do not put LAN IPs, SSH hosts, usernames, or private remotes in public docs or the future Flatpak manifest notes.
+- Do not put LAN IPs, SSH hosts, usernames, or private remotes in public docs or Flatpak build notes.

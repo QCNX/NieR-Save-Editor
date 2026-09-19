@@ -37,3 +37,9 @@ PLAN.md
 
 # Tauri / Rust
 src-tauri/target/
+
+# Flatpak builder artifacts (local Linux builds)
+build-dir/
+repo/
+.flatpak-builder/
+*.flatpak

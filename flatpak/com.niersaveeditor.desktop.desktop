@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=NieR Save Editor
+Name[zh_CN]=尼尔存档编辑器
+Comment=Edit NieR:Automata PC SlotData saves
+Comment[zh_CN]=编辑《尼尔：机械纪元》PC 存档
+Exec=nier-save-editor
+Icon=com.niersaveeditor.desktop
+Terminal=false
+Categories=Utility;Game;
+StartupNotify=true
