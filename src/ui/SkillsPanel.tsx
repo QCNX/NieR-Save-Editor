@@ -1,19 +1,24 @@
 import { useState } from "react";
 
-import { useI18n, type Language } from "../i18n";
+import { translate, useI18n, type Language } from "../i18n";
 import {
   EMPTY_PLUGIN_CHIP_ID,
+  EMPTY_POD_CONFIG_PROGRAM_ID,
   EMPTY_POD_PROGRAM_ID,
   parsePluginChips,
+  parsePodConfig,
   parsePodPrograms,
   POD_PROGRAM_IDS,
   replacePluginChipType,
   serializePluginChips,
+  serializePodConfig,
   serializePodPrograms,
+  setPodConfigPod,
   setPluginChip,
   setPodProgramId,
   VANILLA_PLUGIN_CHIP_IDS,
   type PluginChip,
+  type PodConfigPatch,
   type PodProgram,
   type SlotData,
 } from "../save";
@@ -89,12 +94,34 @@ function pluginChipChoices(language: Language): IdChoice<number>[] {
   }));
 }
 
+export function podConfigProgramChoices(
+  language: Language,
+): IdChoice<number>[] {
+  return [EMPTY_POD_CONFIG_PROGRAM_ID, ...POD_PROGRAM_IDS].map((id) => ({
+    id,
+    label:
+      id === EMPTY_POD_CONFIG_PROGRAM_ID
+        ? translate(language, "list.empty")
+        : lookupPodName(id, language),
+  }));
+}
+
+export function updatePodConfig(
+  slot: SlotData,
+  pod: "A" | "B" | "C",
+  patch: PodConfigPatch,
+): SlotData {
+  const next = setPodConfigPod(parsePodConfig(slot.podConfig), pod, patch);
+  return { ...slot, podConfig: serializePodConfig(next) };
+}
+
 export function SkillsPanel({ slot, onSlotChange }: Props) {
   const { language, t } = useI18n();
   const [query, setQuery] = useState("");
   const [occupiedOnly, setOccupiedOnly] = useState(false);
   const allPods = parsePodPrograms(slot.podPrograms);
   const allChips = parsePluginChips(slot.pluginChips);
+  const podConfig = parsePodConfig(slot.podConfig);
   const pods = filterPodProgramRows(allPods, query, occupiedOnly, language);
   const chips = filterPluginChipRows(
     allChips,
@@ -103,6 +130,7 @@ export function SkillsPanel({ slot, onSlotChange }: Props) {
     language,
   );
   const chipChoices = pluginChipChoices(language);
+  const configChoices = podConfigProgramChoices(language);
   const choiceLabels = {
     clear: t("actions.clear"),
     empty: t("list.empty"),
@@ -112,6 +140,69 @@ export function SkillsPanel({ slot, onSlotChange }: Props) {
   return (
     <section className="panel" aria-labelledby="skills-heading">
       <h2 id="skills-heading">{t("tabs.skills")}</h2>
+
+      <h3>{t("skills.podConfig")}</h3>
+      <div className="weapon-equipment">
+        {(["A", "B", "C"] as const).map((podName) => {
+          const pod = podConfig[`pod${podName}`];
+          const programLabel =
+            language === "zh-CN" ? `Pod ${podName} 程序` : `Pod ${podName} Program`;
+          const levelLabel = `Pod ${podName} ${t("fields.level")}`;
+          const unknownProgramValue =
+            Number.MAX_SAFE_INTEGER - (pod.program.ordinal >>> 0);
+          const programValue = pod.program.id ?? unknownProgramValue;
+
+          return (
+            <fieldset key={podName}>
+              <legend>{`Pod ${podName}`}</legend>
+              <label>
+                <span>{programLabel}</span>
+                <IdChoiceControl
+                  value={programValue}
+                  emptyValue={EMPTY_POD_CONFIG_PROGRAM_ID}
+                  choices={configChoices}
+                  labels={{
+                    select: programLabel,
+                    clear: t("actions.clear"),
+                    empty: t("list.empty"),
+                    unknown: () =>
+                      `${t("entity.unknown")} (${pod.program.ordinal})`,
+                  }}
+                  onChange={(programId) => {
+                    if (programId === unknownProgramValue) return;
+                    onSlotChange(
+                      updatePodConfig(slot, podName, { programId }),
+                    );
+                  }}
+                />
+              </label>
+              {pod.program.id !== EMPTY_POD_CONFIG_PROGRAM_ID ? (
+                <label>
+                  <span>{t("fields.level")}</span>
+                  <input
+                    aria-label={levelLabel}
+                    type="number"
+                    min={-0x80000000}
+                    max={0x7fffffff}
+                    value={pod.level}
+                    onChange={(event) => {
+                      const level = Number(event.currentTarget.value);
+                      if (
+                        !Number.isInteger(level) ||
+                        level < -0x80000000 ||
+                        level > 0x7fffffff
+                      ) {
+                        return;
+                      }
+                      onSlotChange(updatePodConfig(slot, podName, { level }));
+                    }}
+                  />
+                </label>
+              ) : null}
+            </fieldset>
+          );
+        })}
+      </div>
 
       <div className="list-toolbar">
         <label>
