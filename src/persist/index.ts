@@ -1,6 +1,7 @@
 export { BACKUP_DIR_NAME, backupTargetPath } from "./backupPath";
 export {
   overwriteSave,
+  managedOverwriteSave,
   reloadSave,
   saveAsSave,
   type PersistHost,
@@ -16,4 +17,14 @@ export type {
   ReadFileResult,
   ReloadResult,
   SaveAsResult,
+  BackupEntry,
+  BackupReason,
+  CreateBackupResult,
+  ListBackupsResult,
+  ManagedFailure,
+  ManagedOverwriteResult,
+  ManagedPhase,
+  SafeWriteOptions,
+  SafeWriteResult,
+  SaveManagementHost,
 } from "./types";

@@ -3,11 +3,13 @@ import { load, type SlotData } from "../save";
 import { SAVEFILE_SIZE_BYTES } from "../save/constants";
 import { BACKUP_DIR_NAME } from "./backupPath";
 import {
+  managedOverwriteSave,
   overwriteSave,
   reloadSave,
   saveAsSave,
   type PersistHost,
 } from "./host";
+import type { BackupEntry, SaveManagementHost } from "./types";
 
 /** Patterned synthetic PC save — not a real player file. */
 function syntheticSave(): Uint8Array {
@@ -91,6 +93,51 @@ describe("reloadSave", () => {
 });
 
 describe("overwriteSave", () => {
+  it("uses one managed write then rejects a byte-for-byte readback mismatch", async () => {
+    const slot = slotFromSynthetic();
+    const intended = syntheticSave();
+    const mismatched = intended.slice();
+    mismatched[123] ^= 0xff;
+    const backup: BackupEntry = {
+      path: "/saves/nier-save-editor-backup/SlotData_0/version.dat",
+      slotFileName: "SlotData_0.dat",
+      reason: "before-save",
+      size: intended.length,
+      mtimeMs: 1,
+      sha256: "backup-sha",
+      metadataStatus: "ok",
+    };
+    const host: SaveManagementHost = {
+      async createVersionedBackup() {
+        throw new Error("unused");
+      },
+      async listBackups() {
+        throw new Error("unused");
+      },
+      async safeWriteFile({ reason, bytes }) {
+        expect(reason).toBe("before-save");
+        expect(bytes).toEqual(intended);
+        return {
+          status: "ok",
+          path: "/saves/SlotData_0.dat",
+          backup,
+          sha256: "new-sha",
+        };
+      },
+      async readFile() {
+        return { status: "ok", bytes: mismatched };
+      },
+    };
+
+    await expect(
+      managedOverwriteSave(host, "/saves/SlotData_0.dat", slot),
+    ).resolves.toMatchObject({
+      status: "verify",
+      phase: "verify-target",
+      path: "/saves/SlotData_0.dat",
+    });
+  });
+
   it("backs up under nier-save-editor-backup then writes serialized bytes", async () => {
     const slot = slotFromSynthetic();
     const calls: string[] = [];

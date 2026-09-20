@@ -7,6 +7,8 @@ import type {
   PickSaveAsResult,
   ReadFileResult,
   ReloadResult,
+  ManagedOverwriteResult,
+  SaveManagementHost,
   SaveAsResult,
 } from "./types";
 
@@ -19,6 +21,45 @@ export interface PersistHost {
   backupFile(sourcePath: string, backupPath: string): Promise<PersistIoResult>;
   writeFile(path: string, bytes: Uint8Array): Promise<PersistIoResult>;
   pickSaveAsPath(opts: PickSaveAsOptions): Promise<PickSaveAsResult>;
+}
+
+function bytesEqual(left: Uint8Array, right: Uint8Array): boolean {
+  if (left.length !== right.length) return false;
+  return left.every((value, index) => value === right[index]);
+}
+
+/**
+ * Versioned, host-atomic overwrite followed by an independent full-byte readback.
+ * Callers must only clear dirty state after this returns `ok`.
+ */
+export async function managedOverwriteSave(
+  host: SaveManagementHost,
+  path: string,
+  slot: SlotData,
+  expectedTargetSha256?: string,
+): Promise<ManagedOverwriteResult> {
+  const bytes = serialize(slot);
+  const written = await host.safeWriteFile({
+    targetPath: path,
+    bytes,
+    reason: "before-save",
+    expectedTargetSha256,
+  });
+  if (written.status !== "ok") return written;
+
+  const readback = await host.readFile(path);
+  if (readback.status !== "ok") {
+    return { ...readback, phase: "verify-target" };
+  }
+  if (!bytesEqual(bytes, readback.bytes)) {
+    return {
+      status: "verify",
+      phase: "verify-target",
+      path,
+      message: `Written save did not match the intended bytes: ${path}`,
+    };
+  }
+  return { status: "ok", path, backupPath: written.backup.path };
 }
 
 /** Reload raw bytes from the current path (callers discard dirty SlotData). */
