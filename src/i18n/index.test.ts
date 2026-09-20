@@ -86,4 +86,31 @@ describe("i18n public API", () => {
       expect(message, key).not.toMatch(/[\u3400-\u9fff]/u);
     }
   });
+
+  it("covers all General field and Debug status labels in both languages", () => {
+    const keys = [
+      "fields.steamId",
+      "fields.characterName",
+      "fields.playTimeSeconds",
+      "fields.debugFlag",
+      "general.playRecords",
+      "general.itemsUsed",
+      "general.itemsHarvested",
+      "general.hacksCompleted",
+      "general.deaths",
+      "general.unknownCounter1",
+      "general.unknownCounter2",
+      "general.enemiesKilled",
+      "general.emilBulletsEquipped",
+      "debug.disabled",
+      "debug.menu",
+      "debug.chapterSelect",
+      "debug.fullyEnabled",
+    ] as const;
+
+    for (const key of keys) {
+      expect(translate("zh-CN", key), key).not.toBe(key);
+      expect(translate("en", key), key).not.toBe(key);
+    }
+  });
 });

@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { I18nProvider } from "../i18n";
 import { SAVEFILE_SIZE_BYTES, load, setXp } from "../save";
 import { SummaryPanel } from "./SummaryPanel";
 
@@ -8,7 +9,9 @@ describe("SummaryPanel writable level", () => {
     const slot = setXp(load(new Uint8Array(SAVEFILE_SIZE_BYTES)), 55412);
 
     const markup = renderToStaticMarkup(
-      <SummaryPanel slot={slot} onSlotChange={vi.fn()} />,
+      <I18nProvider language="zh-CN">
+        <SummaryPanel slot={slot} onSlotChange={vi.fn()} />
+      </I18nProvider>,
     );
 
     expect(markup).toContain("<span>经验</span><input type=\"number\"");
