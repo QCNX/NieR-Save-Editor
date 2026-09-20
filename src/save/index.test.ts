@@ -6,7 +6,10 @@ import {
   getPlayTime,
   getSteamId,
   parseEmilBulletsEquipped,
+  parseHairColors,
+  parseOutfitConfig,
   parsePlayRecords,
+  parsePodCosmeticConfig,
   POD_PROGRAM_IDS,
   VANILLA_PLUGIN_CHIP_IDS,
   replacePluginChipType,
@@ -17,7 +20,10 @@ import {
   setPlayTime,
   setSteamId,
   setEmilBulletsEquipped,
+  setHairColor,
+  setHeadAccessory,
   setPlayRecordCounter,
+  setPodCosmetic,
   setPodProgramId,
 } from "./index";
 
@@ -58,5 +64,14 @@ describe("public save edit API", () => {
     expect(setPlayRecordCounter).toBeTypeOf("function");
     expect(parseEmilBulletsEquipped).toBeTypeOf("function");
     expect(setEmilBulletsEquipped).toBeTypeOf("function");
+  });
+
+  it("exports cosmetics editing", () => {
+    expect(parseOutfitConfig).toBeTypeOf("function");
+    expect(setHeadAccessory).toBeTypeOf("function");
+    expect(parsePodCosmeticConfig).toBeTypeOf("function");
+    expect(setPodCosmetic).toBeTypeOf("function");
+    expect(parseHairColors).toBeTypeOf("function");
+    expect(setHairColor).toBeTypeOf("function");
   });
 });

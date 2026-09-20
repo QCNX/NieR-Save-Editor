@@ -4,14 +4,18 @@ import {
   BEFORE_STEAM_ID_SIZE_BYTES,
   BETWEEN_CHARACTER_NAME_AND_MONEY_SIZE_BYTES,
   BETWEEN_CHARACTER_NAME_AND_MONEY_START_BYTE,
-  BETWEEN_CHIPS_AND_PLAY_RECORDS_SIZE_BYTES,
-  BETWEEN_CHIPS_AND_PLAY_RECORDS_START_BYTE,
+  BETWEEN_CHIPS_AND_OUTFIT_CONFIG_SIZE_BYTES,
+  BETWEEN_CHIPS_AND_OUTFIT_CONFIG_START_BYTE,
   BETWEEN_EMIL_BULLETS_AND_WEAPON_SLOTS_SIZE_BYTES,
   BETWEEN_EMIL_BULLETS_AND_WEAPON_SLOTS_START_BYTE,
   BETWEEN_PLAY_TIME_AND_CHARACTER_NAME_SIZE_BYTES,
   BETWEEN_PLAY_TIME_AND_CHARACTER_NAME_START_BYTE,
-  BETWEEN_PLAY_RECORDS_AND_EMIL_BULLETS_SIZE_BYTES,
-  BETWEEN_PLAY_RECORDS_AND_EMIL_BULLETS_START_BYTE,
+  BETWEEN_OUTFIT_CONFIG_AND_PLAY_RECORDS_SIZE_BYTES,
+  BETWEEN_OUTFIT_CONFIG_AND_PLAY_RECORDS_START_BYTE,
+  BETWEEN_PLAY_RECORDS_AND_POD_COSMETIC_CONFIG_SIZE_BYTES,
+  BETWEEN_PLAY_RECORDS_AND_POD_COSMETIC_CONFIG_START_BYTE,
+  BETWEEN_POD_COSMETIC_CONFIG_AND_HAIR_COLORS_SIZE_BYTES,
+  BETWEEN_POD_COSMETIC_CONFIG_AND_HAIR_COLORS_START_BYTE,
   BETWEEN_POD_AND_CHIPS_SIZE_BYTES,
   BETWEEN_POD_AND_CHIPS_START_BYTE,
   BETWEEN_POD_CONFIG_AND_DEBUG_FLAG_SIZE_BYTES,
@@ -25,11 +29,14 @@ import {
   CHARACTER_NAME_SIZE_BYTES,
   DEBUG_FLAG_SIZE_BYTES,
   EMIL_BULLETS_EQUIPPED_SIZE_BYTES,
+  HAIR_COLORS_SIZE_BYTES,
   INVENTORY_SIZE_BYTES,
   MONEY_SIZE_BYTES,
+  OUTFIT_CONFIG_SIZE_BYTES,
   PLUGIN_CHIPS_SIZE_BYTES,
   PLAY_TIME_SIZE_BYTES,
   PLAY_RECORDS_SIZE_BYTES,
+  POD_COSMETIC_CONFIG_SIZE_BYTES,
   POD_CONFIG_SIZE_BYTES,
   POD_PROGRAMS_SIZE_BYTES,
   SAVEFILE_CORPSE_INVENTORY_START_BYTE,
@@ -37,11 +44,14 @@ import {
   SAVEFILE_DEBUG_FLAG_START_BYTE,
   SAVEFILE_INVENTORY_START_BYTE,
   SAVEFILE_MONEY_START_BYTE,
+  SAVEFILE_OUTFIT_CONFIG_START_BYTE,
   SAVEFILE_PLAY_TIME_START_BYTE,
   SAVEFILE_PLAY_RECORDS_START_BYTE,
   SAVEFILE_EMIL_BULLETS_EQUIPPED_BYTE,
+  SAVEFILE_HAIR_COLORS_START_BYTE,
   SAVEFILE_PLUGIN_CHIPS_START_BYTE,
   SAVEFILE_POD_CONFIG_START_BYTE,
+  SAVEFILE_POD_COSMETIC_CONFIG_START_BYTE,
   SAVEFILE_POD_PROGRAMS_START_BYTE,
   SAVEFILE_SIZE_BYTES,
   SAVEFILE_STEAM_ID_START_BYTE,
@@ -89,12 +99,22 @@ export type SlotData = {
   betweenPodAndChips: Uint8Array;
   /** Known field placeholder: plug-in chips block. */
   pluginChips: Uint8Array;
-  /** Opaque region from after chips through before Play Records. */
-  betweenChipsAndPlayRecords: Uint8Array;
+  /** Opaque region from after chips through before OutfitConfig. */
+  betweenChipsAndOutfitConfig: Uint8Array;
+  /** Raw dress, head-accessory, and outfit configuration. */
+  outfitConfig: Uint8Array;
+  /** Opaque region from after OutfitConfig through before Play Records. */
+  betweenOutfitConfigAndPlayRecords: Uint8Array;
   /** Raw seven-counter Play Records region. */
   playRecords: Uint8Array;
-  /** Opaque region from after Play Records through before the Emil flag. */
-  betweenPlayRecordsAndEmilBullets: Uint8Array;
+  /** Opaque region from after Play Records through before Pod cosmetics. */
+  betweenPlayRecordsAndPodCosmeticConfig: Uint8Array;
+  /** Raw Pod cosmetic IDs for 2B, 9S, and A2. */
+  podCosmeticConfig: Uint8Array;
+  /** Opaque region from after Pod cosmetics through before hair colors. */
+  betweenPodCosmeticConfigAndHairColors: Uint8Array;
+  /** Raw hair color bytes for 2B, 9S, and A2. */
+  hairColors: Uint8Array;
   /** Raw Emil bullets equipped byte. */
   emilBulletsEquipped: Uint8Array;
   /** Opaque region from after the Emil flag through before weapon slots. */
@@ -201,20 +221,45 @@ export function load(bytes: Uint8Array): SlotData {
       SAVEFILE_PLUGIN_CHIPS_START_BYTE,
       PLUGIN_CHIPS_SIZE_BYTES,
     ),
-    betweenChipsAndPlayRecords: sliceCopy(
+    betweenChipsAndOutfitConfig: sliceCopy(
       bytes,
-      BETWEEN_CHIPS_AND_PLAY_RECORDS_START_BYTE,
-      BETWEEN_CHIPS_AND_PLAY_RECORDS_SIZE_BYTES,
+      BETWEEN_CHIPS_AND_OUTFIT_CONFIG_START_BYTE,
+      BETWEEN_CHIPS_AND_OUTFIT_CONFIG_SIZE_BYTES,
+    ),
+    outfitConfig: sliceCopy(
+      bytes,
+      SAVEFILE_OUTFIT_CONFIG_START_BYTE,
+      OUTFIT_CONFIG_SIZE_BYTES,
+    ),
+    betweenOutfitConfigAndPlayRecords: sliceCopy(
+      bytes,
+      BETWEEN_OUTFIT_CONFIG_AND_PLAY_RECORDS_START_BYTE,
+      BETWEEN_OUTFIT_CONFIG_AND_PLAY_RECORDS_SIZE_BYTES,
     ),
     playRecords: sliceCopy(
       bytes,
       SAVEFILE_PLAY_RECORDS_START_BYTE,
       PLAY_RECORDS_SIZE_BYTES,
     ),
-    betweenPlayRecordsAndEmilBullets: sliceCopy(
+    betweenPlayRecordsAndPodCosmeticConfig: sliceCopy(
       bytes,
-      BETWEEN_PLAY_RECORDS_AND_EMIL_BULLETS_START_BYTE,
-      BETWEEN_PLAY_RECORDS_AND_EMIL_BULLETS_SIZE_BYTES,
+      BETWEEN_PLAY_RECORDS_AND_POD_COSMETIC_CONFIG_START_BYTE,
+      BETWEEN_PLAY_RECORDS_AND_POD_COSMETIC_CONFIG_SIZE_BYTES,
+    ),
+    podCosmeticConfig: sliceCopy(
+      bytes,
+      SAVEFILE_POD_COSMETIC_CONFIG_START_BYTE,
+      POD_COSMETIC_CONFIG_SIZE_BYTES,
+    ),
+    betweenPodCosmeticConfigAndHairColors: sliceCopy(
+      bytes,
+      BETWEEN_POD_COSMETIC_CONFIG_AND_HAIR_COLORS_START_BYTE,
+      BETWEEN_POD_COSMETIC_CONFIG_AND_HAIR_COLORS_SIZE_BYTES,
+    ),
+    hairColors: sliceCopy(
+      bytes,
+      SAVEFILE_HAIR_COLORS_START_BYTE,
+      HAIR_COLORS_SIZE_BYTES,
     ),
     emilBulletsEquipped: sliceCopy(
       bytes,
@@ -290,9 +335,14 @@ export function serialize(slot: SlotData): Uint8Array {
     slot.podPrograms,
     slot.betweenPodAndChips,
     slot.pluginChips,
-    slot.betweenChipsAndPlayRecords,
+    slot.betweenChipsAndOutfitConfig,
+    slot.outfitConfig,
+    slot.betweenOutfitConfigAndPlayRecords,
     slot.playRecords,
-    slot.betweenPlayRecordsAndEmilBullets,
+    slot.betweenPlayRecordsAndPodCosmeticConfig,
+    slot.podCosmeticConfig,
+    slot.betweenPodCosmeticConfigAndHairColors,
+    slot.hairColors,
     slot.emilBulletsEquipped,
     slot.betweenEmilBulletsAndWeaponSlots,
     slot.weaponSlot1,

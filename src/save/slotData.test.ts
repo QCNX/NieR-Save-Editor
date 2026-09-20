@@ -99,7 +99,7 @@ describe("SlotData load/serialize", () => {
         SAVEFILE_WEAPON_SLOT_2_START_BYTE + WEAPON_SLOT_SIZE_BYTES,
       ),
     );
-    expect(slot.betweenChipsAndPlayRecords.length).toBe(10332);
+    expect(slot.betweenChipsAndOutfitConfig.length).toBe(9952);
     expect(slot.betweenWeaponSlotsAndXp.length).toBe(
       BETWEEN_WEAPON_SLOTS_AND_XP_SIZE_BYTES,
     );
@@ -126,9 +126,10 @@ describe("SlotData load/serialize", () => {
     expect(SAVEFILE_PLAY_RECORDS_START_BYTE).toBe(230744);
     expect(PLAY_RECORDS_SIZE_BYTES).toBe(28);
     expect(SAVEFILE_EMIL_BULLETS_EQUIPPED_BYTE).toBe(231039);
-    expect(slot.betweenChipsAndPlayRecords.length).toBe(10332);
+    expect(slot.betweenChipsAndOutfitConfig.length).toBe(9952);
     expect(slot.playRecords).toEqual(input.slice(230744, 230772));
-    expect(slot.betweenPlayRecordsAndEmilBullets.length).toBe(267);
+    expect(slot.betweenPlayRecordsAndPodCosmeticConfig.length).toBe(124);
+    expect(slot.betweenPodCosmeticConfigAndHairColors.length).toBe(128);
     expect(slot.emilBulletsEquipped).toEqual(input.slice(231039, 231040));
     expect(slot.betweenEmilBulletsAndWeaponSlots.length).toBe(116);
     expect(serialize(slot)).toEqual(input);
