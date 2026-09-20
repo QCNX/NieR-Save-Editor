@@ -13,7 +13,7 @@ import {
 import {
   podConfigProgramChoices,
   updatePodConfig,
-  SkillsPanel,
+  PodsPanel,
 } from "./SkillsPanel";
 
 function configuredSlot() {
@@ -71,12 +71,12 @@ describe("ticket 11 Pod Config editor seam", () => {
     const onSlotChange = vi.fn();
     const english = renderToStaticMarkup(
       <I18nProvider language="en">
-        <SkillsPanel slot={configuredSlot()} onSlotChange={onSlotChange} />
+        <PodsPanel slot={configuredSlot()} onSlotChange={onSlotChange} />
       </I18nProvider>,
     );
     const chinese = renderToStaticMarkup(
       <I18nProvider language="zh-CN">
-        <SkillsPanel slot={configuredSlot()} onSlotChange={onSlotChange} />
+        <PodsPanel slot={configuredSlot()} onSlotChange={onSlotChange} />
       </I18nProvider>,
     );
 

@@ -26,13 +26,9 @@ import { lookupChipName, lookupPodName, showsChipDiamond } from "../names";
 import {
   filterSlots,
   IdChoiceControl,
+  estimateSelectWidthCh,
   type IdChoice,
 } from "./slotControls";
-
-type Props = {
-  slot: SlotData;
-  onSlotChange: (next: SlotData) => void;
-};
 
 function chipIsOccupied(chip: PluginChip): boolean {
   return chip.id.type !== EMPTY_PLUGIN_CHIP_ID.type;
@@ -87,7 +83,7 @@ export function availablePodProgramChoices(
   );
 }
 
-function pluginChipChoices(language: Language): IdChoice<number>[] {
+export function pluginChipChoices(language: Language): IdChoice<number>[] {
   return VANILLA_PLUGIN_CHIP_IDS.map((id) => ({
     id: id.type,
     label: lookupChipName(id.baseId, language),
@@ -115,22 +111,23 @@ export function updatePodConfig(
   return { ...slot, podConfig: serializePodConfig(next) };
 }
 
-export function SkillsPanel({ slot, onSlotChange }: Props) {
+type PanelProps = {
+  slot: SlotData;
+  onSlotChange: (next: SlotData) => void;
+};
+
+export function PodsPanel({ slot, onSlotChange }: PanelProps) {
   const { language, t } = useI18n();
   const [query, setQuery] = useState("");
   const [occupiedOnly, setOccupiedOnly] = useState(false);
   const allPods = parsePodPrograms(slot.podPrograms);
-  const allChips = parsePluginChips(slot.pluginChips);
   const podConfig = parsePodConfig(slot.podConfig);
   const pods = filterPodProgramRows(allPods, query, occupiedOnly, language);
-  const chips = filterPluginChipRows(
-    allChips,
-    query,
-    occupiedOnly,
-    language,
-  );
-  const chipChoices = pluginChipChoices(language);
   const configChoices = podConfigProgramChoices(language);
+  const podSelectWidthCh = estimateSelectWidthCh([
+    t("list.empty"),
+    ...POD_PROGRAM_IDS.map((id) => lookupPodName(id, language)),
+  ]);
   const choiceLabels = {
     clear: t("actions.clear"),
     empty: t("list.empty"),
@@ -138,75 +135,180 @@ export function SkillsPanel({ slot, onSlotChange }: Props) {
   };
 
   return (
-    <section className="panel" aria-labelledby="skills-heading">
-      <h2 id="skills-heading">{t("tabs.skills")}</h2>
+    <section className="panel panel--fill" aria-labelledby="pods-heading">
+      <h2 id="pods-heading">{t("tabs.pods")}</h2>
 
-      <h3>{t("skills.podConfig")}</h3>
-      <div className="weapon-equipment">
-        {(["A", "B", "C"] as const).map((podName) => {
-          const pod = podConfig[`pod${podName}`];
-          const programLabel =
-            language === "zh-CN" ? `Pod ${podName} 程序` : `Pod ${podName} Program`;
-          const levelLabel = `Pod ${podName} ${t("fields.level")}`;
-          const unknownProgramValue =
-            Number.MAX_SAFE_INTEGER - (pod.program.ordinal >>> 0);
-          const programValue = pod.program.id ?? unknownProgramValue;
+      <div className="panel-split">
+        <aside className="panel-split__side" aria-label={t("skills.podConfig")}>
+          <h3>{t("skills.podConfig")}</h3>
+          <div className="pod-config-stack">
+            {(["A", "B", "C"] as const).map((podName) => {
+              const pod = podConfig[`pod${podName}`];
+              const programLabel =
+                language === "zh-CN"
+                  ? `Pod ${podName} 程序`
+                  : `Pod ${podName} Program`;
+              const levelLabel = `Pod ${podName} ${t("fields.level")}`;
+              const unknownProgramValue =
+                Number.MAX_SAFE_INTEGER - (pod.program.ordinal >>> 0);
+              const programValue = pod.program.id ?? unknownProgramValue;
 
-          return (
-            <fieldset key={podName}>
-              <legend>{`Pod ${podName}`}</legend>
-              <label>
-                <span>{programLabel}</span>
-                <IdChoiceControl
-                  value={programValue}
-                  emptyValue={EMPTY_POD_CONFIG_PROGRAM_ID}
-                  choices={configChoices}
-                  labels={{
-                    select: programLabel,
-                    clear: t("actions.clear"),
-                    empty: t("list.empty"),
-                    unknown: () =>
-                      `${t("entity.unknown")} (${pod.program.ordinal})`,
-                  }}
-                  onChange={(programId) => {
-                    if (programId === unknownProgramValue) return;
-                    onSlotChange(
-                      updatePodConfig(slot, podName, { programId }),
-                    );
-                  }}
-                />
-              </label>
-              {pod.program.id !== EMPTY_POD_CONFIG_PROGRAM_ID ? (
-                <label>
-                  <span>{t("fields.level")}</span>
-                  <input
-                    aria-label={levelLabel}
-                    type="number"
-                    min={-0x80000000}
-                    max={0x7fffffff}
-                    value={pod.level}
-                    onChange={(event) => {
-                      const level = Number(event.currentTarget.value);
-                      if (
-                        !Number.isInteger(level) ||
-                        level < -0x80000000 ||
-                        level > 0x7fffffff
-                      ) {
-                        return;
-                      }
-                      onSlotChange(updatePodConfig(slot, podName, { level }));
-                    }}
-                  />
-                </label>
-              ) : null}
-            </fieldset>
-          );
-        })}
+              return (
+                <fieldset key={podName} className="pod-config-card">
+                  <legend>{`Pod ${podName}`}</legend>
+                  <label>
+                    <span>{programLabel}</span>
+                    <IdChoiceControl
+                      value={programValue}
+                      emptyValue={EMPTY_POD_CONFIG_PROGRAM_ID}
+                      choices={configChoices}
+                      selectWidthCh={podSelectWidthCh}
+                      labels={{
+                        select: programLabel,
+                        clear: t("actions.clear"),
+                        empty: t("list.empty"),
+                        unknown: () =>
+                          `${t("entity.unknown")} (${pod.program.ordinal})`,
+                      }}
+                      onChange={(programId) => {
+                        if (programId === unknownProgramValue) return;
+                        onSlotChange(
+                          updatePodConfig(slot, podName, { programId }),
+                        );
+                      }}
+                    />
+                  </label>
+                  {pod.program.id !== EMPTY_POD_CONFIG_PROGRAM_ID ? (
+                    <label>
+                      <span>{t("fields.level")}</span>
+                      <input
+                        aria-label={levelLabel}
+                        type="number"
+                        min={-0x80000000}
+                        max={0x7fffffff}
+                        value={pod.level}
+                        onChange={(event) => {
+                          const level = Number(event.currentTarget.value);
+                          if (
+                            !Number.isInteger(level) ||
+                            level < -0x80000000 ||
+                            level > 0x7fffffff
+                          ) {
+                            return;
+                          }
+                          onSlotChange(
+                            updatePodConfig(slot, podName, { level }),
+                          );
+                        }}
+                      />
+                    </label>
+                  ) : null}
+                </fieldset>
+              );
+            })}
+          </div>
+        </aside>
+
+        <div className="panel-split__main">
+          <h3>{t("skills.podPrograms")}</h3>
+          <div className="list-toolbar">
+            <label>
+              <span>{t("list.search")}</span>
+              <input
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.currentTarget.value)}
+              />
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={occupiedOnly}
+                onChange={(event) =>
+                  setOccupiedOnly(event.currentTarget.checked)
+                }
+              />
+              {t("list.occupiedOnly")}
+            </label>
+          </div>
+          <div className="table-wrap">
+            <table className="slot-table">
+              <thead>
+                <tr>
+                  <th className="col-name">{t("fields.name")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pods.length === 0 ? (
+                  <tr>
+                    <td className="empty-row">{t("list.empty")}</td>
+                  </tr>
+                ) : (
+                  pods.map((pod) => (
+                    <tr key={pod.position}>
+                      <td className="col-name">
+                        <IdChoiceControl
+                          value={pod.id}
+                          emptyValue={EMPTY_POD_PROGRAM_ID}
+                          choices={availablePodProgramChoices(
+                            allPods,
+                            pod.position,
+                            language,
+                          )}
+                          selectWidthCh={podSelectWidthCh}
+                          labels={{
+                            ...choiceLabels,
+                            select: `${t("skills.podPrograms")} ${pod.position + 1}`,
+                          }}
+                          onChange={(id) => {
+                            const next = setPodProgramId(
+                              parsePodPrograms(slot.podPrograms),
+                              pod.position,
+                              id,
+                            );
+                            onSlotChange({
+                              ...slot,
+                              podPrograms: serializePodPrograms(next),
+                            });
+                          }}
+                        />
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
+    </section>
+  );
+}
+
+export function ChipsPanel({ slot, onSlotChange }: PanelProps) {
+  const { language, t } = useI18n();
+  const [query, setQuery] = useState("");
+  const [occupiedOnly, setOccupiedOnly] = useState(false);
+  const allChips = parsePluginChips(slot.pluginChips);
+  const chips = filterPluginChipRows(allChips, query, occupiedOnly, language);
+  const chipChoices = pluginChipChoices(language);
+  const chipSelectWidthCh = estimateSelectWidthCh([
+    t("list.empty"),
+    ...chipChoices.map((choice) => choice.label),
+  ]);
+  const choiceLabels = {
+    clear: t("actions.clear"),
+    empty: t("list.empty"),
+    unknown: (id: number) => `${t("entity.unknown")} (T${id})`,
+  };
+
+  return (
+    <section className="panel panel--fill" aria-labelledby="chips-heading">
+      <h2 id="chips-heading">{t("tabs.chips")}</h2>
 
       <div className="list-toolbar">
         <label>
-          {t("list.search")}
+          <span>{t("list.search")}</span>
           <input
             type="search"
             value={query}
@@ -223,64 +325,14 @@ export function SkillsPanel({ slot, onSlotChange }: Props) {
         </label>
       </div>
 
-      <h3>{t("skills.podPrograms")}</h3>
-      <div className="table-wrap table-wrap--compact">
-        <table>
-          <thead>
-            <tr>
-              <th>{t("fields.name")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pods.length === 0 ? (
-              <tr>
-                <td className="empty-row">{t("list.empty")}</td>
-              </tr>
-            ) : (
-              pods.map((pod) => (
-                <tr key={pod.position}>
-                  <td>
-                    <IdChoiceControl
-                      value={pod.id}
-                      emptyValue={EMPTY_POD_PROGRAM_ID}
-                      choices={availablePodProgramChoices(
-                        allPods,
-                        pod.position,
-                        language,
-                      )}
-                      labels={{
-                        ...choiceLabels,
-                        select: `${t("skills.podPrograms")} ${pod.position + 1}`,
-                      }}
-                      onChange={(id) => {
-                        const next = setPodProgramId(
-                          parsePodPrograms(slot.podPrograms),
-                          pod.position,
-                          id,
-                        );
-                        onSlotChange({
-                          ...slot,
-                          podPrograms: serializePodPrograms(next),
-                        });
-                      }}
-                    />
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      <h3>{t("skills.pluginChips")}</h3>
       <div className="table-wrap">
-        <table>
+        <table className="slot-table">
           <thead>
             <tr>
-              <th>{t("fields.name")}</th>
-              <th>{t("fields.level")}</th>
-              <th>{t("fields.weight")}</th>
-              <th aria-label="◆" />
+              <th className="col-name">{t("fields.name")}</th>
+              <th className="col-level">{t("fields.level")}</th>
+              <th className="col-weight">{t("fields.weight")}</th>
+              <th className="diamond-cell" aria-label="◆" />
             </tr>
           </thead>
           <tbody>
@@ -293,11 +345,12 @@ export function SkillsPanel({ slot, onSlotChange }: Props) {
             ) : (
               chips.map((chip) => (
                 <tr key={chip.position}>
-                  <td>
+                  <td className="col-name">
                     <IdChoiceControl
                       value={chip.id.type}
                       emptyValue={EMPTY_PLUGIN_CHIP_ID.type}
                       choices={chipChoices}
+                      selectWidthCh={chipSelectWidthCh}
                       labels={{
                         ...choiceLabels,
                         select: `${t("skills.pluginChips")} ${chip.position + 1}`,
@@ -322,7 +375,7 @@ export function SkillsPanel({ slot, onSlotChange }: Props) {
                       }}
                     />
                   </td>
-                  <td>
+                  <td className="col-level">
                     {chipIsOccupied(chip) && chip.id.hasLevels ? (
                       <input
                         aria-label={`${t("fields.level")} ${chip.position + 1}`}
@@ -345,7 +398,7 @@ export function SkillsPanel({ slot, onSlotChange }: Props) {
                       />
                     ) : null}
                   </td>
-                  <td>
+                  <td className="col-weight">
                     {chipIsOccupied(chip) ? (
                       <input
                         aria-label={`${t("fields.weight")} ${chip.position + 1}`}
@@ -381,5 +434,15 @@ export function SkillsPanel({ slot, onSlotChange }: Props) {
         </table>
       </div>
     </section>
+  );
+}
+
+/** @deprecated Use PodsPanel / ChipsPanel; kept for older ticket imports. */
+export function SkillsPanel(props: PanelProps) {
+  return (
+    <>
+      <PodsPanel {...props} />
+      <ChipsPanel {...props} />
+    </>
   );
 }

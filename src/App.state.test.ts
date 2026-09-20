@@ -25,14 +25,16 @@ describe("changeAppLanguage", () => {
     const workflow = applyEditedSlot(loaded, slot);
     const before: AppShellState = {
       language: "zh-CN",
-      activeTab: "skills",
+      theme: "light",
+      activeTab: "pods",
       workflow,
     };
 
     const after = changeAppLanguage(before, "en");
 
     expect(after.language).toBe("en");
-    expect(after.activeTab).toBe("skills");
+    expect(after.theme).toBe("light");
+    expect(after.activeTab).toBe("pods");
     expect(after.workflow).toBe(workflow);
     expect(after.workflow.slotData).toBe(slot);
     expect(after.workflow.dirty).toBe(true);

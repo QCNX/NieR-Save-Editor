@@ -91,7 +91,7 @@ describe("ticket 16 cosmetics editor seam", () => {
     );
 
     for (const character of ["2B", "9S", "A2"]) {
-      expect(english).toContain(`<th>${character}</th>`);
+      expect(english).toContain(`>${character}</th>`);
     }
     for (const label of [
       "Outfit",

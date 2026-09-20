@@ -38,4 +38,11 @@ describe("Chinese name maps (id → {en, zh})", () => {
       zh: "武器攻击力UP",
     });
   });
+
+  it("keeps the OS chip acronym fully capitalized in English", () => {
+    expect(entry(chips, 3338)).toEqual({
+      en: "OS",
+      zh: "OS芯片",
+    });
+  });
 });

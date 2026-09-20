@@ -8,7 +8,11 @@ import { SettingsPanel } from "./SettingsPanel";
 
 const slot = load(new Uint8Array(SAVEFILE_SIZE_BYTES));
 
-function renderShell(language: "zh-CN" | "en", activeTab: "general" | "settings") {
+function renderShell(
+  language: "zh-CN" | "en",
+  activeTab: "save" | "general" | "settings",
+  loadedSlot = slot,
+) {
   return renderToStaticMarkup(
     <I18nProvider language={language}>
       <EditorShell
@@ -17,6 +21,7 @@ function renderShell(language: "zh-CN" | "en", activeTab: "general" | "settings"
         notices={<p role="status">notice</p>}
         onSlotChange={vi.fn()}
         onTabChange={vi.fn()}
+        onThemeChange={vi.fn()}
         settings={
           <SettingsPanel
             busy={false}
@@ -25,7 +30,8 @@ function renderShell(language: "zh-CN" | "en", activeTab: "general" | "settings"
             onSaveCustomRoot={vi.fn()}
           />
         }
-        slot={slot}
+        slot={loadedSlot}
+        theme="dark"
         toolbar={<section aria-label="save toolbar">save controls</section>}
       />
     </I18nProvider>,
@@ -33,19 +39,33 @@ function renderShell(language: "zh-CN" | "en", activeTab: "general" | "settings"
 }
 
 describe("EditorShell tabs", () => {
-  it("keeps save controls above the five editing tabs without a Save tab", () => {
-    const html = renderShell("en", "general");
+  it("puts Save beside the editing tabs and keeps I/O inside the Save panel", () => {
+    const html = renderShell("en", "save");
 
-    expect(html.indexOf('aria-label="save toolbar"')).toBeLessThan(
-      html.indexOf('role="tablist"'),
-    );
-    expect(html.match(/role="tab"/g)).toHaveLength(5);
+    expect(html.match(/role="tab"/g)).toHaveLength(7);
+    expect(html).toContain('aria-selected="true">Save</button>');
     expect(html).toContain(">General</button>");
     expect(html).toContain(">Items</button>");
     expect(html).toContain(">Weapons</button>");
-    expect(html).toContain(">Skills</button>");
+    expect(html).toContain(">POD</button>");
+    expect(html).toContain(">Chips</button>");
     expect(html).toContain(">Settings</button>");
-    expect(html).not.toContain(">Save</button>");
+    expect(html).not.toContain(">Skills</button>");
+    expect(html).toContain('aria-label="save toolbar"');
+    expect(html.indexOf('role="tablist"')).toBeLessThan(
+      html.indexOf('aria-label="save toolbar"'),
+    );
+  });
+
+  it("places the dark-mode toggle left of the language switch on the tab row", () => {
+    const html = renderShell("en", "general");
+
+    expect(html).toContain('aria-label="Toggle color theme"');
+    expect(html).toContain(">Light</button>");
+    expect(html).toContain('aria-label="Language"');
+    expect(html.indexOf('aria-label="Toggle color theme"')).toBeLessThan(
+      html.indexOf('aria-label="Language"'),
+    );
   });
 
   it("renders the custom save root only inside the Settings tab", () => {
@@ -61,7 +81,10 @@ describe("EditorShell tabs", () => {
     const html = renderShell("zh-CN", "settings");
 
     expect(html).toContain('aria-selected="true">设置</button>');
+    expect(html).toContain(">存档</button>");
     expect(html).toContain("自定义存档目录");
     expect(html).toContain("已修改");
+    expect(html).toContain('aria-label="语言"');
+    expect(html).toContain(">亮色</button>");
   });
 });

@@ -430,19 +430,21 @@ export function SummaryPanel({ slot, onSlotChange }: Props) {
 
       <h3>{t("general.cosmetics")}</h3>
       <div className="table-wrap table-wrap--compact">
-        <table>
+        <table className="cosmetics-table">
           <thead>
             <tr>
-              <th>{t("fields.name")}</th>
+              <th scope="col">{t("fields.name")}</th>
               {ANDROIDS.map((android) => (
-                <th key={android}>{android}</th>
+                <th key={android} scope="col">
+                  {android}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody>
             {COSMETIC_ROWS.map(({ field, label }) => (
               <tr key={field}>
-                <th>{t(label)}</th>
+                <th scope="row">{t(label)}</th>
                 {ANDROIDS.map((android) => {
                   const value = cosmeticValue(slot, field, android);
                   const options =
@@ -453,6 +455,7 @@ export function SummaryPanel({ slot, onSlotChange }: Props) {
                   return (
                     <td key={android}>
                       <select
+                        className="cosmetics-select"
                         aria-label={`${t(label)} ${android}`}
                         value={value}
                         onChange={(event) =>

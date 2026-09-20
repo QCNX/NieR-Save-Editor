@@ -22,8 +22,11 @@ function memoryStorage(initial: Record<string, string> = {}) {
 }
 
 describe("localSettings", () => {
-  it("defaults deterministically to Simplified Chinese when nothing is stored", () => {
-    expect(loadLocalSettings(memoryStorage())).toEqual({ language: "zh-CN" });
+  it("defaults deterministically to Simplified Chinese and dark theme when nothing is stored", () => {
+    expect(loadLocalSettings(memoryStorage())).toEqual({
+      language: "zh-CN",
+      theme: "dark",
+    });
   });
 
   it("loads a legacy custom save root with the default language", () => {
@@ -34,6 +37,7 @@ describe("localSettings", () => {
     saveLocalSettings(storage, settings);
     expect(loadLocalSettings(storage)).toEqual({
       language: "zh-CN",
+      theme: "dark",
       customSaveRoot: settings.customSaveRoot,
     });
   });
@@ -42,7 +46,10 @@ describe("localSettings", () => {
     const storage = memoryStorage({
       "nier-save-editor.settings": "{not-json",
     });
-    expect(loadLocalSettings(storage)).toEqual({ language: "zh-CN" });
+    expect(loadLocalSettings(storage)).toEqual({
+      language: "zh-CN",
+      theme: "dark",
+    });
   });
 
   it("clears customSaveRoot when saved as empty/whitespace", () => {
@@ -54,7 +61,10 @@ describe("localSettings", () => {
       "%USERPROFILE%\\Documents\\My Games\\NieR_Automata",
     );
     saveLocalSettings(storage, { customSaveRoot: "   " });
-    expect(loadLocalSettings(storage)).toEqual({ language: "zh-CN" });
+    expect(loadLocalSettings(storage)).toEqual({
+      language: "zh-CN",
+      theme: "dark",
+    });
   });
 
   it("persists language changes without losing a legacy custom root", () => {
@@ -67,6 +77,7 @@ describe("localSettings", () => {
 
     expect(loadLocalSettings(storage)).toEqual({
       language: "en",
+      theme: "dark",
       customSaveRoot: root,
     });
   });
@@ -75,6 +86,18 @@ describe("localSettings", () => {
     const storage = memoryStorage({
       "nier-save-editor.settings": JSON.stringify({ language: "fr" }),
     });
-    expect(loadLocalSettings(storage)).toEqual({ language: "zh-CN" });
+    expect(loadLocalSettings(storage)).toEqual({
+      language: "zh-CN",
+      theme: "dark",
+    });
+  });
+
+  it("persists an explicit light theme without losing language", () => {
+    const storage = memoryStorage();
+    saveLocalSettings(storage, { language: "en", theme: "light" });
+    expect(loadLocalSettings(storage)).toEqual({
+      language: "en",
+      theme: "light",
+    });
   });
 });

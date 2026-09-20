@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   IdChoiceControl,
   encodeChoiceId,
+  estimateSelectWidthCh,
   filterSlots,
   resolveIdChoiceSelection,
   type IdChoiceControlProps,
@@ -99,5 +100,35 @@ describe("IdChoiceControl", () => {
     const cleared = resolveIdChoiceSelection(null, props());
 
     expect(cleared).toBe(-1);
+  });
+
+  it("sizes the select from the longest choice label plus redundancy", () => {
+    const html = renderToStaticMarkup(
+      <IdChoiceControl
+        {...props({
+          choices: [
+            { id: 101, label: "Small" },
+            { id: 202, label: "Weapon Attack Up" },
+          ],
+        })}
+      />,
+    );
+
+    const expected = estimateSelectWidthCh([
+      "Empty",
+      "Small",
+      "Weapon Attack Up",
+    ]);
+    expect(html).toContain(`style="width:${expected}ch"`);
+  });
+});
+
+describe("estimateSelectWidthCh", () => {
+  it("grows for CJK labels and clamps to a practical maximum", () => {
+    expect(estimateSelectWidthCh(["OS"])).toBeGreaterThanOrEqual(10);
+    expect(
+      estimateSelectWidthCh(["武器攻击力UP", "闪避枪弹系统"]),
+    ).toBeGreaterThan(estimateSelectWidthCh(["OS"]));
+    expect(estimateSelectWidthCh(["x".repeat(80)])).toBe(56);
   });
 });

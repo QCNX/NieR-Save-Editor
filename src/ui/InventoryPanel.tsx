@@ -104,7 +104,7 @@ export function InventoryPanel({ slot, onSlotChange }: Props) {
   const rows = inventoryRows(items, query, occupiedOnly, language);
 
   return (
-    <section className="panel" aria-labelledby="inventory-heading">
+    <section className="panel panel--fill" aria-labelledby="inventory-heading">
       <h2 id="inventory-heading">{t("tabs.items")}</h2>
       <div className="slot-list-toolbar">
         <button
@@ -139,28 +139,30 @@ export function InventoryPanel({ slot, onSlotChange }: Props) {
         </label>
       </div>
       <div className="table-wrap">
-        <table>
+        <table className="slot-table">
           <thead>
             <tr>
-              <th>{t("fields.name")}</th>
-              <th>{t("fields.quantity")}</th>
+              <th className="col-name">{t("fields.name")}</th>
+              <th className="col-clear">{t("actions.clear")}</th>
+              <th className="col-qty">{t("fields.quantity")}</th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={2} className="empty-row">
+                <td colSpan={3} className="empty-row">
                   {t("list.empty")}
                 </td>
               </tr>
             ) : (
               rows.map(({ item }) => (
                 <tr key={item.position}>
-                  <td>
+                  <td className="col-name">
                     <IdChoiceControl
                       value={item.id}
                       emptyValue={-1}
                       choices={inventoryItemChoices(items, item.id, language)}
+                      showClear={false}
                       labels={{
                         select: `${t("fields.name")} (${item.position})`,
                         clear: t("actions.clear"),
@@ -174,7 +176,24 @@ export function InventoryPanel({ slot, onSlotChange }: Props) {
                       }
                     />
                   </td>
-                  <td>
+                  <td className="col-clear">
+                    <button
+                      type="button"
+                      className="slot-clear-button"
+                      aria-label={`${t("actions.clear")} (${item.position})`}
+                      disabled={item.id === -1}
+                      onClick={() =>
+                        onSlotChange(
+                          updateInventorySlot(slot, kind, item.position, {
+                            id: -1,
+                          }),
+                        )
+                      }
+                    >
+                      {t("actions.clear")}
+                    </button>
+                  </td>
+                  <td className="col-qty">
                     {item.id === -1 ? null : (
                       <input
                         aria-label={`${t("fields.quantity")} (${item.position})`}

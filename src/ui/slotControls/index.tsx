@@ -1,4 +1,4 @@
-import type { ChangeEvent } from "react";
+import type { ChangeEvent, CSSProperties } from "react";
 
 export type SlotFilterOptions<T> = {
   query: string;
@@ -53,11 +53,40 @@ export type IdChoiceControlProps<TId extends ChoiceId> =
     labels: IdChoiceLabels<TId>;
     onChange: (id: TId) => void;
     disabled?: boolean;
+    /** When false, only the select is rendered (caller owns Clear). Default true. */
+    showClear?: boolean;
+    /**
+     * Shared select width in `ch` units. When set, every control in a column
+     * can stay equal regardless of the current row's filtered choices.
+     */
+    selectWidthCh?: number;
   };
 
 /** Encode a typed choice ID for a DOM option value without number/string collisions. */
 export function encodeChoiceId(id: ChoiceId): string {
   return `${typeof id}:${String(id)}`;
+}
+
+/**
+ * Approximate select width in `ch` units from the longest visible label,
+ * with redundancy for the native dropdown affordance and CJK glyph width.
+ */
+export function estimateSelectWidthCh(
+  labels: readonly string[],
+  redundancyCh = 8,
+  maxCh = 56,
+): number {
+  let longest = 0;
+  for (const label of labels) {
+    let width = 0;
+    for (const char of label) {
+      width += /[\u3400-\u9fff\uf900-\ufaff\uff00-\uffef]/.test(char)
+        ? 2.2
+        : 1.05;
+    }
+    longest = Math.max(longest, width);
+  }
+  return Math.min(maxCh, Math.max(10, Math.ceil(longest + redundancyCh)));
 }
 
 function selectableChoices<TId extends ChoiceId>({
@@ -102,6 +131,8 @@ export function IdChoiceControl<TId extends ChoiceId>({
   labels,
   onChange,
   disabled = false,
+  showClear = true,
+  selectWidthCh,
 }: IdChoiceControlProps<TId>) {
   const selection = { value, emptyValue, choices };
   const emptyKey = encodeChoiceId(emptyValue);
@@ -122,17 +153,32 @@ export function IdChoiceControl<TId extends ChoiceId>({
     });
   }
 
+  const widthLabels = [
+    labels.empty,
+    ...[...choicesByKey.values()].map((choice) => choice.label),
+  ];
+  const selectStyle: CSSProperties = {
+    width: `${selectWidthCh ?? estimateSelectWidthCh(widthLabels)}ch`,
+  };
+
   function handleChange(event: ChangeEvent<HTMLSelectElement>): void {
     onChange(resolveIdChoiceSelection(event.currentTarget.value, selection));
   }
 
   return (
-    <span className="slot-id-choice">
+    <span
+      className={
+        showClear
+          ? "slot-id-choice"
+          : "slot-id-choice slot-id-choice--select-only"
+      }
+    >
       <select
         aria-label={labels.select}
         value={valueKey}
         onChange={handleChange}
         disabled={disabled}
+        style={selectStyle}
       >
         <option value={emptyKey}>{labels.empty}</option>
         {[...choicesByKey.entries()].map(([key, choice]) => (
@@ -141,13 +187,15 @@ export function IdChoiceControl<TId extends ChoiceId>({
           </option>
         ))}
       </select>
-      <button
-        type="button"
-        onClick={() => onChange(resolveIdChoiceSelection(null, selection))}
-        disabled={disabled || valueKey === emptyKey}
-      >
-        {labels.clear}
-      </button>
+      {showClear ? (
+        <button
+          type="button"
+          onClick={() => onChange(resolveIdChoiceSelection(null, selection))}
+          disabled={disabled || valueKey === emptyKey}
+        >
+          {labels.clear}
+        </button>
+      ) : null}
     </span>
   );
 }

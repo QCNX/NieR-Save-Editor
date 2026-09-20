@@ -35,6 +35,7 @@ import { SettingsPanel } from "./ui/SettingsPanel";
 import {
   loadLocalSettings,
   saveLocalSettings,
+  type UiTheme,
 } from "./ui/localSettings";
 import {
   applyClosed,
@@ -70,6 +71,7 @@ function defaultStorage(): Storage | null {
 
 export type AppShellState = {
   language: Language;
+  theme: UiTheme;
   activeTab: EditorTab;
   workflow: EditorAppState;
 };
@@ -79,6 +81,13 @@ export function changeAppLanguage(
   language: Language,
 ): AppShellState {
   return { ...state, language };
+}
+
+export function changeAppTheme(
+  state: AppShellState,
+  theme: UiTheme,
+): AppShellState {
+  return { ...state, theme };
 }
 
 function formatMessage(
@@ -117,16 +126,18 @@ export function renderAppMessage(
 type AppContentProps = {
   shellState: AppShellState;
   onActiveTabChange: (tab: EditorTab) => void;
+  onThemeChange: (theme: UiTheme) => void;
   onWorkflowChange: Dispatch<SetStateAction<EditorAppState>>;
 };
 
 function AppContent({
   shellState,
   onActiveTabChange,
+  onThemeChange,
   onWorkflowChange,
 }: AppContentProps) {
-  const { language, setLanguage, t } = useI18n();
-  const { activeTab, workflow: state } = shellState;
+  const { t } = useI18n();
+  const { activeTab, theme, workflow: state } = shellState;
   const setState = onWorkflowChange;
   const [slots, setSlots] = useState<SlotFile[]>([]);
   const [selectedSlotPath, setSelectedSlotPath] = useState("");
@@ -452,9 +463,11 @@ function AppContent({
         dirty={state.dirty}
         onSlotChange={applySlotEdit}
         onTabChange={onActiveTabChange}
+        onThemeChange={onThemeChange}
         slot={state.slotData}
+        theme={theme}
         toolbar={
-          <div className="app-toolbar" aria-label={t("app.title")}>
+          <div className="app-toolbar" aria-label={t("tabs.save")}>
             <label className="toolbar-field">
               <span>{t("toolbar.slot")}</span>
               <select
@@ -529,16 +542,6 @@ function AppContent({
             >
               {t("toolbar.close")}
             </button>
-            <label className="toolbar-field language-switch">
-              <span>{t(`language.${language}`)}</span>
-              <select
-                value={language}
-                onChange={(event) => setLanguage(event.currentTarget.value as Language)}
-              >
-                <option value="zh-CN">{t("language.zh-CN")}</option>
-                <option value="en">{t("language.en")}</option>
-              </select>
-            </label>
             {state.currentPath ? (
               <span className="path-chip" title={state.currentPath}>
                 {t("status.current")}：{fileNameFromPath(state.currentPath)}
@@ -587,12 +590,18 @@ function AppContent({
 function App() {
   const [shellState, setShellState] = useState<AppShellState>(() => {
     const storage = defaultStorage();
+    const settings = storage ? loadLocalSettings(storage) : null;
     return {
-      language: storage ? loadLocalSettings(storage).language : "zh-CN",
-      activeTab: "general",
+      language: settings?.language ?? "zh-CN",
+      theme: settings?.theme ?? "dark",
+      activeTab: "save",
       workflow: createInitialEditorState(),
     };
   });
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = shellState.theme;
+  }, [shellState.theme]);
 
   const changeLanguage = useCallback((nextLanguage: Language) => {
     const storage = defaultStorage();
@@ -600,6 +609,14 @@ function App() {
       saveLocalSettings(storage, { language: nextLanguage });
     }
     setShellState((current) => changeAppLanguage(current, nextLanguage));
+  }, []);
+
+  const changeTheme = useCallback((nextTheme: UiTheme) => {
+    const storage = defaultStorage();
+    if (storage) {
+      saveLocalSettings(storage, { theme: nextTheme });
+    }
+    setShellState((current) => changeAppTheme(current, nextTheme));
   }, []);
 
   const changeActiveTab = useCallback((activeTab: EditorTab) => {
@@ -625,6 +642,7 @@ function App() {
       <AppContent
         shellState={shellState}
         onActiveTabChange={changeActiveTab}
+        onThemeChange={changeTheme}
         onWorkflowChange={changeWorkflow}
       />
     </I18nProvider>
