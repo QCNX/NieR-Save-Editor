@@ -2,6 +2,7 @@ import type { MessageKey } from "./messages.zh-CN";
 
 export const messagesEn: Record<MessageKey, string> = {
   "app.title": "NieR:Automata Save Editor",
+  "window.unsavedChanges": "Unsaved changes",
   "language.label": "Language",
   "language.zh-CN": "简中",
   "language.en": "English",

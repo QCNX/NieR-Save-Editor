@@ -39,6 +39,8 @@ describe("i18n public API", () => {
   });
 
   it("covers the shared shell and list-control vocabulary", () => {
+    expect(translate("zh-CN", "window.unsavedChanges")).toBe("有未保存修改");
+    expect(translate("en", "window.unsavedChanges")).toBe("Unsaved changes");
     expect(translate("zh-CN", "toolbar.open")).toBe("打开存档…");
     expect(translate("en", "tabs.settings")).toBe("Settings");
     expect(translate("zh-CN", "list.occupiedOnly")).toBe("仅显示占用");

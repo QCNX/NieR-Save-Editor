@@ -1,5 +1,6 @@
 export const messagesZhCN = {
   "app.title": "尼尔：自动人形 存档编辑器",
+  "window.unsavedChanges": "有未保存修改",
   "language.label": "语言",
   "language.zh-CN": "简中",
   "language.en": "English",

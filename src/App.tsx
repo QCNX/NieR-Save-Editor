@@ -47,6 +47,7 @@ import {
   needsConfirm,
   type EditorAppState,
 } from "./ui/workflow";
+import { formatWindowTitle } from "./ui/windowTitle";
 import "./ui/editor.css";
 
 function isTauriRuntime(): boolean {
@@ -143,6 +144,7 @@ function AppContent({
   const [selectedSlotPath, setSelectedSlotPath] = useState("");
   const [statusMessage, setStatusMessage] = useState<AppMessage | null>(null);
   const [errorMessage, setErrorMessage] = useState<AppMessage | null>(null);
+  const [openedFileName, setOpenedFileName] = useState<string | null>(null);
   const [discoverBusy, setDiscoverBusy] = useState(false);
   const [ioBusy, setIoBusy] = useState(false);
   const [customSaveRoot, setCustomSaveRoot] = useState(() => {
@@ -156,6 +158,19 @@ function AppContent({
     () => (tauri ? createTauriPersistHost() : null),
     [tauri],
   );
+
+  const currentFileName = state.currentPath
+    ? fileNameFromPath(state.currentPath)
+    : openedFileName;
+
+  useEffect(() => {
+    document.title = formatWindowTitle({
+      appTitle: t("app.title"),
+      dirty: state.dirty,
+      fileName: currentFileName,
+      unsavedLabel: t("window.unsavedChanges"),
+    });
+  }, [currentFileName, state.dirty, t]);
 
   const refreshSlots = useCallback(async () => {
     setErrorMessage(null);
@@ -250,6 +265,7 @@ function AppContent({
       }
       const slot = load(result.bytes);
       setState((prev) => applyLoadedSlot(prev, path, slot));
+      setOpenedFileName(fileNameFromPath(path));
       setStatusMessage({
         key: "status.loaded",
         values: { name: fileNameFromPath(path) },
@@ -369,6 +385,7 @@ function AppContent({
       }
       if (result.status === "ok") {
         setState((prev) => applySaveAsSuccess(prev, result.path));
+        setOpenedFileName(fileNameFromPath(result.path));
         setStatusMessage({
           key: "status.savedAs",
           values: { name: fileNameFromPath(result.path) },
@@ -412,6 +429,7 @@ function AppContent({
       const slot = load(bytes);
       // Browser file input has no absolute path — overwrite/reload need discovery or Save As.
       setState((prev) => applyLoadedSlot(prev, null, slot));
+      setOpenedFileName(file.name);
       setStatusMessage({
         key: "status.openedFileNoPath",
         values: { name: file.name },
@@ -435,6 +453,7 @@ function AppContent({
       return;
     }
     setState(applyClosed(state));
+    setOpenedFileName(null);
     clearAlerts();
   }
 
