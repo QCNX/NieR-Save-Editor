@@ -18,6 +18,7 @@ import type {
 interface RustReadFileResult {
   status: string;
   bytes?: number[];
+  sha256?: string;
   path?: string;
   message?: string;
 }
@@ -128,6 +129,7 @@ export function createTauriPersistHost(): PersistHost & SaveManagementHost {
         return {
           status: "ok",
           bytes: Uint8Array.from(result.bytes ?? []),
+          sha256: result.sha256,
         };
       }
       return failureFrom(

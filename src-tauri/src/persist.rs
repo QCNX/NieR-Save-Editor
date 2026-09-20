@@ -538,6 +538,8 @@ pub struct ReadFileResult {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bytes: Option<Vec<u8>>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub sha256: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub path: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub message: Option<String>,
@@ -619,6 +621,7 @@ pub fn persist_read_file(path: String) -> Result<ReadFileResult, String> {
     match fs::read(&path) {
         Ok(bytes) => Ok(ReadFileResult {
             status: "ok".to_string(),
+            sha256: Some(sha256_hex(&bytes)),
             bytes: Some(bytes),
             path: None,
             message: None,
@@ -626,18 +629,21 @@ pub fn persist_read_file(path: String) -> Result<ReadFileResult, String> {
         Err(err) if err.kind() == ErrorKind::NotFound => Ok(ReadFileResult {
             status: "missing".to_string(),
             bytes: None,
+            sha256: None,
             path: Some(path.clone()),
             message: Some(format!("Save file not found: {path}")),
         }),
         Err(err) if err.kind() == ErrorKind::PermissionDenied => Ok(ReadFileResult {
             status: "permission".to_string(),
             bytes: None,
+            sha256: None,
             path: Some(path.clone()),
             message: Some(format!("Permission denied reading save file: {path}")),
         }),
         Err(err) => Ok(ReadFileResult {
             status: "error".to_string(),
             bytes: None,
+            sha256: None,
             path: Some(path.clone()),
             message: Some(format!("Failed to read save file {path}: {err}")),
         }),
@@ -869,6 +875,21 @@ mod tests {
         (0..SAVE_SIZE)
             .map(|index| seed.wrapping_add((index % 251) as u8))
             .collect()
+    }
+
+    #[test]
+    fn reading_a_file_returns_the_sha256_for_conflict_guards() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("preview.dat");
+        fs::write(&source, b"abc").unwrap();
+
+        let result = persist_read_file(source.to_string_lossy().into_owned()).unwrap();
+
+        assert_eq!(result.status, "ok");
+        assert_eq!(
+            result.sha256.as_deref(),
+            Some("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
+        );
     }
 
     #[test]

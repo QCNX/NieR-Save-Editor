@@ -9,7 +9,7 @@ export type PersistIoFailure = {
 export type PersistIoResult = PersistIoOk | PersistIoFailure;
 
 export type ReadFileResult =
-  | { status: "ok"; bytes: Uint8Array }
+  | { status: "ok"; bytes: Uint8Array; sha256?: string }
   | PersistIoFailure;
 
 export type PickSaveAsResult =
