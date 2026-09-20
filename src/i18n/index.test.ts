@@ -80,6 +80,21 @@ describe("i18n public API", () => {
       "status.customRootCleared",
       "empty.intro",
       "empty.backup",
+      "saveManager.currentHeading",
+      "saveManager.slotsHeading",
+      "saveManager.historyHeading",
+      "saveManager.actions",
+      "saveManager.saveChanges",
+      "saveManager.noCurrent",
+      "saveManager.noSlots",
+      "saveManager.slotsLoading",
+      "saveManager.historyEmpty",
+      "saveManager.playTime",
+      "saveManager.modifiedTime",
+      "saveManager.unknownTime",
+      "saveManager.stateReady",
+      "saveManager.stateInvalid",
+      "saveManager.stateUnreadable",
     ] as const;
 
     for (const key of workflowKeys) {

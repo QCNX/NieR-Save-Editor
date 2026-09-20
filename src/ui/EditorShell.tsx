@@ -37,10 +37,10 @@ type Props = {
   onSlotChange: (next: SlotData) => void;
   onTabChange: (tab: EditorTab) => void;
   onThemeChange: (theme: UiTheme) => void;
+  saveManager: ReactNode;
   settings: ReactNode;
   slot: SlotData | null;
   theme: UiTheme;
-  toolbar: ReactNode;
 };
 
 export function EditorShell({
@@ -51,10 +51,10 @@ export function EditorShell({
   onSlotChange,
   onTabChange,
   onThemeChange,
+  saveManager,
   settings,
   slot,
   theme,
-  toolbar,
 }: Props) {
   const { language, setLanguage, t } = useI18n();
   const panelId = `editor-panel-${activeTab}`;
@@ -62,11 +62,7 @@ export function EditorShell({
 
   let content: ReactNode = empty;
   if (activeTab === "save") {
-    content = (
-      <section className="panel save-panel" aria-labelledby="editor-tab-save">
-        {toolbar}
-      </section>
-    );
+    content = saveManager;
   } else if (activeTab === "settings") {
     content = settings;
   } else if (slot) {

@@ -32,7 +32,9 @@ function renderShell(
         }
         slot={loadedSlot}
         theme="dark"
-        toolbar={<section aria-label="save toolbar">save controls</section>}
+        saveManager={
+          <section aria-label="save manager">save controls</section>
+        }
       />
     </I18nProvider>,
   );
@@ -51,9 +53,9 @@ describe("EditorShell tabs", () => {
     expect(html).toContain(">Chips</button>");
     expect(html).toContain(">Settings</button>");
     expect(html).not.toContain(">Skills</button>");
-    expect(html).toContain('aria-label="save toolbar"');
+    expect(html).toContain('aria-label="save manager"');
     expect(html.indexOf('role="tablist"')).toBeLessThan(
-      html.indexOf('aria-label="save toolbar"'),
+      html.indexOf('aria-label="save manager"'),
     );
   });
 

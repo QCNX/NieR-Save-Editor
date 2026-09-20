@@ -23,6 +23,9 @@
   --ui-status-bg: #e8f0f0;
   --ui-status-border: #c0d4d4;
   --ui-theme-swatch: #333036;
+  --ui-primary-bg: #3f4a4a;
+  --ui-primary-ink: #ffffff;
+  --ui-primary-border: #303a3a;
 
   font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
   font-size: 14px;
@@ -56,6 +59,9 @@ html[data-theme="dark"] {
   --ui-status-bg: #2e3c3c;
   --ui-status-border: #3f5555;
   --ui-theme-swatch: #333036;
+  --ui-primary-bg: #d8d4dc;
+  --ui-primary-ink: #242126;
+  --ui-primary-border: #aaa5af;
   color-scheme: dark;
 }
 
@@ -502,6 +508,197 @@ input[type="text"],
 
 .save-panel .app-toolbar {
   margin: 0;
+}
+
+.save-manager {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.save-manager__section {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--ui-border-soft);
+  background: var(--ui-panel);
+}
+
+.save-manager__section > h2 {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+}
+
+.save-current-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 19rem);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.save-current-card {
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--ui-border-table);
+  background: var(--ui-surface);
+}
+
+.save-current-title-row,
+.save-slot-card__header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.save-current-title-row > strong,
+.save-slot-card h3 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.save-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  align-content: start;
+}
+
+.save-action,
+.save-slot-actions button {
+  display: inline-flex;
+  min-width: 0;
+  min-height: 2.35rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--ui-border);
+  background: var(--ui-control-bg);
+  color: var(--ui-ink);
+  padding: 6px 10px;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+
+.save-action--primary {
+  grid-column: 1 / -1;
+  background: var(--ui-primary-bg);
+  border-color: var(--ui-primary-border);
+  color: var(--ui-primary-ink);
+  font-weight: 650;
+}
+
+.save-action:disabled,
+.save-slot-actions button:disabled,
+.save-action.file-button:has(input:disabled) {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.save-action.file-button input {
+  display: none;
+}
+
+.save-summary-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 8px 16px;
+  margin: 10px 0 0;
+}
+
+.save-summary-details > div {
+  min-width: 0;
+}
+
+.save-summary-details dt {
+  color: var(--ui-muted);
+  font-size: 0.85rem;
+}
+
+.save-summary-details dd {
+  margin: 2px 0 0;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.save-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  gap: 10px;
+}
+
+.save-slot-card {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--ui-border-table);
+  background: var(--ui-surface);
+}
+
+.save-slot-card--current {
+  border-color: var(--ui-status-ink);
+  box-shadow: inset 3px 0 0 var(--ui-status-ink);
+}
+
+.save-slot-card h3 {
+  margin: 0;
+  font-size: 0.98rem;
+}
+
+.save-slot-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.save-state {
+  padding: 1px 6px;
+  border: 1px solid var(--ui-border-soft);
+  color: var(--ui-muted);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.save-state--current,
+.save-state--ready {
+  color: var(--ui-status-ink);
+  border-color: var(--ui-status-border);
+  background: var(--ui-status-bg);
+}
+
+.save-state--invalid,
+.save-state--unreadable {
+  color: var(--ui-alert-ink);
+  border-color: var(--ui-alert-border);
+  background: var(--ui-alert-bg);
+}
+
+.save-slot-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.save-slot-error {
+  color: var(--ui-alert-ink);
+}
+
+.save-manager-empty {
+  margin: 0;
+  color: var(--ui-muted);
+}
+
+@media (max-width: 760px) {
+  .save-current-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 430px) {
+  .save-actions,
+  .save-slot-grid,
+  .save-summary-details {
+    grid-template-columns: 1fr;
+  }
 }
 
 .settings-row {

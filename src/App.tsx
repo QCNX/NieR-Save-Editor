@@ -9,6 +9,7 @@ import {
 import {
   SAVEFILE_SIZE_BYTES,
   load,
+  serialize,
   type SlotData,
 } from "./save";
 import {
@@ -21,7 +22,6 @@ import {
   createTauriDiscoveryHost,
   discoverHostSlotDataFiles,
   PermissionDeniedError,
-  type SlotFile,
 } from "./discovery";
 import {
   createTauriPersistHost,
@@ -31,6 +31,13 @@ import {
   type PersistHost,
 } from "./persist";
 import { EditorShell, type EditorTab } from "./ui/EditorShell";
+import { SaveManagerPanel } from "./ui/SaveManagerPanel";
+import {
+  summarizeDiscoveredSaves,
+  summarizeSave,
+  type ReadySaveSummary,
+  type SaveSummary,
+} from "./ui/saveSummary";
 import { SettingsPanel } from "./ui/SettingsPanel";
 import {
   loadLocalSettings,
@@ -140,8 +147,7 @@ function AppContent({
   const { t } = useI18n();
   const { activeTab, theme, workflow: state } = shellState;
   const setState = onWorkflowChange;
-  const [slots, setSlots] = useState<SlotFile[]>([]);
-  const [selectedSlotPath, setSelectedSlotPath] = useState("");
+  const [slotSummaries, setSlotSummaries] = useState<SaveSummary[]>([]);
   const [statusMessage, setStatusMessage] = useState<AppMessage | null>(null);
   const [errorMessage, setErrorMessage] = useState<AppMessage | null>(null);
   const [openedFileName, setOpenedFileName] = useState<string | null>(null);
@@ -175,29 +181,36 @@ function AppContent({
   const refreshSlots = useCallback(async () => {
     setErrorMessage(null);
     if (!tauri) {
-      setSlots([]);
+      setSlotSummaries([]);
       setStatusMessage({ key: "status.preview" });
       return;
     }
     setDiscoverBusy(true);
+    setSlotSummaries([]);
     try {
       const host = createTauriDiscoveryHost();
       const found = await discoverHostSlotDataFiles(host, {
         extraRoots: customSaveRoot ? [customSaveRoot] : [],
       });
       found.sort((a, b) => a.path.localeCompare(b.path));
-      setSlots(found);
+      if (persistHost) {
+        const summaries = await summarizeDiscoveredSaves(
+          found,
+          async (path) => {
+            const result = await persistHost.readFile(path);
+            if (result.status !== "ok") {
+              throw new Error(result.message);
+            }
+            return result.bytes;
+          },
+        );
+        setSlotSummaries(summaries);
+      }
       setStatusMessage(
         found.length === 0
           ? { key: "status.noSlotsFound" }
           : { key: "status.slotsFound", values: { count: found.length } },
       );
-      setSelectedSlotPath((prev) => {
-        if (prev && found.some((s) => s.path === prev)) {
-          return prev;
-        }
-        return found[0]?.path ?? "";
-      });
     } catch (err) {
       if (err instanceof PermissionDeniedError) {
         setErrorMessage({
@@ -211,11 +224,11 @@ function AppContent({
             : { key: "errors.scanFailed" },
         );
       }
-      setSlots([]);
+      setSlotSummaries([]);
     } finally {
       setDiscoverBusy(false);
     }
-  }, [tauri, customSaveRoot]);
+  }, [tauri, customSaveRoot, persistHost]);
 
   useEffect(() => {
     void refreshSlots();
@@ -283,10 +296,7 @@ function AppContent({
     }
   }
 
-  async function onSelectSlot() {
-    if (!selectedSlotPath) {
-      return;
-    }
+  async function onSelectSlot(path: string) {
     if (
       !confirmIfNeeded(
         "switch-slot",
@@ -295,7 +305,7 @@ function AppContent({
     ) {
       return;
     }
-    await loadBytesFromPath(selectedSlotPath);
+    await loadBytesFromPath(path);
   }
 
   async function onReload() {
@@ -474,6 +484,21 @@ function AppContent({
   const busy = discoverBusy || ioBusy;
   const canPathIo = Boolean(persistHost && state.currentPath && state.slotData);
   const canSaveAs = Boolean(persistHost && state.slotData);
+  const currentSummary = useMemo<ReadySaveSummary | null>(() => {
+    if (!state.slotData) {
+      return null;
+    }
+    const path = state.currentPath ?? openedFileName ?? "memory.dat";
+    const discovered = state.currentPath
+      ? slotSummaries.find((summary) => summary.path === state.currentPath)
+      : undefined;
+    const summary = summarizeSave({
+      path,
+      mtimeMs: discovered?.mtimeMs ?? 0,
+      bytes: serialize(state.slotData),
+    });
+    return summary.status === "ready" ? summary : null;
+  }, [openedFileName, slotSummaries, state.currentPath, state.slotData]);
 
   return (
     <main className="app-root">
@@ -485,95 +510,26 @@ function AppContent({
         onThemeChange={onThemeChange}
         slot={state.slotData}
         theme={theme}
-        toolbar={
-          <div className="app-toolbar" aria-label={t("tabs.save")}>
-            <label className="toolbar-field">
-              <span>{t("toolbar.slot")}</span>
-              <select
-                value={selectedSlotPath}
-                disabled={busy || slots.length === 0}
-                onChange={(event) =>
-                  setSelectedSlotPath(event.currentTarget.value)
-                }
-              >
-                {slots.length === 0 ? (
-                  <option value="">{t("toolbar.noSlots")}</option>
-                ) : (
-                  slots.map((slot) => (
-                    <option key={slot.path} value={slot.path}>
-                      {fileNameFromPath(slot.path)}
-                    </option>
-                  ))
-                )}
-              </select>
-            </label>
-            <button
-              type="button"
-              disabled={busy || !selectedSlotPath}
-              onClick={() => void onSelectSlot()}
-            >
-              {t("toolbar.loadSlot")}
-            </button>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => void refreshSlots()}
-            >
-              {t("toolbar.rescan")}
-            </button>
-            <button
-              type="button"
-              disabled={busy || !canPathIo}
-              onClick={() => void onReload()}
-            >
-              {t("toolbar.reload")}
-            </button>
-            <button
-              type="button"
-              disabled={busy || !canPathIo}
-              onClick={() => void onOverwrite()}
-            >
-              {t("toolbar.overwrite")}
-            </button>
-            <button
-              type="button"
-              disabled={busy || !canSaveAs}
-              onClick={() => void onSaveAs()}
-            >
-              {t("toolbar.saveAs")}
-            </button>
-            <label className="file-button">
-              {t("toolbar.open")}
-              <input
-                type="file"
-                accept=".dat,application/octet-stream"
-                disabled={busy}
-                onChange={(event) => {
-                  void onPickFile(event.currentTarget.files?.[0]);
-                  event.currentTarget.value = "";
-                }}
-              />
-            </label>
-            <button
-              type="button"
-              disabled={busy || !state.slotData}
-              onClick={onClose}
-            >
-              {t("toolbar.close")}
-            </button>
-            {state.currentPath ? (
-              <span className="path-chip" title={state.currentPath}>
-                {t("status.current")}：{fileNameFromPath(state.currentPath)}
-              </span>
-            ) : state.slotData ? (
-              <span className="path-chip">
-                {t("status.current")}：{t("status.inMemory")}
-              </span>
-            ) : null}
-            {state.dirty ? (
-              <span className="dirty-chip">{t("status.dirty")}</span>
-            ) : null}
-          </div>
+        saveManager={
+          <SaveManagerPanel
+            busy={busy}
+            current={currentSummary}
+            currentPath={state.currentPath}
+            dirty={state.dirty}
+            slots={slotSummaries}
+            slotsLoading={discoverBusy}
+            canReload={canPathIo}
+            canSaveAs={canSaveAs}
+            canSaveChanges={canPathIo}
+            canClose={Boolean(state.slotData)}
+            onClose={onClose}
+            onLoad={(path) => void onSelectSlot(path)}
+            onOpenFile={(file) => void onPickFile(file)}
+            onReload={() => void onReload()}
+            onRescan={() => void refreshSlots()}
+            onSaveAs={() => void onSaveAs()}
+            onSaveChanges={() => void onOverwrite()}
+          />
         }
         notices={
           <>
