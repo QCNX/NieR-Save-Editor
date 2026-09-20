@@ -5,13 +5,11 @@ import { I18nProvider } from "../i18n";
 import {
   SAVEFILE_SIZE_BYTES,
   load,
-} from "../save";
-import {
   parseWeapons,
   replaceWeaponId,
   writeWeaponAt,
   type WeaponItem,
-} from "../save/weapons";
+} from "../save";
 import {
   availableWeaponChoices,
   filterWeaponRows,

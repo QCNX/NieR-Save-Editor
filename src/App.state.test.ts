@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { changeAppLanguage, type AppShellState } from "./App";
+import {
+  changeAppLanguage,
+  renderAppMessage,
+  type AppMessage,
+  type AppShellState,
+} from "./App";
+import { translate } from "./i18n";
 import { SAVEFILE_SIZE_BYTES, load } from "./save";
 import {
   applyEditedSlot,
@@ -30,5 +36,21 @@ describe("changeAppLanguage", () => {
     expect(after.workflow).toBe(workflow);
     expect(after.workflow.slotData).toBe(slot);
     expect(after.workflow.dirty).toBe(true);
+  });
+});
+
+describe("external workflow messages", () => {
+  it("re-renders localized shell copy while retaining diagnostic detail", () => {
+    const message: AppMessage = {
+      key: "errors.loadFailed",
+      detail: "synthetic host failure",
+    };
+
+    expect(renderAppMessage(message, (key) => translate("zh-CN", key))).toBe(
+      "加载存档失败：synthetic host failure",
+    );
+    expect(renderAppMessage(message, (key) => translate("en", key))).toBe(
+      "Failed to load save: synthetic host failure",
+    );
   });
 });

@@ -92,17 +92,26 @@ function formatMessage(
   );
 }
 
-type AppMessage =
-  | { key: MessageKey; values?: Record<string, string | number> }
-  | { text: string };
+export type AppMessage = {
+  key: MessageKey;
+  values?: Record<string, string | number>;
+  detail?: string;
+};
 
-function renderAppMessage(
+export function renderAppMessage(
   message: AppMessage,
   t: (key: string) => string,
 ): string {
-  return "text" in message
-    ? message.text
-    : formatMessage(t(message.key), message.values ?? {});
+  const localizedMessage = formatMessage(
+    t(message.key),
+    message.values ?? {},
+  );
+  return message.detail
+    ? formatMessage(t("message.withDetail"), {
+        message: localizedMessage,
+        detail: message.detail,
+      })
+    : localizedMessage;
 }
 
 type AppContentProps = {
@@ -172,7 +181,7 @@ function AppContent({
       } else {
         setErrorMessage(
           err instanceof Error
-            ? { text: err.message }
+            ? { key: "errors.scanFailed", detail: err.message }
             : { key: "errors.scanFailed" },
         );
       }
@@ -215,7 +224,7 @@ function AppContent({
     try {
       const result = await reloadSave(persistHost, path);
       if (result.status !== "ok") {
-        setErrorMessage({ text: result.message });
+        setErrorMessage({ key: "errors.loadFailed", detail: result.message });
         return false;
       }
       if (result.bytes.length !== SAVEFILE_SIZE_BYTES) {
@@ -237,7 +246,9 @@ function AppContent({
       return true;
     } catch (err) {
       setErrorMessage(
-        err instanceof Error ? { text: err.message } : { key: "errors.loadFailed" },
+        err instanceof Error
+          ? { key: "errors.loadFailed", detail: err.message }
+          : { key: "errors.loadFailed" },
       );
       return false;
     } finally {
@@ -308,15 +319,18 @@ function AppContent({
       if (result.status === "backup") {
         setErrorMessage({
           key: "errors.backupFailed",
-          values: { message: result.message },
+          detail: result.message,
         });
         return;
       }
-      setErrorMessage({ text: result.message });
+      setErrorMessage({
+        key: "errors.overwriteFailed",
+        detail: result.message,
+      });
     } catch (err) {
       setErrorMessage(
         err instanceof Error
-          ? { text: err.message }
+          ? { key: "errors.overwriteFailed", detail: err.message }
           : { key: "errors.overwriteFailed" },
       );
     } finally {
@@ -350,11 +364,11 @@ function AppContent({
         });
         return;
       }
-      setErrorMessage({ text: result.message });
+      setErrorMessage({ key: "errors.saveAsFailed", detail: result.message });
     } catch (err) {
       setErrorMessage(
         err instanceof Error
-          ? { text: err.message }
+          ? { key: "errors.saveAsFailed", detail: err.message }
           : { key: "errors.saveAsFailed" },
       );
     } finally {
@@ -393,7 +407,9 @@ function AppContent({
       });
     } catch (err) {
       setErrorMessage(
-        err instanceof Error ? { text: err.message } : { key: "errors.loadFailed" },
+        err instanceof Error
+          ? { key: "errors.loadFailed", detail: err.message }
+          : { key: "errors.loadFailed" },
       );
     }
   }
