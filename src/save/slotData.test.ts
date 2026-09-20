@@ -1,15 +1,23 @@
 import { describe, expect, it } from "vitest";
 import {
+  CHARACTER_NAME_SIZE_BYTES,
+  DEBUG_FLAG_SIZE_BYTES,
   BETWEEN_XP_AND_POD_CONFIG_SIZE_BYTES,
   BETWEEN_WEAPON_SLOTS_AND_XP_SIZE_BYTES,
+  PLAY_TIME_SIZE_BYTES,
   POD_CONFIG_SIZE_BYTES,
+  SAVEFILE_CHARACTER_NAME_START_BYTE,
+  SAVEFILE_DEBUG_FLAG_START_BYTE,
   SAVEFILE_INVENTORY_START_BYTE,
   SAVEFILE_MONEY_START_BYTE,
+  SAVEFILE_PLAY_TIME_START_BYTE,
   SAVEFILE_POD_CONFIG_START_BYTE,
   SAVEFILE_SIZE_BYTES,
+  SAVEFILE_STEAM_ID_START_BYTE,
   SAVEFILE_WEAPON_SLOT_1_START_BYTE,
   SAVEFILE_WEAPON_SLOT_2_START_BYTE,
   SAVEFILE_XP_START_BYTE,
+  STEAM_ID_SIZE_BYTES,
   WEAPON_SLOT_SIZE_BYTES,
 } from "./constants";
 import { load, serialize, SlotDataSizeError } from "./slotData";
@@ -39,6 +47,32 @@ describe("SlotData load/serialize", () => {
     const output = serialize(load(input));
     expect(output.length).toBe(SAVEFILE_SIZE_BYTES);
     expect(output).toEqual(input);
+  });
+
+  it("splits General fields at their frozen literal offsets without byte drift", () => {
+    const input = syntheticSave();
+    const slot = load(input);
+
+    expect(SAVEFILE_STEAM_ID_START_BYTE).toBe(4);
+    expect(STEAM_ID_SIZE_BYTES).toBe(8);
+    expect(SAVEFILE_PLAY_TIME_START_BYTE).toBe(36);
+    expect(PLAY_TIME_SIZE_BYTES).toBe(4);
+    expect(SAVEFILE_CHARACTER_NAME_START_BYTE).toBe(52);
+    expect(CHARACTER_NAME_SIZE_BYTES).toBe(70);
+    expect(SAVEFILE_DEBUG_FLAG_START_BYTE).toBe(234775);
+    expect(DEBUG_FLAG_SIZE_BYTES).toBe(1);
+
+    expect(slot.steamId).toEqual(input.slice(4, 12));
+    expect(slot.beforeSteamId.length).toBe(4);
+    expect(slot.betweenSteamIdAndPlayTime.length).toBe(24);
+    expect(slot.playTime).toEqual(input.slice(36, 40));
+    expect(slot.betweenPlayTimeAndCharacterName.length).toBe(12);
+    expect(slot.characterName).toEqual(input.slice(52, 122));
+    expect(slot.betweenCharacterNameAndMoney.length).toBe(197874);
+    expect(slot.debugFlag).toEqual(input.slice(234775, 234776));
+    expect(slot.betweenPodConfigAndDebugFlag.length).toBe(3543);
+    expect(slot.afterDebugFlag.length).toBe(1204);
+    expect(serialize(slot)).toEqual(input);
   });
 
   it("splits both weapon equipment slots without changing any save byte", () => {

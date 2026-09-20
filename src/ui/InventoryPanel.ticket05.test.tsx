@@ -49,7 +49,13 @@ function inventory(entries: Record<number, { id: number; quantity: number }>) {
 
 function slot(): SlotData {
   return {
-    beforeMoney: new Uint8Array(),
+    beforeSteamId: new Uint8Array(),
+    steamId: new Uint8Array(8),
+    betweenSteamIdAndPlayTime: new Uint8Array(),
+    playTime: new Uint8Array(4),
+    betweenPlayTimeAndCharacterName: new Uint8Array(),
+    characterName: new Uint8Array(70),
+    betweenCharacterNameAndMoney: new Uint8Array(),
     money: new Uint8Array(4),
     inventory: inventory({ 0: { id: 1, quantity: 4 } }),
     corpseInventory: inventory({ 1: { id: 0x32, quantity: 2 } }),
@@ -68,7 +74,9 @@ function slot(): SlotData {
       BETWEEN_XP_AND_POD_CONFIG_SIZE_BYTES,
     ),
     podConfig: new Uint8Array(POD_CONFIG_SIZE_BYTES),
-    afterPodConfig: new Uint8Array(),
+    betweenPodConfigAndDebugFlag: new Uint8Array(),
+    debugFlag: new Uint8Array(1),
+    afterDebugFlag: new Uint8Array(),
   };
 }
 

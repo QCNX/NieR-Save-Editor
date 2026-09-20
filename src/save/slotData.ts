@@ -1,30 +1,47 @@
 import {
-  AFTER_POD_CONFIG_SIZE_BYTES,
-  AFTER_POD_CONFIG_START_BYTE,
+  AFTER_DEBUG_FLAG_SIZE_BYTES,
+  AFTER_DEBUG_FLAG_START_BYTE,
+  BEFORE_STEAM_ID_SIZE_BYTES,
+  BETWEEN_CHARACTER_NAME_AND_MONEY_SIZE_BYTES,
+  BETWEEN_CHARACTER_NAME_AND_MONEY_START_BYTE,
   BETWEEN_CHIPS_AND_WEAPON_SLOTS_SIZE_BYTES,
   BETWEEN_CHIPS_AND_WEAPON_SLOTS_START_BYTE,
+  BETWEEN_PLAY_TIME_AND_CHARACTER_NAME_SIZE_BYTES,
+  BETWEEN_PLAY_TIME_AND_CHARACTER_NAME_START_BYTE,
   BETWEEN_POD_AND_CHIPS_SIZE_BYTES,
   BETWEEN_POD_AND_CHIPS_START_BYTE,
+  BETWEEN_POD_CONFIG_AND_DEBUG_FLAG_SIZE_BYTES,
+  BETWEEN_POD_CONFIG_AND_DEBUG_FLAG_START_BYTE,
+  BETWEEN_STEAM_ID_AND_PLAY_TIME_SIZE_BYTES,
+  BETWEEN_STEAM_ID_AND_PLAY_TIME_START_BYTE,
   BETWEEN_WEAPON_SLOTS_AND_XP_SIZE_BYTES,
   BETWEEN_WEAPON_SLOTS_AND_XP_START_BYTE,
   BETWEEN_XP_AND_POD_CONFIG_SIZE_BYTES,
   BETWEEN_XP_AND_POD_CONFIG_START_BYTE,
+  CHARACTER_NAME_SIZE_BYTES,
+  DEBUG_FLAG_SIZE_BYTES,
   INVENTORY_SIZE_BYTES,
   MONEY_SIZE_BYTES,
   PLUGIN_CHIPS_SIZE_BYTES,
+  PLAY_TIME_SIZE_BYTES,
   POD_CONFIG_SIZE_BYTES,
   POD_PROGRAMS_SIZE_BYTES,
   SAVEFILE_CORPSE_INVENTORY_START_BYTE,
+  SAVEFILE_CHARACTER_NAME_START_BYTE,
+  SAVEFILE_DEBUG_FLAG_START_BYTE,
   SAVEFILE_INVENTORY_START_BYTE,
   SAVEFILE_MONEY_START_BYTE,
+  SAVEFILE_PLAY_TIME_START_BYTE,
   SAVEFILE_PLUGIN_CHIPS_START_BYTE,
   SAVEFILE_POD_CONFIG_START_BYTE,
   SAVEFILE_POD_PROGRAMS_START_BYTE,
   SAVEFILE_SIZE_BYTES,
+  SAVEFILE_STEAM_ID_START_BYTE,
   SAVEFILE_WEAPON_SLOT_1_START_BYTE,
   SAVEFILE_WEAPON_SLOT_2_START_BYTE,
   SAVEFILE_WEAPONS_START_BYTE,
   SAVEFILE_XP_START_BYTE,
+  STEAM_ID_SIZE_BYTES,
   WEAPONS_SIZE_BYTES,
   WEAPON_SLOT_SIZE_BYTES,
   XP_SIZE_BYTES,
@@ -36,8 +53,20 @@ import {
  * unknown passthrough regions.
  */
 export type SlotData = {
-  /** Bytes [0, money). */
-  beforeMoney: Uint8Array;
+  /** Opaque four-byte file prefix. */
+  beforeSteamId: Uint8Array;
+  /** Raw unsigned 64-bit SteamID. */
+  steamId: Uint8Array;
+  /** Opaque region between SteamID and play time. */
+  betweenSteamIdAndPlayTime: Uint8Array;
+  /** Raw signed 32-bit play time in seconds. */
+  playTime: Uint8Array;
+  /** Opaque region between play time and character name. */
+  betweenPlayTimeAndCharacterName: Uint8Array;
+  /** Raw fixed-width UTF-16LE character name. */
+  characterName: Uint8Array;
+  /** Opaque region between character name and money. */
+  betweenCharacterNameAndMoney: Uint8Array;
   /** Known field placeholder at money offset (4 LE bytes). */
   money: Uint8Array;
   /** Known field placeholder: main inventory block. */
@@ -66,8 +95,12 @@ export type SlotData = {
   betweenXpAndPodConfig: Uint8Array;
   /** Raw Pod A/B/C levels and equipped programs. */
   podConfig: Uint8Array;
-  /** Opaque trailing region after PodConfig. */
-  afterPodConfig: Uint8Array;
+  /** Opaque region between PodConfig and Debug Flag. */
+  betweenPodConfigAndDebugFlag: Uint8Array;
+  /** Raw Debug Flag byte. */
+  debugFlag: Uint8Array;
+  /** Opaque trailing region after Debug Flag. */
+  afterDebugFlag: Uint8Array;
 };
 
 export class SlotDataSizeError extends Error {
@@ -98,7 +131,33 @@ export function load(bytes: Uint8Array): SlotData {
   }
 
   return {
-    beforeMoney: sliceCopy(bytes, 0, SAVEFILE_MONEY_START_BYTE),
+    beforeSteamId: sliceCopy(bytes, 0, BEFORE_STEAM_ID_SIZE_BYTES),
+    steamId: sliceCopy(bytes, SAVEFILE_STEAM_ID_START_BYTE, STEAM_ID_SIZE_BYTES),
+    betweenSteamIdAndPlayTime: sliceCopy(
+      bytes,
+      BETWEEN_STEAM_ID_AND_PLAY_TIME_START_BYTE,
+      BETWEEN_STEAM_ID_AND_PLAY_TIME_SIZE_BYTES,
+    ),
+    playTime: sliceCopy(
+      bytes,
+      SAVEFILE_PLAY_TIME_START_BYTE,
+      PLAY_TIME_SIZE_BYTES,
+    ),
+    betweenPlayTimeAndCharacterName: sliceCopy(
+      bytes,
+      BETWEEN_PLAY_TIME_AND_CHARACTER_NAME_START_BYTE,
+      BETWEEN_PLAY_TIME_AND_CHARACTER_NAME_SIZE_BYTES,
+    ),
+    characterName: sliceCopy(
+      bytes,
+      SAVEFILE_CHARACTER_NAME_START_BYTE,
+      CHARACTER_NAME_SIZE_BYTES,
+    ),
+    betweenCharacterNameAndMoney: sliceCopy(
+      bytes,
+      BETWEEN_CHARACTER_NAME_AND_MONEY_START_BYTE,
+      BETWEEN_CHARACTER_NAME_AND_MONEY_SIZE_BYTES,
+    ),
     money: sliceCopy(bytes, SAVEFILE_MONEY_START_BYTE, MONEY_SIZE_BYTES),
     inventory: sliceCopy(
       bytes,
@@ -157,10 +216,20 @@ export function load(bytes: Uint8Array): SlotData {
       SAVEFILE_POD_CONFIG_START_BYTE,
       POD_CONFIG_SIZE_BYTES,
     ),
-    afterPodConfig: sliceCopy(
+    betweenPodConfigAndDebugFlag: sliceCopy(
       bytes,
-      AFTER_POD_CONFIG_START_BYTE,
-      AFTER_POD_CONFIG_SIZE_BYTES,
+      BETWEEN_POD_CONFIG_AND_DEBUG_FLAG_START_BYTE,
+      BETWEEN_POD_CONFIG_AND_DEBUG_FLAG_SIZE_BYTES,
+    ),
+    debugFlag: sliceCopy(
+      bytes,
+      SAVEFILE_DEBUG_FLAG_START_BYTE,
+      DEBUG_FLAG_SIZE_BYTES,
+    ),
+    afterDebugFlag: sliceCopy(
+      bytes,
+      AFTER_DEBUG_FLAG_START_BYTE,
+      AFTER_DEBUG_FLAG_SIZE_BYTES,
     ),
   };
 }
@@ -171,7 +240,13 @@ export function load(bytes: Uint8Array): SlotData {
  */
 export function serialize(slot: SlotData): Uint8Array {
   const parts = [
-    slot.beforeMoney,
+    slot.beforeSteamId,
+    slot.steamId,
+    slot.betweenSteamIdAndPlayTime,
+    slot.playTime,
+    slot.betweenPlayTimeAndCharacterName,
+    slot.characterName,
+    slot.betweenCharacterNameAndMoney,
     slot.money,
     slot.inventory,
     slot.corpseInventory,
@@ -186,7 +261,9 @@ export function serialize(slot: SlotData): Uint8Array {
     slot.xp,
     slot.betweenXpAndPodConfig,
     slot.podConfig,
-    slot.afterPodConfig,
+    slot.betweenPodConfigAndDebugFlag,
+    slot.debugFlag,
+    slot.afterDebugFlag,
   ];
 
   let total = 0;
