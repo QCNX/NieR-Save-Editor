@@ -79,6 +79,9 @@ export async function overwriteSave(
   path: string,
   slot: SlotData,
 ): Promise<OverwriteResult> {
+  if ("safeWriteFile" in host) {
+    return managedOverwriteSave(host as PersistHost & SaveManagementHost, path, slot);
+  }
   const backupPath = backupTargetPath(path);
   const backup = await host.backupFile(path, backupPath);
   if (backup.status !== "ok") {

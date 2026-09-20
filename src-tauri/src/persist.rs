@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+#[cfg(not(windows))]
+use std::fs::File;
 use std::fs::{self, OpenOptions};
 use std::io::{ErrorKind, Write};
 use std::path::{Path, PathBuf};
@@ -114,15 +116,9 @@ fn source_identity(source: &Path) -> Result<(String, String, PathBuf), String> {
     Ok((file_name, safe_stem, parent.join(BACKUP_DIR_NAME)))
 }
 
-fn write_new_synced(path: &Path, bytes: &[u8]) -> Result<(), String> {
-    let mut file = OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .open(path)
-        .map_err(|error| format!("Failed to create {}: {error}", path.display()))?;
-    file.write_all(bytes)
-        .and_then(|_| file.sync_all())
-        .map_err(|error| format!("Failed to persist {}: {error}", path.display()))
+fn write_new_synced(path: &Path, bytes: &[u8]) -> std::io::Result<()> {
+    let mut file = OpenOptions::new().write(true).create_new(true).open(path)?;
+    file.write_all(bytes).and_then(|_| file.sync_all())
 }
 
 fn create_versioned_backup_at(
@@ -149,8 +145,14 @@ fn create_versioned_backup_at(
             continue;
         }
         let temp_path = version_dir.join(format!(".{stem}.dat.tmp"));
-        if write_new_synced(&temp_path, &bytes).is_err() {
-            continue;
+        if let Err(error) = write_new_synced(&temp_path, &bytes) {
+            if error.kind() == ErrorKind::AlreadyExists {
+                continue;
+            }
+            return Err(format!(
+                "Failed to create backup {}: {error}",
+                temp_path.display()
+            ));
         }
         match fs::rename(&temp_path, &final_path) {
             Ok(()) => {
@@ -166,7 +168,12 @@ fn create_versioned_backup_at(
                     .map_err(|error| format!("Failed to encode backup metadata: {error}"))?;
                 let sidecar_path = final_path.with_extension("json");
                 let sidecar_temp = version_dir.join(format!(".{stem}.json.tmp"));
-                write_new_synced(&sidecar_temp, &sidecar_bytes)?;
+                write_new_synced(&sidecar_temp, &sidecar_bytes).map_err(|error| {
+                    format!(
+                        "Failed to create backup metadata {}: {error}",
+                        sidecar_temp.display()
+                    )
+                })?;
                 fs::rename(&sidecar_temp, &sidecar_path).map_err(|error| {
                     format!(
                         "Failed to commit backup metadata {}: {error}",
@@ -199,12 +206,19 @@ fn entry_from_version(path: &Path, slot_file_name: &str) -> Option<BackupEntry> 
         return None;
     }
     let bytes = fs::read(path).ok()?;
+    let digest = sha256_hex(&bytes);
     let sidecar_path = path.with_extension("json");
     let parsed = fs::read(&sidecar_path)
         .ok()
         .and_then(|json| serde_json::from_slice::<BackupSidecar>(&json).ok());
     let (reason, mtime_ms, metadata_status) = match parsed {
-        Some(sidecar) if sidecar.schema_version == 1 => {
+        Some(sidecar)
+            if sidecar.schema_version == 1
+                && BackupReason::try_from(sidecar.reason.as_str()).is_ok()
+                && sidecar.slot_file_name == slot_file_name
+                && sidecar.size == bytes.len() as u64
+                && sidecar.sha256 == digest =>
+        {
             (sidecar.reason, sidecar.created_at_ms, "ok")
         }
         Some(_) => ("manual".to_string(), file_mtime_ms(path), "invalid"),
@@ -217,7 +231,7 @@ fn entry_from_version(path: &Path, slot_file_name: &str) -> Option<BackupEntry> 
         reason,
         size: bytes.len() as u64,
         mtime_ms,
-        sha256: sha256_hex(&bytes),
+        sha256: digest,
         metadata_status: metadata_status.to_string(),
     })
 }
@@ -261,6 +275,260 @@ fn list_backups_impl(source: &Path) -> Result<Vec<BackupEntry>, String> {
             .then_with(|| right.path.cmp(&left.path))
     });
     Ok(entries)
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SafeWriteResult {
+    pub status: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub backup: Option<BackupEntry>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sha256: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub phase: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub message: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub actual: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected_sha256: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub actual_sha256: Option<String>,
+}
+
+fn safe_failure(status: &str, phase: &str, path: &Path, message: String) -> SafeWriteResult {
+    SafeWriteResult {
+        status: status.to_string(),
+        path: Some(path.to_string_lossy().into_owned()),
+        backup: None,
+        sha256: None,
+        phase: Some(phase.to_string()),
+        message: Some(message),
+        expected: None,
+        actual: None,
+        expected_sha256: None,
+        actual_sha256: None,
+    }
+}
+
+fn stage_bytes(target: &Path, bytes: &[u8], label: &str) -> Result<PathBuf, String> {
+    let parent = target
+        .parent()
+        .ok_or_else(|| format!("Target path has no parent: {}", target.display()))?;
+    let name = target
+        .file_name()
+        .and_then(|value| value.to_str())
+        .unwrap_or("SlotData.dat");
+    for collision in 0..10_000_u16 {
+        let candidate = parent.join(format!(
+            ".{name}.nier-save-editor.{label}.{}.{collision:03}.tmp",
+            now_ms()
+        ));
+        match OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&candidate)
+        {
+            Ok(mut file) => {
+                if let Ok(metadata) = target.metadata() {
+                    let _ = file.set_permissions(metadata.permissions());
+                }
+                if let Err(error) = file.write_all(bytes).and_then(|_| file.sync_all()) {
+                    drop(file);
+                    let _ = fs::remove_file(&candidate);
+                    return Err(format!(
+                        "Failed to persist {}: {error}",
+                        candidate.display()
+                    ));
+                }
+                let length = file
+                    .metadata()
+                    .map_err(|error| format!("Failed to inspect {}: {error}", candidate.display()))?
+                    .len();
+                if length != bytes.len() as u64 {
+                    drop(file);
+                    let _ = fs::remove_file(&candidate);
+                    return Err(format!(
+                        "Staged save has wrong size: expected {}, got {length}",
+                        bytes.len()
+                    ));
+                }
+                return Ok(candidate);
+            }
+            Err(error) if error.kind() == ErrorKind::AlreadyExists => continue,
+            Err(error) => {
+                return Err(format!(
+                    "Failed to stage save {}: {error}",
+                    candidate.display()
+                ));
+            }
+        }
+    }
+    Err(format!(
+        "Could not allocate a unique temporary file beside {}",
+        target.display()
+    ))
+}
+
+#[cfg(windows)]
+fn platform_replace(staged: &Path, target: &Path) -> std::io::Result<()> {
+    use std::os::windows::ffi::OsStrExt;
+    use windows_sys::Win32::Storage::FileSystem::{
+        MoveFileExW, MOVEFILE_REPLACE_EXISTING, MOVEFILE_WRITE_THROUGH,
+    };
+
+    let staged_wide: Vec<u16> = staged.as_os_str().encode_wide().chain(Some(0)).collect();
+    let target_wide: Vec<u16> = target.as_os_str().encode_wide().chain(Some(0)).collect();
+    let result = unsafe {
+        MoveFileExW(
+            staged_wide.as_ptr(),
+            target_wide.as_ptr(),
+            MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH,
+        )
+    };
+    if result == 0 {
+        Err(std::io::Error::last_os_error())
+    } else {
+        Ok(())
+    }
+}
+
+#[cfg(not(windows))]
+fn platform_replace(staged: &Path, target: &Path) -> std::io::Result<()> {
+    fs::rename(staged, target)?;
+    if let Some(parent) = target.parent() {
+        File::open(parent)?.sync_all()?;
+    }
+    Ok(())
+}
+
+fn safe_write_with<F>(
+    target: &Path,
+    bytes: &[u8],
+    reason: BackupReason,
+    expected_target_sha256: Option<&str>,
+    mut commit: F,
+) -> SafeWriteResult
+where
+    F: FnMut(&Path, &Path) -> std::io::Result<()>,
+{
+    const SAVE_SIZE: usize = 235_980;
+    if bytes.len() != SAVE_SIZE {
+        let mut result = safe_failure(
+            "invalid-size",
+            "validate-source",
+            target,
+            format!(
+                "Invalid PC SlotData size: expected {SAVE_SIZE} bytes, got {}",
+                bytes.len()
+            ),
+        );
+        result.expected = Some(SAVE_SIZE as u64);
+        result.actual = Some(bytes.len() as u64);
+        return result;
+    }
+    if !target.is_file() {
+        return safe_failure(
+            "missing",
+            "check-target",
+            target,
+            format!("Save file not found: {}", target.display()),
+        );
+    }
+    let original = match fs::read(target) {
+        Ok(value) => value,
+        Err(error) => {
+            return safe_failure(
+                map_io_kind(error.kind()),
+                "check-target",
+                target,
+                format!("Failed to read target {}: {error}", target.display()),
+            );
+        }
+    };
+    let original_sha = sha256_hex(&original);
+    if let Some(expected) = expected_target_sha256 {
+        if expected != original_sha {
+            let mut result = safe_failure(
+                "conflict",
+                "check-target",
+                target,
+                format!(
+                    "Save file changed before it could be written: {}",
+                    target.display()
+                ),
+            );
+            result.expected_sha256 = Some(expected.to_string());
+            result.actual_sha256 = Some(original_sha);
+            return result;
+        }
+    }
+
+    let backup = match create_versioned_backup_at(target, reason, now_ms()) {
+        Ok(value) => value,
+        Err(message) => {
+            return safe_failure("backup", "backup-target", target, message);
+        }
+    };
+    let staged = match stage_bytes(target, bytes, "write") {
+        Ok(value) => value,
+        Err(message) => {
+            let mut result = safe_failure("error", "stage-write", target, message);
+            result.backup = Some(backup);
+            return result;
+        }
+    };
+    if let Err(error) = commit(&staged, target) {
+        let _ = fs::remove_file(&staged);
+        let mut result = safe_failure(
+            map_io_kind(error.kind()),
+            "replace-target",
+            target,
+            format!("Failed to replace target {}: {error}", target.display()),
+        );
+        result.backup = Some(backup);
+        return result;
+    }
+
+    let verify = fs::read(target);
+    if !matches!(&verify, Ok(actual) if actual == bytes) {
+        let recovery_message =
+            match stage_bytes(target, &original, "rollback").and_then(|rollback| {
+                commit(&rollback, target).map_err(|error| {
+                    let _ = fs::remove_file(&rollback);
+                    format!("rollback failed: {error}")
+                })
+            }) {
+                Ok(()) => "The original target was restored from the recovery bytes.".to_string(),
+                Err(error) => format!("The recovery backup remains available; {error}"),
+            };
+        let mut result = safe_failure(
+            "verify",
+            "verify-target",
+            target,
+            format!("Written save did not match the intended bytes. {recovery_message}"),
+        );
+        result.backup = Some(backup);
+        return result;
+    }
+
+    SafeWriteResult {
+        status: "ok".to_string(),
+        path: Some(target.to_string_lossy().into_owned()),
+        backup: Some(backup),
+        sha256: Some(sha256_hex(bytes)),
+        phase: None,
+        message: None,
+        expected: None,
+        actual: None,
+        expected_sha256: None,
+        actual_sha256: None,
+    }
 }
 
 #[derive(Serialize)]
@@ -545,6 +813,51 @@ pub fn persist_list_backups(source_path: String) -> Result<BackupListResult, Str
     }
 }
 
+/// Backup, stage, atomically replace, and verify one existing PC SlotData target.
+#[tauri::command]
+pub fn persist_safe_write_file(
+    target_path: String,
+    bytes: Vec<u8>,
+    reason: String,
+    expected_source_sha256: Option<String>,
+    expected_target_sha256: Option<String>,
+) -> Result<SafeWriteResult, String> {
+    let parsed_reason = match BackupReason::try_from(reason.as_str()) {
+        Ok(BackupReason::Manual) | Err(_) => {
+            return Ok(safe_failure(
+                "error",
+                "validate-source",
+                Path::new(&target_path),
+                format!("Unsupported safe-write backup reason: {reason}"),
+            ));
+        }
+        Ok(value) => value,
+    };
+    if bytes.len() == 235_980 {
+        if let Some(expected) = expected_source_sha256 {
+            let actual = sha256_hex(&bytes);
+            if expected != actual {
+                let mut result = safe_failure(
+                    "integrity",
+                    "validate-source",
+                    Path::new(&target_path),
+                    "Replacement bytes changed after validation.".to_string(),
+                );
+                result.expected_sha256 = Some(expected);
+                result.actual_sha256 = Some(actual);
+                return Ok(result);
+            }
+        }
+    }
+    Ok(safe_write_with(
+        Path::new(&target_path),
+        &bytes,
+        parsed_reason,
+        expected_target_sha256.as_deref(),
+        platform_replace,
+    ))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -607,5 +920,187 @@ mod tests {
         assert_eq!(history[1].path, older.path);
         assert_eq!(history[2].reason, "legacy");
         assert_eq!(history[2].path, legacy.to_string_lossy());
+    }
+
+    #[test]
+    fn history_rejects_untrusted_sidecar_reason_metadata() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("SlotData_0.dat");
+        fs::write(&source, synthetic(1)).unwrap();
+        let backup =
+            create_versioned_backup_at(&source, BackupReason::Manual, 1_700_000_000_300).unwrap();
+        let sidecar = Path::new(&backup.path).with_extension("json");
+        let mut metadata: serde_json::Value =
+            serde_json::from_slice(&fs::read(&sidecar).unwrap()).unwrap();
+        metadata["reason"] = serde_json::Value::String("../../unsafe".to_string());
+        fs::write(&sidecar, serde_json::to_vec(&metadata).unwrap()).unwrap();
+
+        let listed = list_backups_impl(&source).unwrap();
+
+        assert_eq!(listed[0].metadata_status, "invalid");
+        assert_eq!(listed[0].reason, "manual");
+    }
+
+    #[test]
+    fn safe_write_rejects_wrong_size_before_creating_a_backup() {
+        let temp = tempdir().unwrap();
+        let target = temp.path().join("SlotData_0.dat");
+        let original = synthetic(4);
+        fs::write(&target, &original).unwrap();
+
+        let result = safe_write_with(
+            &target,
+            &[1, 2, 3],
+            BackupReason::BeforeSave,
+            None,
+            platform_replace,
+        );
+
+        assert_eq!(result.status, "invalid-size");
+        assert_eq!(result.phase.as_deref(), Some("validate-source"));
+        assert_eq!(fs::read(&target).unwrap(), original);
+        assert!(!temp.path().join(BACKUP_DIR_NAME).exists());
+    }
+
+    #[test]
+    fn safe_write_rejects_a_source_hash_mismatch_before_mutation() {
+        let temp = tempdir().unwrap();
+        let target = temp.path().join("SlotData_0.dat");
+        let original = synthetic(4);
+        fs::write(&target, &original).unwrap();
+
+        let result = persist_safe_write_file(
+            target.to_string_lossy().into_owned(),
+            synthetic(5),
+            "before-import".to_string(),
+            Some("wrong-source-hash".to_string()),
+            Some(sha256_hex(&original)),
+        )
+        .unwrap();
+
+        assert_eq!(result.status, "integrity");
+        assert_eq!(result.phase.as_deref(), Some("validate-source"));
+        assert_eq!(fs::read(&target).unwrap(), original);
+        assert!(!temp.path().join(BACKUP_DIR_NAME).exists());
+    }
+
+    #[test]
+    fn safe_write_detects_a_target_hash_conflict_before_backup() {
+        let temp = tempdir().unwrap();
+        let target = temp.path().join("SlotData_0.dat");
+        let original = synthetic(5);
+        fs::write(&target, &original).unwrap();
+
+        let result = safe_write_with(
+            &target,
+            &synthetic(6),
+            BackupReason::BeforeSave,
+            Some("not-the-current-hash"),
+            platform_replace,
+        );
+
+        assert_eq!(result.status, "conflict");
+        assert_eq!(result.phase.as_deref(), Some("check-target"));
+        assert_eq!(fs::read(&target).unwrap(), original);
+        assert!(!temp.path().join(BACKUP_DIR_NAME).exists());
+    }
+
+    #[test]
+    fn backup_failure_prevents_all_target_mutation() {
+        let temp = tempdir().unwrap();
+        let target = temp.path().join("SlotData_0.dat");
+        let original = synthetic(5);
+        fs::write(&target, &original).unwrap();
+        fs::write(
+            temp.path().join(BACKUP_DIR_NAME),
+            b"blocks backup directory",
+        )
+        .unwrap();
+
+        let result = safe_write_with(
+            &target,
+            &synthetic(6),
+            BackupReason::BeforeSave,
+            Some(&sha256_hex(&original)),
+            platform_replace,
+        );
+
+        assert_eq!(result.status, "backup");
+        assert_eq!(result.phase.as_deref(), Some("backup-target"));
+        assert_eq!(fs::read(&target).unwrap(), original);
+    }
+
+    #[test]
+    fn safe_write_commits_intended_bytes_and_preserves_the_original_version() {
+        let temp = tempdir().unwrap();
+        let target = temp.path().join("SlotData_0.dat");
+        let original = synthetic(12);
+        let intended = synthetic(13);
+        fs::write(&target, &original).unwrap();
+
+        let result = safe_write_with(
+            &target,
+            &intended,
+            BackupReason::BeforeSave,
+            Some(&sha256_hex(&original)),
+            platform_replace,
+        );
+
+        assert_eq!(result.status, "ok");
+        assert_eq!(fs::read(&target).unwrap(), intended);
+        let backup = result.backup.expect("before-save backup");
+        assert_eq!(backup.reason, "before-save");
+        assert_eq!(fs::read(backup.path).unwrap(), original);
+    }
+
+    #[test]
+    fn failed_commit_keeps_the_original_and_a_recovery_backup() {
+        let temp = tempdir().unwrap();
+        let target = temp.path().join("SlotData_1.dat");
+        let original = synthetic(7);
+        fs::write(&target, &original).unwrap();
+
+        let result = safe_write_with(
+            &target,
+            &synthetic(8),
+            BackupReason::BeforeImport,
+            Some(&sha256_hex(&original)),
+            |_staged, _target| Err(std::io::Error::other("forced commit failure")),
+        );
+
+        assert_eq!(result.status, "error");
+        assert_eq!(result.phase.as_deref(), Some("replace-target"));
+        assert_eq!(fs::read(&target).unwrap(), original);
+        let backup = result.backup.expect("recovery backup");
+        assert_eq!(fs::read(backup.path).unwrap(), original);
+    }
+
+    #[test]
+    fn verification_mismatch_restores_the_original_from_backup() {
+        let temp = tempdir().unwrap();
+        let target = temp.path().join("SlotData_2.dat");
+        let original = synthetic(10);
+        fs::write(&target, &original).unwrap();
+        let intended = synthetic(11);
+        let mut commits = 0;
+
+        let result = safe_write_with(
+            &target,
+            &intended,
+            BackupReason::BeforeRestore,
+            Some(&sha256_hex(&original)),
+            |staged, target| {
+                commits += 1;
+                if commits == 1 {
+                    fs::write(target, synthetic(99))
+                } else {
+                    platform_replace(staged, target)
+                }
+            },
+        );
+
+        assert_eq!(result.status, "verify");
+        assert_eq!(result.phase.as_deref(), Some("verify-target"));
+        assert_eq!(fs::read(&target).unwrap(), original);
     }
 }

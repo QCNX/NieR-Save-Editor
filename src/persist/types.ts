@@ -21,7 +21,8 @@ export type ReloadResult = ReadFileResult;
 export type OverwriteResult =
   | { status: "ok"; path: string; backupPath: string }
   | { status: "backup"; path: string; backupPath: string; message: string }
-  | PersistIoFailure;
+  | PersistIoFailure
+  | ManagedFailure;
 
 export type SaveAsResult =
   | { status: "ok"; path: string }
@@ -100,6 +101,7 @@ export type SafeWriteOptions = {
   targetPath: string;
   bytes: Uint8Array;
   reason: Exclude<BackupReason, "manual">;
+  expectedSourceSha256?: string;
   expectedTargetSha256?: string;
 };
 

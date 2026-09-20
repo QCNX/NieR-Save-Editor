@@ -14,6 +14,7 @@
     "allow-persist-write-file",
     "allow-persist-save-as-dialog",
     "allow-persist-create-versioned-backup",
-    "allow-persist-list-backups"
+    "allow-persist-list-backups",
+    "allow-persist-safe-write-file"
   ]
 }

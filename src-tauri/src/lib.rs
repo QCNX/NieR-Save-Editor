@@ -20,6 +20,7 @@ pub fn run() {
             persist::persist_backup_file,
             persist::persist_create_versioned_backup,
             persist::persist_list_backups,
+            persist::persist_safe_write_file,
             persist::persist_write_file,
             persist::persist_save_as_dialog
         ])

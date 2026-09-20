@@ -27,3 +27,8 @@ commands.allow = ["persist_create_versioned_backup"]
 identifier = "allow-persist-list-backups"
 description = "Allows listing versioned and legacy backups for a SlotData path."
 commands.allow = ["persist_list_backups"]
+
+[[permission]]
+identifier = "allow-persist-safe-write-file"
+description = "Allows backup-first, verified atomic replacement of an existing SlotData file."
+commands.allow = ["persist_safe_write_file"]

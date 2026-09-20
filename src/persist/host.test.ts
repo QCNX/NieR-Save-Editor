@@ -93,6 +93,59 @@ describe("reloadSave", () => {
 });
 
 describe("overwriteSave", () => {
+  it("routes a capable host through the versioned safe-write contract", async () => {
+    const bytes = syntheticSave();
+    const backup: BackupEntry = {
+      path: "/saves/nier-save-editor-backup/SlotData_0/version.dat",
+      slotFileName: "SlotData_0.dat",
+      reason: "before-save",
+      size: bytes.length,
+      mtimeMs: 2,
+      sha256: "old-sha",
+      metadataStatus: "ok",
+    };
+    let usedLegacyBackup = false;
+    const host: PersistHost & SaveManagementHost = {
+      async readFile() {
+        return { status: "ok", bytes };
+      },
+      async backupFile() {
+        usedLegacyBackup = true;
+        return { status: "ok" };
+      },
+      async writeFile() {
+        throw new Error("legacy write must not be used");
+      },
+      async pickSaveAsPath() {
+        throw new Error("unused");
+      },
+      async createVersionedBackup() {
+        throw new Error("unused");
+      },
+      async listBackups() {
+        throw new Error("unused");
+      },
+      async safeWriteFile(options) {
+        expect(options.reason).toBe("before-save");
+        return {
+          status: "ok",
+          path: options.targetPath,
+          backup,
+          sha256: "new-sha",
+        };
+      },
+    };
+
+    await expect(
+      overwriteSave(host, "/saves/SlotData_0.dat", slotFromSynthetic()),
+    ).resolves.toEqual({
+      status: "ok",
+      path: "/saves/SlotData_0.dat",
+      backupPath: backup.path,
+    });
+    expect(usedLegacyBackup).toBe(false);
+  });
+
   it("uses one managed write then rejects a byte-for-byte readback mismatch", async () => {
     const slot = slotFromSynthetic();
     const intended = syntheticSave();
