@@ -1,5 +1,13 @@
 import { useI18n } from "../i18n";
 import {
+  getCosmeticOptions,
+  getOutfitOptions,
+  lookupCosmeticName,
+  lookupOutfitName,
+  type CosmeticAndroid,
+  type CosmeticCategory,
+} from "../names";
+import {
   DEBUG_FLAG_VALUES,
   getCharacterName,
   getDebugFlag,
@@ -8,15 +16,26 @@ import {
   getSteamId,
   getXp,
   levelFromXp,
+  parseHairColors,
+  parseOutfitConfig,
+  parsePodCosmeticConfig,
   parseEmilBulletsEquipped,
   parsePlayRecords,
   serializeEmilBulletsEquipped,
+  serializeHairColors,
+  serializeOutfitConfig,
   serializePlayRecords,
+  serializePodCosmeticConfig,
+  setDressModule,
+  setHairColor,
+  setHeadAccessory,
   setCharacterName,
   setDebugFlag,
   setEmilBulletsEquipped,
   setLevel,
   setMoney,
+  setOutfit,
+  setPodCosmetic,
   setPlayTime,
   setSteamId,
   setXp,
@@ -38,6 +57,25 @@ export type GeneralFieldEdit =
     }
   | { field: PlayRecordField; value: string }
   | { field: "emilBulletsEquipped"; value: boolean };
+
+export type CosmeticFieldEdit = {
+  field: "outfit" | CosmeticCategory;
+  android: CosmeticAndroid;
+  id: number;
+};
+
+const ANDROIDS = ["2B", "9S", "A2"] as const;
+
+const COSMETIC_ROWS: ReadonlyArray<{
+  field: CosmeticFieldEdit["field"];
+  label: string;
+}> = [
+  { field: "outfit", label: "general.outfit" },
+  { field: "hairColor", label: "general.hairColor" },
+  { field: "headAccessory", label: "general.headAccessory" },
+  { field: "dressModule", label: "general.dressModule" },
+  { field: "podAppearance", label: "general.podAppearance" },
+];
 
 const PLAY_RECORD_FIELDS: ReadonlyArray<{
   field: PlayRecordField;
@@ -113,8 +151,112 @@ export function updateGeneralField(
   }
 }
 
+/** Apply one cosmetic edit while preserving every other raw cosmetic value. */
+export function updateCosmeticField(
+  slot: SlotData,
+  edit: CosmeticFieldEdit,
+): SlotData {
+  try {
+    switch (edit.field) {
+      case "outfit":
+        return {
+          ...slot,
+          outfitConfig: serializeOutfitConfig(
+            setOutfit(parseOutfitConfig(slot.outfitConfig), edit.android, edit.id),
+          ),
+        };
+      case "hairColor":
+        return {
+          ...slot,
+          hairColors: serializeHairColors(
+            setHairColor(parseHairColors(slot.hairColors), edit.android, edit.id),
+          ),
+        };
+      case "headAccessory":
+        return {
+          ...slot,
+          outfitConfig: serializeOutfitConfig(
+            setHeadAccessory(
+              parseOutfitConfig(slot.outfitConfig),
+              edit.android,
+              edit.id,
+            ),
+          ),
+        };
+      case "dressModule":
+        return {
+          ...slot,
+          outfitConfig: serializeOutfitConfig(
+            setDressModule(
+              parseOutfitConfig(slot.outfitConfig),
+              edit.android,
+              edit.id,
+            ),
+          ),
+        };
+      case "podAppearance":
+        return {
+          ...slot,
+          podCosmeticConfig: serializePodCosmeticConfig(
+            setPodCosmetic(
+              parsePodCosmeticConfig(slot.podCosmeticConfig),
+              edit.android,
+              edit.id,
+            ),
+          ),
+        };
+    }
+  } catch {
+    return slot;
+  }
+}
+
+function cosmeticValue(
+  slot: SlotData,
+  field: CosmeticFieldEdit["field"],
+  android: CosmeticAndroid,
+): number {
+  if (field === "hairColor") {
+    const colors = parseHairColors(slot.hairColors);
+    return android === "2B"
+      ? colors.hair2B
+      : android === "9S"
+        ? colors.hair9S
+        : colors.hairA2;
+  }
+  if (field === "podAppearance") {
+    const pods = parsePodCosmeticConfig(slot.podCosmeticConfig);
+    return android === "2B"
+      ? pods.pod2B
+      : android === "9S"
+        ? pods.pod9S
+        : pods.podA2;
+  }
+
+  const outfit = parseOutfitConfig(slot.outfitConfig);
+  if (field === "outfit") {
+    return android === "2B"
+      ? outfit.outfit2B
+      : android === "9S"
+        ? outfit.outfit9S
+        : outfit.outfitA2;
+  }
+  if (field === "headAccessory") {
+    return android === "2B"
+      ? outfit.headAccessory2B
+      : android === "9S"
+        ? outfit.headAccessory9S
+        : outfit.headAccessoryA2;
+  }
+  return android === "2B"
+    ? outfit.dressModule2B
+    : android === "9S"
+      ? outfit.dressModule9S
+      : outfit.dressModuleA2;
+}
+
 export function SummaryPanel({ slot, onSlotChange }: Props) {
-  const { t } = useI18n();
+  const { language, t } = useI18n();
   const money = getMoney(slot);
   const xp = getXp(slot);
   const level = levelFromXp(xp);
@@ -127,6 +269,11 @@ export function SummaryPanel({ slot, onSlotChange }: Props) {
 
   const commitGeneralEdit = (edit: GeneralFieldEdit) => {
     const next = updateGeneralField(slot, edit);
+    if (next !== slot) onSlotChange(next);
+  };
+
+  const commitCosmeticEdit = (edit: CosmeticFieldEdit) => {
+    const next = updateCosmeticField(slot, edit);
     if (next !== slot) onSlotChange(next);
   };
 
@@ -280,6 +427,65 @@ export function SummaryPanel({ slot, onSlotChange }: Props) {
           ? ` — ${t("general.unknownRawValue")} (${emilBullets.rawValue})`
           : null}
       </label>
+
+      <h3>{t("general.cosmetics")}</h3>
+      <div className="table-wrap table-wrap--compact">
+        <table>
+          <thead>
+            <tr>
+              <th>{t("fields.name")}</th>
+              {ANDROIDS.map((android) => (
+                <th key={android}>{android}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {COSMETIC_ROWS.map(({ field, label }) => (
+              <tr key={field}>
+                <th>{t(label)}</th>
+                {ANDROIDS.map((android) => {
+                  const value = cosmeticValue(slot, field, android);
+                  const options =
+                    field === "outfit"
+                      ? getOutfitOptions(android)
+                      : getCosmeticOptions(field);
+                  const hasCurrent = options.some((option) => option.id === value);
+                  return (
+                    <td key={android}>
+                      <select
+                        aria-label={`${t(label)} ${android}`}
+                        value={value}
+                        onChange={(event) =>
+                          commitCosmeticEdit({
+                            field,
+                            android,
+                            id: Number(event.currentTarget.value),
+                          })
+                        }
+                      >
+                        {!hasCurrent ? (
+                          <option value={value}>
+                            {field === "outfit"
+                              ? lookupOutfitName(android, value, language)
+                              : lookupCosmeticName(field, value, language)}
+                          </option>
+                        ) : null}
+                        {options.map((option) => (
+                          <option key={option.id} value={option.id}>
+                            {field === "outfit"
+                              ? lookupOutfitName(android, option.id, language)
+                              : lookupCosmeticName(field, option.id, language)}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }
