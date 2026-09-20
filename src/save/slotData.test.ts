@@ -5,12 +5,15 @@ import {
   BETWEEN_XP_AND_POD_CONFIG_SIZE_BYTES,
   BETWEEN_WEAPON_SLOTS_AND_XP_SIZE_BYTES,
   PLAY_TIME_SIZE_BYTES,
+  PLAY_RECORDS_SIZE_BYTES,
   POD_CONFIG_SIZE_BYTES,
   SAVEFILE_CHARACTER_NAME_START_BYTE,
   SAVEFILE_DEBUG_FLAG_START_BYTE,
   SAVEFILE_INVENTORY_START_BYTE,
   SAVEFILE_MONEY_START_BYTE,
   SAVEFILE_PLAY_TIME_START_BYTE,
+  SAVEFILE_PLAY_RECORDS_START_BYTE,
+  SAVEFILE_EMIL_BULLETS_EQUIPPED_BYTE,
   SAVEFILE_POD_CONFIG_START_BYTE,
   SAVEFILE_SIZE_BYTES,
   SAVEFILE_STEAM_ID_START_BYTE,
@@ -96,7 +99,7 @@ describe("SlotData load/serialize", () => {
         SAVEFILE_WEAPON_SLOT_2_START_BYTE + WEAPON_SLOT_SIZE_BYTES,
       ),
     );
-    expect(slot.betweenChipsAndWeaponSlots.length).toBe(10744);
+    expect(slot.betweenChipsAndPlayRecords.length).toBe(10332);
     expect(slot.betweenWeaponSlotsAndXp.length).toBe(
       BETWEEN_WEAPON_SLOTS_AND_XP_SIZE_BYTES,
     );
@@ -113,6 +116,21 @@ describe("SlotData load/serialize", () => {
       BETWEEN_XP_AND_POD_CONFIG_SIZE_BYTES,
     );
     expect(slot.podConfig).toEqual(input.slice(231208, 231232));
+    expect(serialize(slot)).toEqual(input);
+  });
+
+  it("splits Play Records and Emil bullets at frozen literal offsets without byte drift", () => {
+    const input = syntheticSave();
+    const slot = load(input);
+
+    expect(SAVEFILE_PLAY_RECORDS_START_BYTE).toBe(230744);
+    expect(PLAY_RECORDS_SIZE_BYTES).toBe(28);
+    expect(SAVEFILE_EMIL_BULLETS_EQUIPPED_BYTE).toBe(231039);
+    expect(slot.betweenChipsAndPlayRecords.length).toBe(10332);
+    expect(slot.playRecords).toEqual(input.slice(230744, 230772));
+    expect(slot.betweenPlayRecordsAndEmilBullets.length).toBe(267);
+    expect(slot.emilBulletsEquipped).toEqual(input.slice(231039, 231040));
+    expect(slot.betweenEmilBulletsAndWeaponSlots.length).toBe(116);
     expect(serialize(slot)).toEqual(input);
   });
 

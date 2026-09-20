@@ -5,6 +5,8 @@ import {
   getDebugFlag,
   getPlayTime,
   getSteamId,
+  parseEmilBulletsEquipped,
+  parsePlayRecords,
   POD_PROGRAM_IDS,
   VANILLA_PLUGIN_CHIP_IDS,
   replacePluginChipType,
@@ -14,6 +16,8 @@ import {
   setDebugFlag,
   setPlayTime,
   setSteamId,
+  setEmilBulletsEquipped,
+  setPlayRecordCounter,
   setPodProgramId,
 } from "./index";
 
@@ -47,5 +51,12 @@ describe("public save edit API", () => {
     expect(setCharacterName).toBeTypeOf("function");
     expect(getDebugFlag).toBeTypeOf("function");
     expect(setDebugFlag).toBeTypeOf("function");
+  });
+
+  it("exports Play Records and Emil bullets editing", () => {
+    expect(parsePlayRecords).toBeTypeOf("function");
+    expect(setPlayRecordCounter).toBeTypeOf("function");
+    expect(parseEmilBulletsEquipped).toBeTypeOf("function");
+    expect(setEmilBulletsEquipped).toBeTypeOf("function");
   });
 });

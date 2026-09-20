@@ -63,7 +63,11 @@ function slot(): SlotData {
     podPrograms: new Uint8Array(),
     betweenPodAndChips: new Uint8Array(),
     pluginChips: new Uint8Array(),
-    betweenChipsAndWeaponSlots: new Uint8Array(),
+    betweenChipsAndPlayRecords: new Uint8Array(),
+    playRecords: new Uint8Array(),
+    betweenPlayRecordsAndEmilBullets: new Uint8Array(),
+    emilBulletsEquipped: new Uint8Array(),
+    betweenEmilBulletsAndWeaponSlots: new Uint8Array(),
     weaponSlot1: new Uint8Array(WEAPON_SLOT_SIZE_BYTES),
     weaponSlot2: new Uint8Array(WEAPON_SLOT_SIZE_BYTES),
     betweenWeaponSlotsAndXp: new Uint8Array(

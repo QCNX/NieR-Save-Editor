@@ -4,10 +4,14 @@ import {
   BEFORE_STEAM_ID_SIZE_BYTES,
   BETWEEN_CHARACTER_NAME_AND_MONEY_SIZE_BYTES,
   BETWEEN_CHARACTER_NAME_AND_MONEY_START_BYTE,
-  BETWEEN_CHIPS_AND_WEAPON_SLOTS_SIZE_BYTES,
-  BETWEEN_CHIPS_AND_WEAPON_SLOTS_START_BYTE,
+  BETWEEN_CHIPS_AND_PLAY_RECORDS_SIZE_BYTES,
+  BETWEEN_CHIPS_AND_PLAY_RECORDS_START_BYTE,
+  BETWEEN_EMIL_BULLETS_AND_WEAPON_SLOTS_SIZE_BYTES,
+  BETWEEN_EMIL_BULLETS_AND_WEAPON_SLOTS_START_BYTE,
   BETWEEN_PLAY_TIME_AND_CHARACTER_NAME_SIZE_BYTES,
   BETWEEN_PLAY_TIME_AND_CHARACTER_NAME_START_BYTE,
+  BETWEEN_PLAY_RECORDS_AND_EMIL_BULLETS_SIZE_BYTES,
+  BETWEEN_PLAY_RECORDS_AND_EMIL_BULLETS_START_BYTE,
   BETWEEN_POD_AND_CHIPS_SIZE_BYTES,
   BETWEEN_POD_AND_CHIPS_START_BYTE,
   BETWEEN_POD_CONFIG_AND_DEBUG_FLAG_SIZE_BYTES,
@@ -20,10 +24,12 @@ import {
   BETWEEN_XP_AND_POD_CONFIG_START_BYTE,
   CHARACTER_NAME_SIZE_BYTES,
   DEBUG_FLAG_SIZE_BYTES,
+  EMIL_BULLETS_EQUIPPED_SIZE_BYTES,
   INVENTORY_SIZE_BYTES,
   MONEY_SIZE_BYTES,
   PLUGIN_CHIPS_SIZE_BYTES,
   PLAY_TIME_SIZE_BYTES,
+  PLAY_RECORDS_SIZE_BYTES,
   POD_CONFIG_SIZE_BYTES,
   POD_PROGRAMS_SIZE_BYTES,
   SAVEFILE_CORPSE_INVENTORY_START_BYTE,
@@ -32,6 +38,8 @@ import {
   SAVEFILE_INVENTORY_START_BYTE,
   SAVEFILE_MONEY_START_BYTE,
   SAVEFILE_PLAY_TIME_START_BYTE,
+  SAVEFILE_PLAY_RECORDS_START_BYTE,
+  SAVEFILE_EMIL_BULLETS_EQUIPPED_BYTE,
   SAVEFILE_PLUGIN_CHIPS_START_BYTE,
   SAVEFILE_POD_CONFIG_START_BYTE,
   SAVEFILE_POD_PROGRAMS_START_BYTE,
@@ -81,8 +89,16 @@ export type SlotData = {
   betweenPodAndChips: Uint8Array;
   /** Known field placeholder: plug-in chips block. */
   pluginChips: Uint8Array;
-  /** Opaque region from after chips through before weapon equipment slots. */
-  betweenChipsAndWeaponSlots: Uint8Array;
+  /** Opaque region from after chips through before Play Records. */
+  betweenChipsAndPlayRecords: Uint8Array;
+  /** Raw seven-counter Play Records region. */
+  playRecords: Uint8Array;
+  /** Opaque region from after Play Records through before the Emil flag. */
+  betweenPlayRecordsAndEmilBullets: Uint8Array;
+  /** Raw Emil bullets equipped byte. */
+  emilBulletsEquipped: Uint8Array;
+  /** Opaque region from after the Emil flag through before weapon slots. */
+  betweenEmilBulletsAndWeaponSlots: Uint8Array;
   /** Raw Set 1 weapon equipment IDs (light/heavy). */
   weaponSlot1: Uint8Array;
   /** Raw Set 2 weapon equipment IDs (light/heavy). */
@@ -185,10 +201,30 @@ export function load(bytes: Uint8Array): SlotData {
       SAVEFILE_PLUGIN_CHIPS_START_BYTE,
       PLUGIN_CHIPS_SIZE_BYTES,
     ),
-    betweenChipsAndWeaponSlots: sliceCopy(
+    betweenChipsAndPlayRecords: sliceCopy(
       bytes,
-      BETWEEN_CHIPS_AND_WEAPON_SLOTS_START_BYTE,
-      BETWEEN_CHIPS_AND_WEAPON_SLOTS_SIZE_BYTES,
+      BETWEEN_CHIPS_AND_PLAY_RECORDS_START_BYTE,
+      BETWEEN_CHIPS_AND_PLAY_RECORDS_SIZE_BYTES,
+    ),
+    playRecords: sliceCopy(
+      bytes,
+      SAVEFILE_PLAY_RECORDS_START_BYTE,
+      PLAY_RECORDS_SIZE_BYTES,
+    ),
+    betweenPlayRecordsAndEmilBullets: sliceCopy(
+      bytes,
+      BETWEEN_PLAY_RECORDS_AND_EMIL_BULLETS_START_BYTE,
+      BETWEEN_PLAY_RECORDS_AND_EMIL_BULLETS_SIZE_BYTES,
+    ),
+    emilBulletsEquipped: sliceCopy(
+      bytes,
+      SAVEFILE_EMIL_BULLETS_EQUIPPED_BYTE,
+      EMIL_BULLETS_EQUIPPED_SIZE_BYTES,
+    ),
+    betweenEmilBulletsAndWeaponSlots: sliceCopy(
+      bytes,
+      BETWEEN_EMIL_BULLETS_AND_WEAPON_SLOTS_START_BYTE,
+      BETWEEN_EMIL_BULLETS_AND_WEAPON_SLOTS_SIZE_BYTES,
     ),
     weaponSlot1: sliceCopy(
       bytes,
@@ -254,7 +290,11 @@ export function serialize(slot: SlotData): Uint8Array {
     slot.podPrograms,
     slot.betweenPodAndChips,
     slot.pluginChips,
-    slot.betweenChipsAndWeaponSlots,
+    slot.betweenChipsAndPlayRecords,
+    slot.playRecords,
+    slot.betweenPlayRecordsAndEmilBullets,
+    slot.emilBulletsEquipped,
+    slot.betweenEmilBulletsAndWeaponSlots,
     slot.weaponSlot1,
     slot.weaponSlot2,
     slot.betweenWeaponSlotsAndXp,
