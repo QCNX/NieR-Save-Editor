@@ -17,3 +17,13 @@ commands.allow = ["persist_write_file"]
 identifier = "allow-persist-save-as-dialog"
 description = "Allows opening a window-bound Save As dialog for SlotData files."
 commands.allow = ["persist_save_as_dialog"]
+
+[[permission]]
+identifier = "allow-persist-create-versioned-backup"
+description = "Allows creating an immutable versioned backup derived from a SlotData path."
+commands.allow = ["persist_create_versioned_backup"]
+
+[[permission]]
+identifier = "allow-persist-list-backups"
+description = "Allows listing versioned and legacy backups for a SlotData path."
+commands.allow = ["persist_list_backups"]

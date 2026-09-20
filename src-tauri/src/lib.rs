@@ -18,6 +18,8 @@ pub fn run() {
             discovery::discovery_list_dir,
             persist::persist_read_file,
             persist::persist_backup_file,
+            persist::persist_create_versioned_backup,
+            persist::persist_list_backups,
             persist::persist_write_file,
             persist::persist_save_as_dialog
         ])
