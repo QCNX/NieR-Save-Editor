@@ -108,12 +108,15 @@ export {
 } from "./weapons";
 
 export {
+  copyPluginChipLoadout,
   EMPTY_PLUGIN_CHIP_ID,
+  equipPluginChipToLoadout,
   minimumWeightForLevel,
   optimizePluginChipLoadout,
   OsChipLockedError,
   OS_PLUGIN_CHIP_TYPE,
   parsePluginChips,
+  pluginChipLoadoutUsedCost,
   PluginChipsSizeError,
   replacePluginChipType,
   serializePluginChips,

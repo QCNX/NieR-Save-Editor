@@ -2,22 +2,33 @@ import { useState } from "react";
 
 import { translate, useI18n, type Language } from "../i18n";
 import {
+  ACTIVE_CHIP_LOADOUT_SET_SUPPORTED,
+  copyPluginChipLoadout,
   EMPTY_PLUGIN_CHIP_ID,
   EMPTY_POD_CONFIG_PROGRAM_ID,
   EMPTY_POD_PROGRAM_ID,
+  equipPluginChipToLoadout,
+  getPurchasedChipCapacity,
+  OS_PLUGIN_CHIP_TYPE,
   parsePluginChips,
   parsePodConfig,
   parsePodPrograms,
+  pluginChipLoadoutUsedCost,
   POD_PROGRAM_IDS,
+  PURCHASED_CAPACITY_OPTIONS,
   replacePluginChipType,
   serializePluginChips,
   serializePodConfig,
   serializePodPrograms,
+  setEquippedPluginChipWeight,
   setPodConfigPod,
   setPluginChip,
   setPodProgramId,
+  setPurchasedChipCapacityWithInventorySync,
+  unequipPluginChipFromLoadout,
   VANILLA_PLUGIN_CHIP_IDS,
   type PluginChip,
+  type PluginChipLoadoutSet,
   type PodConfigPatch,
   type PodProgram,
   type SlotData,
@@ -300,13 +311,488 @@ export function PodsPanel({ slot, onSlotChange }: PanelProps) {
   );
 }
 
-/** Placeholder until chip loadout UI (later ticket) fills the panel. */
-export function ChipLoadoutPanel() {
+const LOADOUT_SETS: readonly PluginChipLoadoutSet[] = ["A", "B", "C"];
+
+const LOADOUT_SLOT_KEY = {
+  A: "slotA",
+  B: "slotB",
+  C: "slotC",
+} as const satisfies Record<PluginChipLoadoutSet, keyof PluginChip>;
+
+export class ChipLoadoutCapacityError extends Error {
+  constructor(
+    message = "Loadout change would exceed purchased capacity while overload is off",
+  ) {
+    super(message);
+    this.name = "ChipLoadoutCapacityError";
+  }
+}
+
+export function chipsEquippedOnLoadout(
+  chips: readonly PluginChip[],
+  set: PluginChipLoadoutSet,
+): PluginChip[] {
+  const key = LOADOUT_SLOT_KEY[set];
+  return chips
+    .filter((chip) => chip[key] >= 0)
+    .sort((a, b) => a[key] - b[key] || a.position - b.position);
+}
+
+export function chipsAvailableForLoadout(
+  chips: readonly PluginChip[],
+  set: PluginChipLoadoutSet,
+): PluginChip[] {
+  const key = LOADOUT_SLOT_KEY[set];
+  return chips.filter(
+    (chip) => chipIsOccupied(chip) && chip[key] < 0,
+  );
+}
+
+function assertWithinCapacity(
+  used: number,
+  purchased: number,
+  overload: boolean,
+): void {
+  if (!overload && used > purchased) {
+    throw new ChipLoadoutCapacityError();
+  }
+}
+
+export function applyChipLoadoutEquip(
+  slot: SlotData,
+  index: number,
+  set: PluginChipLoadoutSet,
+  options: { overload: boolean },
+): SlotData {
+  const chips = parsePluginChips(slot.pluginChips);
+  const chip = chips[index];
+  if (!chip) {
+    throw new RangeError(`Plugin chip index out of range: ${index}`);
+  }
+  const key = LOADOUT_SLOT_KEY[set];
+  if (chip[key] < 0) {
+    const used =
+      pluginChipLoadoutUsedCost(chips, set) + Math.max(0, chip.weight);
+    assertWithinCapacity(
+      used,
+      getPurchasedChipCapacity(slot),
+      options.overload,
+    );
+  }
+  return {
+    ...slot,
+    pluginChips: serializePluginChips(
+      equipPluginChipToLoadout(chips, index, set),
+    ),
+  };
+}
+
+export function applyChipLoadoutUnequip(
+  slot: SlotData,
+  index: number,
+  set: PluginChipLoadoutSet,
+): SlotData {
+  const chips = parsePluginChips(slot.pluginChips);
+  return {
+    ...slot,
+    pluginChips: serializePluginChips(
+      unequipPluginChipFromLoadout(chips, index, set),
+    ),
+  };
+}
+
+export function applyChipLoadoutCopy(
+  slot: SlotData,
+  from: PluginChipLoadoutSet,
+  to: PluginChipLoadoutSet,
+  options: { overload: boolean },
+): SlotData {
+  const chips = parsePluginChips(slot.pluginChips);
+  const projected = copyPluginChipLoadout(chips, from, to);
+  assertWithinCapacity(
+    pluginChipLoadoutUsedCost(projected, to),
+    getPurchasedChipCapacity(slot),
+    options.overload,
+  );
+  return {
+    ...slot,
+    pluginChips: serializePluginChips(projected),
+  };
+}
+
+export function applyChipLoadoutCapacity(
+  slot: SlotData,
+  capacity: number,
+): SlotData {
+  return setPurchasedChipCapacityWithInventorySync(slot, capacity);
+}
+
+export function applyChipLoadoutLevel(
+  slot: SlotData,
+  index: number,
+  level: number,
+): SlotData {
+  const chips = parsePluginChips(slot.pluginChips);
+  const next = setPluginChip(chips, index, {
+    level: Math.min(8, Math.max(0, level | 0)),
+  });
+  return { ...slot, pluginChips: serializePluginChips(next) };
+}
+
+export function applyChipLoadoutWeight(
+  slot: SlotData,
+  index: number,
+  weight: number,
+  options: { overload: boolean },
+): SlotData {
+  const chips = parsePluginChips(slot.pluginChips);
+  const chip = chips[index];
+  if (!chip) {
+    throw new RangeError(`Plugin chip index out of range: ${index}`);
+  }
+  const nextWeight = Math.max(0, weight | 0);
+  const purchased = getPurchasedChipCapacity(slot);
+  for (const set of LOADOUT_SETS) {
+    const key = LOADOUT_SLOT_KEY[set];
+    if (chip[key] < 0) continue;
+    const used =
+      pluginChipLoadoutUsedCost(chips, set) - chip.weight + nextWeight;
+    assertWithinCapacity(used, purchased, options.overload);
+  }
+  return {
+    ...slot,
+    pluginChips: serializePluginChips(
+      setEquippedPluginChipWeight(chips, index, nextWeight),
+    ),
+  };
+}
+
+type ChipLoadoutPanelProps = PanelProps & {
+  /** Test seam: start with overload enabled (defaults to off). */
+  initialOverload?: boolean;
+};
+
+/** Chip loadout wireframe: A/B/C sets, capacity, overload, library → equipped. */
+export function ChipLoadoutPanel({
+  slot,
+  onSlotChange,
+  initialOverload = false,
+}: ChipLoadoutPanelProps) {
+  const { language, t } = useI18n();
+  const [editSet, setEditSet] = useState<PluginChipLoadoutSet>("A");
+  const [copySource, setCopySource] = useState<PluginChipLoadoutSet>("B");
+  const [overload, setOverload] = useState(initialOverload);
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState<ChipLibraryCategory>("all");
+
+  const allChips = parsePluginChips(slot.pluginChips);
+  const purchased = getPurchasedChipCapacity(slot);
+  const used = pluginChipLoadoutUsedCost(allChips, editSet);
+  const overCapacity = used > purchased;
+  const equipped = chipsEquippedOnLoadout(allChips, editSet);
+  const available = filterPluginChipRows(
+    chipsAvailableForLoadout(allChips, editSet),
+    query,
+    true,
+    language,
+    category,
+  );
+
+  const runGuarded = (action: () => SlotData) => {
+    try {
+      onSlotChange(action());
+    } catch (error) {
+      if (error instanceof ChipLoadoutCapacityError) return;
+      throw error;
+    }
+  };
+
   return (
     <section
       className="panel panel--fill"
-      data-testid="chip-loadout-placeholder"
-    />
+      data-testid="chip-loadout-panel"
+    >
+      <div className="list-toolbar chip-loadout-toolbar">
+        <div
+          className="slot-list-toolbar"
+          role="group"
+          aria-label={t("chips.loadoutSet")}
+        >
+          {LOADOUT_SETS.map((set) => (
+            <button
+              key={set}
+              type="button"
+              aria-pressed={editSet === set}
+              onClick={() => setEditSet(set)}
+            >
+              {set}
+            </button>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          data-testid="chip-loadout-active"
+          disabled={!ACTIVE_CHIP_LOADOUT_SET_SUPPORTED}
+          title={t("chips.activeUnavailable")}
+          aria-label={t("chips.activeUnavailable")}
+        >
+          {t("chips.activeUnavailable")}
+        </button>
+
+        <label>
+          <span>{t("chips.copyFrom")}</span>
+          <select
+            aria-label={t("chips.copyFrom")}
+            value={copySource}
+            onChange={(event) =>
+              setCopySource(event.currentTarget.value as PluginChipLoadoutSet)
+            }
+          >
+            {LOADOUT_SETS.map((set) => (
+              <option key={set} value={set}>
+                {set}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button
+          type="button"
+          onClick={() =>
+            runGuarded(() =>
+              applyChipLoadoutCopy(slot, copySource, editSet, { overload }),
+            )
+          }
+        >
+          {t("chips.copy")}
+        </button>
+
+        <label>
+          <input
+            type="checkbox"
+            checked={overload}
+            onChange={(event) => setOverload(event.currentTarget.checked)}
+          />
+          {t("chips.overload")}
+        </label>
+
+        <label
+          data-testid="chip-loadout-usage"
+          data-over-capacity={overCapacity ? "true" : "false"}
+          className={overCapacity ? "chip-loadout-usage--over" : undefined}
+        >
+          <span>{t("chips.usage")}</span>
+          <span>
+            {used} /{" "}
+            <select
+              data-testid="chip-loadout-capacity"
+              aria-label={t("chips.purchasedCapacity")}
+              value={purchased}
+              onChange={(event) => {
+                const capacity = Number(event.currentTarget.value);
+                if (!Number.isFinite(capacity)) return;
+                onSlotChange(applyChipLoadoutCapacity(slot, capacity));
+              }}
+            >
+              {PURCHASED_CAPACITY_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </span>
+          <span className="chip-loadout-capacity-label">
+            {t("chips.purchasedCapacity")}
+          </span>
+        </label>
+      </div>
+
+      <div className="panel-split">
+        <div className="panel-split__side">
+          <h3>{t("chips.fromLibrary")}</h3>
+          <div className="list-toolbar">
+            <label>
+              <span>{t("list.search")}</span>
+              <input
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.currentTarget.value)}
+              />
+            </label>
+            <label>
+              <span>{t("chips.category")}</span>
+              <select
+                aria-label={t("chips.category")}
+                value={category}
+                onChange={(event) => {
+                  const next = event.currentTarget.value;
+                  if (
+                    (CHIP_LIBRARY_CATEGORIES as readonly string[]).includes(
+                      next,
+                    )
+                  ) {
+                    setCategory(next as ChipLibraryCategory);
+                  }
+                }}
+              >
+                {CHIP_LIBRARY_CATEGORIES.map((id) => (
+                  <option key={id} value={id}>
+                    {t(CATEGORY_MESSAGE_KEYS[id])}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div className="table-wrap">
+            <table className="slot-table">
+              <thead>
+                <tr>
+                  <th className="col-name">{t("fields.name")}</th>
+                  <th className="col-weight">{t("fields.weight")}</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {available.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="empty-row">
+                      {t("list.empty")}
+                    </td>
+                  </tr>
+                ) : (
+                  available.map((chip) => (
+                    <tr key={chip.position}>
+                      <td className="col-name">
+                        {lookupChipName(chip.id.baseId, language)}
+                      </td>
+                      <td className="col-weight">{chip.weight}</td>
+                      <td>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            runGuarded(() =>
+                              applyChipLoadoutEquip(
+                                slot,
+                                chip.position,
+                                editSet,
+                                { overload },
+                              ),
+                            )
+                          }
+                        >
+                          {t("chips.equip")}
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="panel-split__main">
+          <h3>{t("chips.equipped")}</h3>
+          <div className="table-wrap">
+            <table className="slot-table">
+              <thead>
+                <tr>
+                  <th className="col-name">{t("fields.name")}</th>
+                  <th className="col-level">{t("fields.level")}</th>
+                  <th className="col-weight">{t("fields.weight")}</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {equipped.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="empty-row">
+                      {t("list.empty")}
+                    </td>
+                  </tr>
+                ) : (
+                  equipped.map((chip) => (
+                    <tr key={chip.position}>
+                      <td className="col-name">
+                        {lookupChipName(chip.id.baseId, language)}
+                      </td>
+                      <td className="col-level">
+                        {chip.id.hasLevels ? (
+                          <input
+                            aria-label={`${t("fields.level")} ${chip.position + 1}`}
+                            type="number"
+                            min={0}
+                            max={8}
+                            value={chip.level}
+                            onChange={(event) => {
+                              const level = Number(event.currentTarget.value);
+                              if (!Number.isFinite(level)) return;
+                              onSlotChange(
+                                applyChipLoadoutLevel(
+                                  slot,
+                                  chip.position,
+                                  level,
+                                ),
+                              );
+                            }}
+                          />
+                        ) : null}
+                      </td>
+                      <td className="col-weight">
+                        <input
+                          aria-label={`${t("fields.weight")} ${chip.position + 1}`}
+                          type="number"
+                          min={0}
+                          value={chip.weight}
+                          onChange={(event) => {
+                            const weight = Number(event.currentTarget.value);
+                            if (!Number.isFinite(weight)) return;
+                            runGuarded(() =>
+                              applyChipLoadoutWeight(
+                                slot,
+                                chip.position,
+                                weight,
+                                { overload },
+                              ),
+                            );
+                          }}
+                        />
+                      </td>
+                      <td>
+                        {chip.id.type === OS_PLUGIN_CHIP_TYPE ? null : (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              onSlotChange(
+                                applyChipLoadoutUnequip(
+                                  slot,
+                                  chip.position,
+                                  editSet,
+                                ),
+                              )
+                            }
+                          >
+                            {t("chips.unequip")}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <section
+        className="chip-loadout-stats"
+        data-testid="chip-loadout-stats"
+        aria-label={t("chips.statsPanel")}
+      >
+        <h3>{t("chips.statsPanel")}</h3>
+      </section>
+    </section>
   );
 }
 

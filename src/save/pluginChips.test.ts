@@ -7,11 +7,14 @@ import {
   SAVEFILE_SIZE_BYTES,
 } from "./constants";
 import {
+  copyPluginChipLoadout,
   EMPTY_PLUGIN_CHIP_ID,
+  equipPluginChipToLoadout,
   minimumWeightForLevel,
   optimizePluginChipLoadout,
   OsChipLockedError,
   parsePluginChips,
+  pluginChipLoadoutUsedCost,
   replacePluginChipType,
   serializePluginChips,
   setEquippedPluginChipWeight,
@@ -385,6 +388,78 @@ function libraryWith(...chips: PluginChip[]): PluginChip[] {
   }
   return all;
 }
+
+describe("pluginChipLoadoutUsedCost", () => {
+  it("sums weight of chips equipped on the given set", () => {
+    const chips = libraryWith(
+      syntheticChip(0, { weight: 4, slotA: 0, slotB: 0 }),
+      syntheticChip(1, { type: 0x23, weight: 6, slotA: 4 }),
+      syntheticChip(2, { type: 0x27, weight: 2, slotC: 0 }),
+    );
+
+    expect(pluginChipLoadoutUsedCost(chips, "A")).toBe(10);
+    expect(pluginChipLoadoutUsedCost(chips, "B")).toBe(4);
+    expect(pluginChipLoadoutUsedCost(chips, "C")).toBe(2);
+  });
+});
+
+describe("equipPluginChipToLoadout", () => {
+  it("equips a library chip onto a set and Optimizes starts from 0", () => {
+    const chips = libraryWith(
+      syntheticChip(0, { weight: 4, slotA: 0 }),
+      syntheticChip(1, { type: 0x23, weight: 6 }),
+    );
+
+    const next = equipPluginChipToLoadout(chips, 1, "A");
+
+    expect(next[0].slotA).toBe(0);
+    expect(next[1].slotA).toBe(4);
+    expect(pluginChipLoadoutUsedCost(next, "A")).toBe(10);
+  });
+
+  it("is a no-op when the chip is already equipped on that set", () => {
+    const chips = libraryWith(
+      syntheticChip(0, { weight: 4, slotA: 0 }),
+      syntheticChip(1, { type: 0x23, weight: 6, slotA: 4 }),
+    );
+
+    const next = equipPluginChipToLoadout(chips, 1, "A");
+
+    expect(next).toBe(chips);
+  });
+
+  it("refuses to equip an empty library slot", () => {
+    const chips = libraryWith(syntheticChip(0, { weight: 4, slotA: 0 }));
+
+    expect(() => equipPluginChipToLoadout(chips, 5, "A")).toThrow(RangeError);
+    expect(chips[0].slotA).toBe(0);
+  });
+});
+
+describe("copyPluginChipLoadout", () => {
+  it("copies equipped membership from one set onto another then Optimizes", () => {
+    const chips = libraryWith(
+      syntheticChip(0, { weight: 4, slotA: 0, slotB: -1 }),
+      syntheticChip(1, { type: 0x23, weight: 6, slotA: 4, slotB: 0 }),
+      syntheticChip(2, { type: 0x27, weight: 2, slotA: -1, slotB: 6 }),
+    );
+
+    const next = copyPluginChipLoadout(chips, "A", "B");
+
+    expect(next[0].slotB).toBe(0);
+    expect(next[1].slotB).toBe(4);
+    expect(next[2].slotB).toBe(-1);
+    // Source set unchanged
+    expect(next[0].slotA).toBe(0);
+    expect(next[1].slotA).toBe(4);
+    expect(next[2].slotA).toBe(-1);
+  });
+
+  it("is a no-op when source and target are the same set", () => {
+    const chips = libraryWith(syntheticChip(0, { weight: 4, slotA: 0 }));
+    expect(copyPluginChipLoadout(chips, "A", "A")).toBe(chips);
+  });
+});
 
 describe("optimizePluginChipLoadout (in-game Optimize pack)", () => {
   it("packs equipped set A starts tightly from 0 by preceding weights", () => {

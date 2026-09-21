@@ -91,7 +91,7 @@ describe("EditorShell tabs", () => {
     expect(html).not.toContain(">芯片</button>");
   });
 
-  it("keeps library editing under Chip Library and shows a selectable loadout placeholder", () => {
+  it("keeps library editing under Chip Library and shows the loadout panel under Chip Loadout", () => {
     const library = renderShell("en", "chipLibrary");
     const loadout = renderShell("en", "chipLoadout");
 
@@ -107,7 +107,8 @@ describe("EditorShell tabs", () => {
     expect(loadout).toContain(
       'role="tabpanel" id="editor-panel-chipLoadout" aria-labelledby="editor-tab-chipLoadout"',
     );
-    expect(loadout).toContain('data-testid="chip-loadout-placeholder"');
+    expect(loadout).toContain('data-testid="chip-loadout-panel"');
+    expect(loadout).not.toContain('data-testid="chip-loadout-placeholder"');
   });
 
   it("places the dark-mode toggle left of the language switch on the tab row", () => {

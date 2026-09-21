@@ -384,6 +384,36 @@ input[type="text"],
   align-items: stretch;
 }
 
+.chip-loadout-toolbar {
+  flex-wrap: wrap;
+  align-items: end;
+}
+
+.chip-loadout-usage--over,
+.chip-loadout-usage--over select {
+  color: var(--ui-dirty);
+  font-weight: 650;
+}
+
+.chip-loadout-capacity-label {
+  color: var(--ui-muted);
+  font-size: 0.9em;
+}
+
+.chip-loadout-stats {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--ui-border-soft);
+}
+
+.chip-loadout-stats h3,
+.panel-split__side h3,
+.panel-split__main h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  font-weight: 650;
+}
+
 .panel-split__side,
 .panel-split__main {
   min-width: 0;

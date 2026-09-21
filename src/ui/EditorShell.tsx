@@ -82,7 +82,7 @@ export function EditorShell({
       ) : activeTab === "chipLibrary" ? (
         <ChipsPanel slot={slot} onSlotChange={onSlotChange} />
       ) : (
-        <ChipLoadoutPanel />
+        <ChipLoadoutPanel slot={slot} onSlotChange={onSlotChange} />
       );
   }
 

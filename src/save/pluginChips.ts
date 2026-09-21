@@ -197,6 +197,80 @@ export function optimizePluginChipLoadout(
   });
 }
 
+/** Sum of `weight` for chips equipped on one loadout set. */
+export function pluginChipLoadoutUsedCost(
+  chips: readonly PluginChip[],
+  set: PluginChipLoadoutSet,
+): number {
+  const key = LOADOUT_SLOT_KEY[set];
+  let used = 0;
+  for (const chip of chips) {
+    if (chip[key] >= 0) used += chip.weight;
+  }
+  return used;
+}
+
+/**
+ * Equip a library chip onto a loadout set, then Optimize that set.
+ * Empty library slots cannot be equipped; already-equipped chips are a no-op.
+ */
+export function equipPluginChipToLoadout(
+  chips: PluginChip[],
+  index: number,
+  set: PluginChipLoadoutSet,
+): PluginChip[] {
+  if (index < 0 || index >= PLUGIN_CHIPS_SIZE_ITEMS) {
+    throw new RangeError(
+      `Plugin chip index out of range: ${index} (expected 0..${PLUGIN_CHIPS_SIZE_ITEMS - 1})`,
+    );
+  }
+  if (chips.length !== PLUGIN_CHIPS_SIZE_ITEMS) {
+    throw new PluginChipsSizeError(
+      chips.length * PLUGIN_CHIPS_ITEM_SIZE_BYTES,
+    );
+  }
+
+  const key = LOADOUT_SLOT_KEY[set];
+  const chip = chips[index]!;
+  if (chip.id.type === EMPTY_PLUGIN_CHIP_ID.type) {
+    throw new RangeError(
+      `Cannot equip empty plugin chip at index ${index}`,
+    );
+  }
+  if (chip[key] >= 0) return chips;
+
+  // Append after current strip end; Optimize rewrites contiguous starts.
+  const end = pluginChipLoadoutUsedCost(chips, set);
+  const marked = setPluginChip(chips, index, { [key]: end });
+  return optimizePluginChipLoadout(marked, set);
+}
+
+/**
+ * Copy equipped membership from one loadout set onto another, then Optimize.
+ * Source set slot fields are unchanged. Same-set copies are a no-op.
+ */
+export function copyPluginChipLoadout(
+  chips: PluginChip[],
+  from: PluginChipLoadoutSet,
+  to: PluginChipLoadoutSet,
+): PluginChip[] {
+  if (from === to) return chips;
+  if (chips.length !== PLUGIN_CHIPS_SIZE_ITEMS) {
+    throw new PluginChipsSizeError(
+      chips.length * PLUGIN_CHIPS_ITEM_SIZE_BYTES,
+    );
+  }
+
+  const fromKey = LOADOUT_SLOT_KEY[from];
+  const toKey = LOADOUT_SLOT_KEY[to];
+  const copied = chips.map((chip) => {
+    const nextStart = chip[fromKey] >= 0 ? chip[fromKey] : -1;
+    if (chip[toKey] === nextStart) return chip;
+    return { ...chip, [toKey]: nextStart };
+  });
+  return optimizePluginChipLoadout(copied, to);
+}
+
 /**
  * Unequip a chip from one loadout set, then Optimize that set.
  * OS chips (type 0x2A) cannot be unequipped while present on the set.
