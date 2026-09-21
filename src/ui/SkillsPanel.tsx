@@ -578,11 +578,6 @@ export function ChipLoadoutPanel({
                 key={set}
                 type="button"
                 aria-pressed={editSet === set}
-                data-in-game-active={
-                  ACTIVE_CHIP_LOADOUT_SET_SUPPORTED && activeSet === set
-                    ? "true"
-                    : undefined
-                }
                 onClick={() => setEditSet(set)}
               >
                 {set}
@@ -592,33 +587,30 @@ export function ChipLoadoutPanel({
         </fieldset>
 
         <fieldset
-          className="chip-loadout-control-group"
+          className="chip-loadout-control-group chip-loadout-control-group--centered"
           data-testid="chip-loadout-in-game-set"
         >
           <legend>{t("chips.inGameSet")}</legend>
-          <label>
-            <span>{t("chips.activeSet")}</span>
-            <select
-              data-testid="chip-loadout-active"
-              aria-label={t("chips.activeSet")}
-              value={activeSet}
-              disabled={!ACTIVE_CHIP_LOADOUT_SET_SUPPORTED}
-              onChange={(event) =>
-                onSlotChange(
-                  applyChipLoadoutActiveSet(
-                    slot,
-                    event.currentTarget.value as PluginChipLoadoutSet,
-                  ),
-                )
-              }
-            >
-              {LOADOUT_SETS.map((set) => (
-                <option key={set} value={set}>
-                  {set}
-                </option>
-              ))}
-            </select>
-          </label>
+          <select
+            data-testid="chip-loadout-active"
+            aria-label={t("chips.activeSet")}
+            value={activeSet}
+            disabled={!ACTIVE_CHIP_LOADOUT_SET_SUPPORTED}
+            onChange={(event) =>
+              onSlotChange(
+                applyChipLoadoutActiveSet(
+                  slot,
+                  event.currentTarget.value as PluginChipLoadoutSet,
+                ),
+              )
+            }
+          >
+            {LOADOUT_SETS.map((set) => (
+              <option key={set} value={set}>
+                {set}
+              </option>
+            ))}
+          </select>
         </fieldset>
 
         <fieldset

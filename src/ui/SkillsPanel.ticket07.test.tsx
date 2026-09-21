@@ -249,10 +249,10 @@ describe("ChipLoadoutPanel wireframe", () => {
     expect(html).toContain('data-testid="chip-loadout-panel"');
     expect(html).not.toContain('data-testid="chip-loadout-placeholder"');
     expect(html).toMatch(/aria-pressed="true"[^>]*>A</);
-    expect(html).toMatch(/data-in-game-active="true"[^>]*>A</);
     expect(html).toContain(">B</button>");
     expect(html).toContain(">C</button>");
     expect(html).not.toContain("★");
+    expect(html).not.toContain("data-in-game-active");
     expect(html).toContain('data-testid="chip-loadout-active"');
     expect(html).toContain("Overload");
     expect(html).toContain('data-testid="chip-loadout-capacity"');
@@ -280,17 +280,17 @@ describe("ChipLoadoutPanel wireframe", () => {
     expect(html).toContain("Capacity");
   });
 
-  it("marks the in-game active set with inverted button chrome and exposes a switch", () => {
+  it("exposes an in-game active set switch without marking A/B/C buttons for it", () => {
     const slot = setActiveChipLoadoutSet(loadoutSampleSlot(), "B");
     const html = renderLoadout("en", slot);
 
     expect(html).toContain('data-testid="chip-loadout-active"');
     expect(html).not.toContain("★");
+    expect(html).not.toContain("data-in-game-active");
     expect(html).not.toContain("unavailable");
     expect(html).toMatch(
       /data-testid="chip-loadout-active"[^>]*>[\s\S]*?<option[^>]*value="B"[^>]*selected/,
     );
-    expect(html).toMatch(/data-in-game-active="true"[^>]*>B</);
     expect(html).not.toMatch(
       /data-testid="chip-loadout-active"[^>]*disabled/,
     );
@@ -299,10 +299,14 @@ describe("ChipLoadoutPanel wireframe", () => {
   it("keeps the edit subpage independent of the active set", () => {
     const slot = setActiveChipLoadoutSet(loadoutSampleSlot(), "C");
     const html = renderLoadout("en", slot);
-    // Default edit set remains A while in-game active is C.
+    // Default edit set remains A while in-game active is C (dropdown only).
     expect(html).toMatch(/aria-pressed="true"[^>]*>A</);
-    expect(html).toMatch(/data-in-game-active="true"[^>]*>C</);
+    expect(html).toMatch(/aria-pressed="false"[^>]*>C</);
+    expect(html).toMatch(
+      /data-testid="chip-loadout-active"[^>]*>[\s\S]*?<option[^>]*value="C"[^>]*selected/,
+    );
     expect(html).not.toContain("★");
+    expect(html).not.toContain("data-in-game-active");
   });
 
   it("reuses category filter labels on the from-library pane", () => {

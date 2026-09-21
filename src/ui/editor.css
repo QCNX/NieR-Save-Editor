@@ -504,6 +504,10 @@ input[type="text"],
   white-space: nowrap;
 }
 
+.chip-loadout-control-group--centered {
+  justify-content: center;
+}
+
 .chip-loadout-control-group--capacity {
   gap: 10px;
 }
@@ -693,20 +697,12 @@ input[type="text"],
   box-sizing: border-box;
 }
 
+/* Editing loadout set: invert fill/ink. In-game active set is unmarked here. */
 .slot-list-toolbar button[aria-pressed="true"] {
   font-weight: 650;
-  background: var(--ui-panel);
-}
-
-/* In-game active loadout set: invert fill/ink instead of a star glyph. */
-.slot-list-toolbar button[data-in-game-active="true"] {
   background: var(--ui-ink);
   color: var(--ui-control-bg);
   border-color: var(--ui-ink);
-}
-
-.slot-list-toolbar button[data-in-game-active="true"][aria-pressed="true"] {
-  font-weight: 650;
 }
 
 

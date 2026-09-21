@@ -115,13 +115,14 @@ describe("chip loadout three-column layout CSS", () => {
     );
   });
 
-  it("inverts in-game active loadout set buttons instead of starring them", () => {
+  it("inverts the editing loadout set button instead of starring the in-game set", () => {
     expect(css).toMatch(
-      /\.slot-list-toolbar button\[data-in-game-active="true"\]\s*\{[^}]*background:\s*var\(--ui-ink\)/s,
+      /\.slot-list-toolbar button\[aria-pressed="true"\]\s*\{[^}]*background:\s*var\(--ui-ink\)/s,
     );
     expect(css).toMatch(
-      /\.slot-list-toolbar button\[data-in-game-active="true"\]\s*\{[^}]*color:\s*var\(--ui-control-bg\)/s,
+      /\.slot-list-toolbar button\[aria-pressed="true"\]\s*\{[^}]*color:\s*var\(--ui-control-bg\)/s,
     );
+    expect(css).not.toMatch(/data-in-game-active/);
   });
 
   it("clips horizontal overflow in chip-loadout and collection containers", () => {
