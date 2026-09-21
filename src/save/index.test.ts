@@ -30,6 +30,9 @@ import {
   setPodCosmetic,
   setPodProgramId,
   setPurchasedChipCapacity,
+  setPurchasedChipCapacityWithInventorySync,
+  CAPACITY_EXPANSION_ITEM_IDS,
+  purchasedCapacityTiers,
 } from "./index";
 
 describe("public save edit API", () => {
@@ -86,5 +89,11 @@ describe("public save edit API", () => {
     expect(getPurchasedChipCapacity).toBeTypeOf("function");
     expect(setPurchasedChipCapacity).toBeTypeOf("function");
     expect(PURCHASED_CAPACITY_OPTIONS).toContain(128);
+  });
+
+  it("exports capacity expansion backpack sync", () => {
+    expect(setPurchasedChipCapacityWithInventorySync).toBeTypeOf("function");
+    expect(purchasedCapacityTiers).toBeTypeOf("function");
+    expect(CAPACITY_EXPANSION_ITEM_IDS.plus8).toBe(8042);
   });
 });

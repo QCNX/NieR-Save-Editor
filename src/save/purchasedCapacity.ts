@@ -44,16 +44,20 @@ function snapToCapacityOption(capacity: number): number {
   return best;
 }
 
+export type PurchasedCapacityTiers = {
+  n8: number;
+  n16: number;
+  n24: number;
+};
+
 /**
- * Encode a purchased capacity into the on-disk mask.
- * Among (n8,n16,n24) triples that yield the capacity, prefer fewer +24 then
- * fewer +16 (prefer +8). Bit4 is never set. Out-of-range values snap to the
- * nearest legal option.
+ * Prefer-small-tier (n8,n16,n24) counts for a purchased capacity.
+ * Same selection rule as encodePurchasedCapacity (fewer +24, then fewer +16).
  */
-export function encodePurchasedCapacity(capacity: number): number {
+export function purchasedCapacityTiers(capacity: number): PurchasedCapacityTiers {
   const snapped = snapToCapacityOption(capacity);
   const units = (snapped - 40) / 8;
-  let best: { n8: number; n16: number; n24: number } | null = null;
+  let best: PurchasedCapacityTiers | null = null;
   for (let n24 = 0; n24 <= 1; n24++) {
     for (let n16 = 0; n16 <= 2; n16++) {
       const n8 = units - 2 * n16 - 3 * n24;
@@ -71,7 +75,17 @@ export function encodePurchasedCapacity(capacity: number): number {
   if (!best) {
     throw new RangeError(`Unsupported purchased capacity: ${capacity}`);
   }
+  return best;
+}
 
+/**
+ * Encode a purchased capacity into the on-disk mask.
+ * Among (n8,n16,n24) triples that yield the capacity, prefer fewer +24 then
+ * fewer +16 (prefer +8). Bit4 is never set. Out-of-range values snap to the
+ * nearest legal option.
+ */
+export function encodePurchasedCapacity(capacity: number): number {
+  const best = purchasedCapacityTiers(capacity);
   let mask = 0;
   for (let i = 0; i < best.n8; i++) mask |= 1 << i;
   for (let i = 0; i < best.n16; i++) mask |= 1 << (5 + i);

@@ -143,9 +143,16 @@ export {
   decodePurchasedCapacity,
   encodePurchasedCapacity,
   getPurchasedChipCapacity,
+  purchasedCapacityTiers,
   PURCHASED_CAPACITY_OPTIONS,
   setPurchasedChipCapacity,
+  type PurchasedCapacityTiers,
 } from "./purchasedCapacity";
+export {
+  CAPACITY_EXPANSION_ITEM_IDS,
+  setPurchasedChipCapacityWithInventorySync,
+  syncInventoryCapacityExpansionItems,
+} from "./capacityExpansionInventory";
 export { getXp, setXp } from "./xp";
 export {
   DEBUG_FLAG_VALUES,
