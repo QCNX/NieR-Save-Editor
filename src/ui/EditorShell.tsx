@@ -32,6 +32,7 @@ const TABS_WITHOUT_SLOT: ReadonlySet<EditorTab> = new Set(["save", "settings"]);
 type Props = {
   activeTab: EditorTab;
   dirty: boolean;
+  modalOpen?: boolean;
   empty?: ReactNode;
   notices?: ReactNode;
   onSlotChange: (next: SlotData) => void;
@@ -46,6 +47,7 @@ type Props = {
 export function EditorShell({
   activeTab,
   dirty,
+  modalOpen = false,
   empty,
   notices,
   onSlotChange,
@@ -82,7 +84,11 @@ export function EditorShell({
 
   return (
     <div className="editor-shell">
-      <div className="editor-tabs-row">
+      <div
+        className="editor-tabs-row"
+        inert={modalOpen ? true : undefined}
+        aria-hidden={modalOpen ? "true" : undefined}
+      >
         <nav className="editor-tabs" role="tablist" aria-label={t("app.title")}>
           {EDITOR_TABS.map((tab) => {
             const selected = tab === activeTab;

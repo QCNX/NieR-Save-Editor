@@ -135,9 +135,7 @@ export function PodsPanel({ slot, onSlotChange }: PanelProps) {
   };
 
   return (
-    <section className="panel panel--fill" aria-labelledby="pods-heading">
-      <h2 id="pods-heading">{t("tabs.pods")}</h2>
-
+    <section className="panel panel--fill">
       <div className="panel-split">
         <aside className="panel-split__side" aria-label={t("skills.podConfig")}>
           <h3>{t("skills.podConfig")}</h3>
@@ -303,9 +301,7 @@ export function ChipsPanel({ slot, onSlotChange }: PanelProps) {
   };
 
   return (
-    <section className="panel panel--fill" aria-labelledby="chips-heading">
-      <h2 id="chips-heading">{t("tabs.chips")}</h2>
-
+    <section className="panel panel--fill">
       <div className="list-toolbar">
         <label>
           <span>{t("list.search")}</span>

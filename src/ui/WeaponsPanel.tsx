@@ -125,9 +125,7 @@ export function WeaponsPanel({ slot, onSlotChange }: Props) {
   ];
 
   return (
-    <section className="panel panel--fill" aria-labelledby="weapons-heading">
-      <h2 id="weapons-heading">{t("tabs.weapons")}</h2>
-
+    <section className="panel panel--fill">
       <div className="panel-split">
         <aside
           className="panel-split__side"

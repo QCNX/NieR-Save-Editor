@@ -17,7 +17,6 @@ export function SettingsPanel({
 
   return (
     <section className="panel settings-panel">
-      <h2>{t("tabs.settings")}</h2>
       <div className="settings-row">
         <label className="toolbar-field toolbar-field--grow">
           <span>{t("settings.customSaveRoot")}</span>

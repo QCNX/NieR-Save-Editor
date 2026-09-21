@@ -825,6 +825,7 @@ function AppContent({
       <EditorShell
         activeTab={activeTab}
         dirty={state.dirty}
+        modalOpen={replacementPreview !== null}
         onSlotChange={applySlotEdit}
         onTabChange={onActiveTabChange}
         onThemeChange={onThemeChange}

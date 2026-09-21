@@ -57,6 +57,7 @@ export const messagesZhCN = {
   "saveManager.metadata.missing": "缺少元数据",
   "saveManager.metadata.invalid": "元数据无效",
   "saveManager.metadata.legacy": "旧版元数据",
+  "saveManager.metadata.unreadable": "元数据无法读取",
   "saveManager.backupReason.manual": "手动备份",
   "saveManager.backupReason.before-save": "保存前",
   "saveManager.backupReason.before-import": "导入前",

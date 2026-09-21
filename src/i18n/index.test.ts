@@ -8,6 +8,8 @@ import {
   translate,
   useI18n,
 } from "./index";
+import { messagesEn } from "./messages.en";
+import { messagesZhCN } from "./messages.zh-CN";
 
 function TranslationProbe() {
   const { language, t } = useI18n();
@@ -15,6 +17,18 @@ function TranslationProbe() {
 }
 
 describe("i18n public API", () => {
+  it("keeps catalog keys and interpolation placeholders in exact parity", () => {
+    expect(Object.keys(messagesEn).sort()).toEqual(
+      Object.keys(messagesZhCN).sort(),
+    );
+    const placeholders = (message: string) =>
+      Array.from(message.matchAll(/\{([^}]+)\}/g), (match) => match[1]).sort();
+    for (const key of Object.keys(messagesZhCN) as (keyof typeof messagesZhCN)[]) {
+      expect(placeholders(messagesEn[key]), key).toEqual(
+        placeholders(messagesZhCN[key]),
+      );
+    }
+  });
   it("translates the same shell key in both supported languages", () => {
     expect(DEFAULT_LANGUAGE).toBe("zh-CN");
     expect(SUPPORTED_LANGUAGES).toEqual(["zh-CN", "en"]);
@@ -114,6 +128,7 @@ describe("i18n public API", () => {
       "saveManager.metadata.missing",
       "saveManager.metadata.invalid",
       "saveManager.metadata.legacy",
+      "saveManager.metadata.unreadable",
       "saveManager.backupReason.manual",
       "saveManager.backupReason.before-save",
       "saveManager.backupReason.before-import",

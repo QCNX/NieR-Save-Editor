@@ -249,6 +249,9 @@ describe("SaveManagerPanel", () => {
     expect(html).toContain("Restore…");
     expect(html).toContain("Import and replace…");
     expect(html).toContain('role="dialog"');
+    expect(html).toContain('inert=""');
+    expect(html).toContain('aria-hidden="true"');
+    expect(html).toContain('tabindex="-1"');
     expect(html).toContain("Source");
     expect(html).toContain("Target");
     expect(html).toContain("restore.dat");

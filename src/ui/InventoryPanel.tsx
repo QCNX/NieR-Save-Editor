@@ -104,8 +104,7 @@ export function InventoryPanel({ slot, onSlotChange }: Props) {
   const rows = inventoryRows(items, query, occupiedOnly, language);
 
   return (
-    <section className="panel panel--fill" aria-labelledby="inventory-heading">
-      <h2 id="inventory-heading">{t("tabs.items")}</h2>
+    <section className="panel panel--fill">
       <div className="slot-list-toolbar">
         <button
           type="button"

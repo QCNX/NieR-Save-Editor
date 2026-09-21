@@ -2,22 +2,44 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
 import { I18nProvider } from "../i18n";
-import { SAVEFILE_SIZE_BYTES, load } from "../save";
+import {
+  INVENTORY_SIZE_ITEMS,
+  SAVEFILE_CORPSE_INVENTORY_START_BYTE,
+  SAVEFILE_INVENTORY_START_BYTE,
+  SAVEFILE_SIZE_BYTES,
+  load,
+} from "../save";
 import { EditorShell } from "./EditorShell";
 import { SettingsPanel } from "./SettingsPanel";
 
-const slot = load(new Uint8Array(SAVEFILE_SIZE_BYTES));
+function makeRenderableSlot() {
+  const bytes = new Uint8Array(SAVEFILE_SIZE_BYTES);
+  const view = new DataView(bytes.buffer);
+  for (const inventoryStart of [
+    SAVEFILE_INVENTORY_START_BYTE,
+    SAVEFILE_CORPSE_INVENTORY_START_BYTE,
+  ]) {
+    for (let index = 0; index < INVENTORY_SIZE_ITEMS; index += 1) {
+      view.setUint32(inventoryStart + index * 12 + 4, 0xffff_ffff, true);
+    }
+  }
+  return load(bytes);
+}
+
+const slot = makeRenderableSlot();
 
 function renderShell(
   language: "zh-CN" | "en",
-  activeTab: "save" | "general" | "settings",
+  activeTab: React.ComponentProps<typeof EditorShell>["activeTab"],
   loadedSlot = slot,
+  options: { modalOpen?: boolean; theme?: "light" | "dark" } = {},
 ) {
   return renderToStaticMarkup(
     <I18nProvider language={language}>
       <EditorShell
         activeTab={activeTab}
         dirty
+        modalOpen={options.modalOpen}
         notices={<p role="status">notice</p>}
         onSlotChange={vi.fn()}
         onTabChange={vi.fn()}
@@ -31,7 +53,7 @@ function renderShell(
           />
         }
         slot={loadedSlot}
-        theme="dark"
+        theme={options.theme ?? "dark"}
         saveManager={
           <section aria-label="save manager">save controls</section>
         }
@@ -88,5 +110,40 @@ describe("EditorShell tabs", () => {
     expect(html).toContain("已修改");
     expect(html).toContain('aria-label="语言"');
     expect(html).toContain(">亮色</button>");
+  });
+
+  it("does not repeat a non-save tab label as a page-level content heading", () => {
+    for (const [tab, headingId] of [
+      ["general", "summary-heading"],
+      ["items", "inventory-heading"],
+      ["weapons", "weapons-heading"],
+      ["pods", "pods-heading"],
+      ["chips", "chips-heading"],
+    ] as const) {
+      expect(renderShell("en", tab)).not.toContain(`id="${headingId}"`);
+    }
+    expect(renderShell("en", "settings")).not.toContain("<h2>Settings</h2>");
+
+    const inventory = renderShell("en", "items");
+    expect(inventory).toContain('id="editor-tab-items"');
+    expect(inventory).toContain(
+      'role="tabpanel" id="editor-panel-items" aria-labelledby="editor-tab-items"',
+    );
+  });
+
+  it("makes tabs and shell controls inert while the replacement dialog is open", () => {
+    const html = renderShell("en", "save", slot, { modalOpen: true });
+
+    expect(html).toContain('class="editor-tabs-row" inert="" aria-hidden="true"');
+  });
+
+  it("keeps the same semantic tab structure in both themes", () => {
+    const light = renderShell("en", "save", slot, { theme: "light" });
+    const dark = renderShell("en", "save", slot, { theme: "dark" });
+
+    expect(light.match(/role="tab"/g)).toHaveLength(7);
+    expect(dark.match(/role="tab"/g)).toHaveLength(7);
+    expect(light).toContain('aria-pressed="false"');
+    expect(dark).toContain('aria-pressed="true"');
   });
 });

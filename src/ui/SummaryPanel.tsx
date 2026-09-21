@@ -278,8 +278,7 @@ export function SummaryPanel({ slot, onSlotChange }: Props) {
   };
 
   return (
-    <section className="panel" aria-labelledby="summary-heading">
-      <h2 id="summary-heading">{t("tabs.general")}</h2>
+    <section className="panel">
       <div className="summary-grid">
         <label>
           <span>{t("fields.steamId")}</span>

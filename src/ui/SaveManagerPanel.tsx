@@ -1,4 +1,10 @@
-import { useId, type ChangeEvent } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  type ChangeEvent,
+  type KeyboardEvent,
+} from "react";
 
 import { useI18n } from "../i18n";
 import type {
@@ -7,6 +13,7 @@ import type {
   SaveSummary,
 } from "./saveSummary";
 import type { SaveReplacementPreview } from "./saveReplacement";
+import { dialogKeyAction } from "./dialogKeyboard";
 
 export type SaveManagerPanelProps = {
   busy: boolean;
@@ -158,6 +165,23 @@ export function SaveManagerPanel({
   const inputId = useId();
   const importInputId = useId();
   const pageBusy = busy || replacementPreview !== null;
+  const dialogRef = useRef<HTMLElement>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
+  const restoreFocusRef = useRef<HTMLElement | null>(null);
+  const replacementOpen = replacementPreview !== null;
+
+  useEffect(() => {
+    if (!replacementOpen) return;
+    restoreFocusRef.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    cancelButtonRef.current?.focus();
+    return () => {
+      restoreFocusRef.current?.focus();
+      restoreFocusRef.current = null;
+    };
+  }, [replacementOpen]);
 
   function handleOpenFile(event: ChangeEvent<HTMLInputElement>) {
     onOpenFile(event.currentTarget.files?.[0]);
@@ -169,8 +193,34 @@ export function SaveManagerPanel({
     event.currentTarget.value = "";
   }
 
+  function handleDialogKeyDown(event: KeyboardEvent<HTMLElement>) {
+    const focusable = Array.from(
+      dialogRef.current?.querySelectorAll<HTMLElement>(
+        'button:not(:disabled), input:not(:disabled), select:not(:disabled), [href], [tabindex]:not([tabindex="-1"])',
+      ) ?? [],
+    );
+    const action = dialogKeyAction({
+      key: event.key,
+      shiftKey: event.shiftKey,
+      activeIndex: focusable.indexOf(document.activeElement as HTMLElement),
+      count: focusable.length,
+    });
+    if (action.type === "cancel") {
+      event.preventDefault();
+      if (!busy) onCancelReplacement();
+    } else if (action.type === "focus") {
+      event.preventDefault();
+      focusable[action.index]?.focus();
+    }
+  }
+
   return (
     <div className="save-manager">
+      <div
+        className="save-manager-content"
+        inert={replacementOpen ? true : undefined}
+        aria-hidden={replacementOpen ? "true" : undefined}
+      >
       <section
         className="save-manager__section save-current"
         aria-labelledby="save-manager-current"
@@ -450,13 +500,17 @@ export function SaveManagerPanel({
           </div>
         )}
       </section>
+      </div>
       {replacementPreview ? (
         <div className="replacement-dialog-backdrop">
           <section
+            ref={dialogRef}
             className="replacement-dialog"
             role="dialog"
             aria-modal="true"
             aria-labelledby="replacement-dialog-title"
+            tabIndex={-1}
+            onKeyDown={handleDialogKeyDown}
           >
             <h2 id="replacement-dialog-title">
               {t(`replacement.heading.${replacementPreview.kind}`)}
@@ -492,9 +546,9 @@ export function SaveManagerPanel({
             <div className="replacement-dialog-actions">
               <button
                 type="button"
+                ref={cancelButtonRef}
                 className="save-action"
                 disabled={busy}
-                autoFocus
                 onClick={onCancelReplacement}
               >
                 {t("replacement.cancel")}

@@ -114,7 +114,7 @@ describe("ticket 14 General editor seam", () => {
       </I18nProvider>,
     );
 
-    expect(markup).toContain("General");
+    expect(markup).not.toContain(">General</h2>");
     expect(markup).toContain("SteamID");
     expect(markup).toContain('value="18446744073709551615"');
     expect(markup).toContain("Character name");
@@ -155,8 +155,8 @@ describe("ticket 14 General editor seam", () => {
       </I18nProvider>,
     );
 
+    expect(markup).not.toContain(">概要</h2>");
     for (const label of [
-      "概要",
       "角色名",
       "游戏时长（秒）",
       "调试标志",

@@ -59,6 +59,7 @@ export const messagesEn: Record<MessageKey, string> = {
   "saveManager.metadata.missing": "Metadata missing",
   "saveManager.metadata.invalid": "Invalid metadata",
   "saveManager.metadata.legacy": "Legacy metadata",
+  "saveManager.metadata.unreadable": "Metadata unreadable",
   "saveManager.backupReason.manual": "Manual backup",
   "saveManager.backupReason.before-save": "Before save",
   "saveManager.backupReason.before-import": "Before import",
