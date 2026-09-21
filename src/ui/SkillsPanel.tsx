@@ -22,7 +22,14 @@ import {
   type PodProgram,
   type SlotData,
 } from "../save";
-import { lookupChipName, lookupPodName, showsChipDiamond } from "../names";
+import {
+  CHIP_LIBRARY_CATEGORIES,
+  chipTypeMatchesCategory,
+  lookupChipName,
+  lookupPodName,
+  showsChipDiamond,
+  type ChipLibraryCategory,
+} from "../names";
 import {
   filterSlots,
   IdChoiceControl,
@@ -33,6 +40,15 @@ import {
 function chipIsOccupied(chip: PluginChip): boolean {
   return chip.id.type !== EMPTY_PLUGIN_CHIP_ID.type;
 }
+
+const CATEGORY_MESSAGE_KEYS = {
+  all: "chips.category.all",
+  attack: "chips.category.attack",
+  defense: "chips.category.defense",
+  support: "chips.category.support",
+  hacking: "chips.category.hacking",
+  system: "chips.category.system",
+} as const satisfies Record<ChipLibraryCategory, string>;
 
 export function filterPodProgramRows(
   programs: readonly PodProgram[],
@@ -54,6 +70,7 @@ export function filterPluginChipRows(
   query: string,
   occupiedOnly: boolean,
   language: Language,
+  category: ChipLibraryCategory = "all",
 ): PluginChip[] {
   return filterSlots(chips, {
     query,
@@ -61,7 +78,7 @@ export function filterPluginChipRows(
     getId: (chip) => chip.id.type,
     getLabel: (chip) => lookupChipName(chip.id.baseId, language),
     isOccupied: chipIsOccupied,
-  });
+  }).filter((chip) => chipTypeMatchesCategory(chip.id.type, category));
 }
 
 export function availablePodProgramChoices(
@@ -297,8 +314,15 @@ export function ChipsPanel({ slot, onSlotChange }: PanelProps) {
   const { language, t } = useI18n();
   const [query, setQuery] = useState("");
   const [occupiedOnly, setOccupiedOnly] = useState(false);
+  const [category, setCategory] = useState<ChipLibraryCategory>("all");
   const allChips = parsePluginChips(slot.pluginChips);
-  const chips = filterPluginChipRows(allChips, query, occupiedOnly, language);
+  const chips = filterPluginChipRows(
+    allChips,
+    query,
+    occupiedOnly,
+    language,
+    category,
+  );
   const chipChoices = pluginChipChoices(language);
   const chipSelectWidthCh = estimateSelectWidthCh([
     t("list.empty"),
@@ -320,6 +344,27 @@ export function ChipsPanel({ slot, onSlotChange }: PanelProps) {
             value={query}
             onChange={(event) => setQuery(event.currentTarget.value)}
           />
+        </label>
+        <label>
+          <span>{t("chips.category")}</span>
+          <select
+            aria-label={t("chips.category")}
+            value={category}
+            onChange={(event) => {
+              const next = event.currentTarget.value;
+              if (
+                (CHIP_LIBRARY_CATEGORIES as readonly string[]).includes(next)
+              ) {
+                setCategory(next as ChipLibraryCategory);
+              }
+            }}
+          >
+            {CHIP_LIBRARY_CATEGORIES.map((id) => (
+              <option key={id} value={id}>
+                {t(CATEGORY_MESSAGE_KEYS[id])}
+              </option>
+            ))}
+          </select>
         </label>
         <label>
           <input

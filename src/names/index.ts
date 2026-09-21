@@ -7,6 +7,13 @@ export {
 } from "./displayName";
 export { showsChipDiamond } from "./chipDiamond";
 export {
+  CHIP_LIBRARY_CATEGORIES,
+  chipCategoryForType,
+  chipTypeMatchesCategory,
+  type ChipLibraryCategory,
+  type ChipTypeCategory,
+} from "./chipCategory";
+export {
   getCosmeticOptions,
   getOutfitOptions,
   lookupCosmeticName,

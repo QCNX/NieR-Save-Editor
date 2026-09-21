@@ -76,6 +76,9 @@ describe("i18n public API", () => {
     expect(translate("en", "chips.purchasedCapacity")).toBe("Purchased");
     expect(translate("zh-CN", "chips.statsPanel")).toBe("数值面板");
     expect(translate("en", "chips.statsPanel")).toBe("Stats Panel");
+    expect(translate("zh-CN", "chips.category.all")).toBe("全部");
+    expect(translate("en", "chips.category.attack")).toBe("Attack");
+    expect(translate("zh-CN", "chips.category.hacking")).toBe("黑客");
   });
 
   it("provides English text for every save-workflow and empty-state message", () => {
