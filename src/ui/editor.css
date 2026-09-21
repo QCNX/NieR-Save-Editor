@@ -414,6 +414,45 @@ input[type="text"],
   font-weight: 650;
 }
 
+.chip-stats-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chip-stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.95rem;
+}
+
+.chip-stats-row--overflow .chip-stats-value {
+  color: var(--ui-dirty);
+  font-weight: 650;
+}
+
+.chip-stats-name {
+  min-width: 8rem;
+}
+
+.chip-stats-estimate {
+  color: var(--ui-muted);
+  font-size: 0.9em;
+  font-weight: 400;
+}
+
+.chip-stats-empty {
+  margin: 0;
+  color: var(--ui-muted);
+  font-size: 0.95rem;
+}
+
 .panel-split__side,
 .panel-split__main {
   min-width: 0;

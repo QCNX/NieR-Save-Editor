@@ -131,6 +131,16 @@ export {
 } from "./pluginChips";
 
 export {
+  formatBestOfStatLine,
+  formatStackableStatLine,
+  summarizeEquippedChipStats,
+  type BestOfStatLine,
+  type ChipLoadoutStatsSummary,
+  type ListedStatLine,
+  type StackableStatLine,
+} from "./chipLoadoutStats";
+
+export {
   ACTIVE_CHIP_LOADOUT_SET_SUPPORTED,
   ActiveChipLoadoutSetUnsupportedError,
   getActiveChipLoadoutSet,

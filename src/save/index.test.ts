@@ -37,6 +37,8 @@ import {
   setPurchasedChipCapacityWithInventorySync,
   CAPACITY_EXPANSION_ITEM_IDS,
   purchasedCapacityTiers,
+  summarizeEquippedChipStats,
+  formatStackableStatLine,
 } from "./index";
 
 describe("public save edit API", () => {
@@ -58,6 +60,11 @@ describe("public save edit API", () => {
     expect(VANILLA_PLUGIN_CHIP_IDS).toContainEqual(
       expect.objectContaining({ baseId: 0x00000bb9, type: 0x01 }),
     );
+  });
+
+  it("exports chip loadout stats aggregation", () => {
+    expect(summarizeEquippedChipStats).toBeTypeOf("function");
+    expect(formatStackableStatLine).toBeTypeOf("function");
   });
 
   it("exports General core field editing", () => {
