@@ -5,7 +5,7 @@
  * Best-of: highest equipped tier only.
  * Conditional / system / HUD: listed as text; no fake numeric aggregate.
  *
- * Caps: only confident community/PLAN values are stored. Unknown caps stay
+ * Caps: only confident community-table values are stored. Unknown caps stay
  * uncapped (`cap: null`) and must never invent a cutoff.
  */
 import { chipCategoryForType } from "../names/chipCategory";
@@ -78,11 +78,11 @@ type EffectDef =
     };
 
 /**
- * Community / PLAN effect metadata keyed by chip type.
+ * Community-table effect metadata keyed by chip type.
  * Value ladders are community estimates unless noted; caps only when confident.
  */
 const CHIP_EFFECT_DEFS: ReadonlyMap<number, EffectDef> = new Map([
-  // PLAN §2.6 example: Weapon Attack Up hard-caps at 100%.
+  // Product spec example: Weapon Attack Up hard-caps at 100%.
   // Ladder: common community table (diamond-efficiency guides); marked estimate.
   [
     0x01,
@@ -347,7 +347,7 @@ function formatUnit(value: number, unit: ChipStatUnit): string {
 }
 
 /**
- * Display string for a stackable row (PLAN zh overflow phrasing).
+ * Display string for a stackable row (zh overflow phrasing).
  */
 export function formatStackableStatLine(
   line: StackableStatLine,

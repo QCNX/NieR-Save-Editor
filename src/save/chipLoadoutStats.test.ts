@@ -127,7 +127,7 @@ describe("summarizeEquippedChipStats", () => {
 });
 
 describe("formatStackableStatLine", () => {
-  it("formats overflow in the PLAN zh style", () => {
+  it("formats overflow with zh overflow phrasing", () => {
     expect(
       formatStackableStatLine(
         {
