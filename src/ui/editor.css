@@ -1270,6 +1270,9 @@ input[type="text"],
   border-bottom: none;
   background: var(--ui-th);
   padding: 0 4px;
+  /* Match body scrollbar-gutter so the mid divider aligns with header gap. */
+  overflow-y: hidden;
+  scrollbar-gutter: stable;
 }
 
 .chip-library-virtual {
@@ -1300,14 +1303,23 @@ input[type="text"],
 .chip-library-pair {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 6px;
+  column-gap: 0;
+  row-gap: 0;
   align-items: stretch;
   min-width: 0;
 }
 
+/* Divider between the two tracks — same on header + body rows. */
+.chip-library-pair > .chip-library-pair__col:last-child {
+  border-left: 1px solid var(--ui-border);
+  margin-left: 8px;
+  padding-left: 8px;
+}
+
 .chip-library-pair__col {
   min-width: 0;
-  overflow: hidden;
+  /* Do not clip Level/Cost — name select shrinks instead. */
+  overflow: visible;
 }
 
 .chip-library-pair__col--empty {
@@ -1319,8 +1331,21 @@ input[type="text"],
   table-layout: fixed;
 }
 
+/* Reserve Level / Cost / ◆ so dual columns never hide them behind the name select. */
 .chip-library-cell-table .col-name {
   width: auto;
+}
+
+.chip-library-cell-table .col-level {
+  width: 5.5ch;
+}
+
+.chip-library-cell-table .col-weight {
+  width: 6.5ch;
+}
+
+.chip-library-cell-table .diamond-cell {
+  width: 1.5rem;
 }
 
 .panel--chip-library .slot-id-choice {
@@ -1332,28 +1357,46 @@ input[type="text"],
 
 .panel--chip-library .slot-id-choice select {
   flex: 1 1 auto;
+  /* Override any intrinsic/ch sizing so the name column can yield to Level/Cost. */
+  width: 100% !important;
   min-width: 0;
   max-width: 100%;
 }
 
 .panel--chip-library .slot-table .col-level,
 .panel--chip-library .slot-table .col-weight {
-  width: 1%;
-  max-width: none;
-  padding-inline: 4px;
+  padding-inline: 2px;
   white-space: nowrap;
+  overflow: visible;
+  text-align: center;
+}
+
+.panel--chip-library .slot-table .col-level input,
+.panel--chip-library .slot-table .col-weight input {
+  text-align: center;
+  /* Hide spin buttons so digits read as centered in the compact ch-width box. */
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.panel--chip-library .slot-table .col-level input::-webkit-outer-spin-button,
+.panel--chip-library .slot-table .col-level input::-webkit-inner-spin-button,
+.panel--chip-library .slot-table .col-weight input::-webkit-outer-spin-button,
+.panel--chip-library .slot-table .col-weight input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .panel--chip-library .slot-table .col-level input {
   width: 3.5ch;
-  min-width: 0;
+  min-width: 3.5ch;
   max-width: none;
   padding: 0 0.15em;
 }
 
 .panel--chip-library .slot-table .col-weight input {
   width: 4.75ch;
-  min-width: 0;
+  min-width: 4.75ch;
   max-width: none;
   padding: 0 0.15em;
 }
@@ -1365,6 +1408,12 @@ input[type="text"],
 @media (max-width: 760px) {
   .chip-library-pair {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .chip-library-pair > .chip-library-pair__col:last-child {
+    border-left: none;
+    margin-left: 0;
+    padding-left: 0;
   }
 }
 

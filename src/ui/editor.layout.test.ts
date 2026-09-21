@@ -278,13 +278,28 @@ describe("chip library dual-column density CSS", () => {
       /\.chip-library-pair\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+minmax\(0,\s*1fr\)/s,
     );
     expect(css).toMatch(
+      /\.chip-library-pair\s*>\s*\.chip-library-pair__col:last-child\s*\{[^}]*border-left:\s*1px\s+solid/s,
+    );
+    expect(css).toMatch(
+      /\.chip-library-virtual__head\s*\{[^}]*scrollbar-gutter:\s*stable/s,
+    );
+    expect(css).toMatch(
+      /\.chip-library-cell-table\s+\.col-level\s*\{[^}]*width:\s*5\.5ch/s,
+    );
+    expect(css).toMatch(
+      /\.chip-library-cell-table\s+\.col-weight\s*\{[^}]*width:\s*6\.5ch/s,
+    );
+    expect(css).toMatch(
       /\.panel--chip-library[\s\S]*?\.col-level input[\s\S]*?width:\s*3\.5ch/s,
     );
     expect(css).toMatch(
       /\.panel--chip-library[\s\S]*?\.col-weight input[\s\S]*?width:\s*4\.75ch/s,
     );
     expect(css).toMatch(
-      /\.panel--chip-library[\s\S]*?\.slot-id-choice select[\s\S]*?max-width:\s*100%/s,
+      /\.panel--chip-library[\s\S]*?\.col-level input[\s\S]*?text-align:\s*center/s,
+    );
+    expect(css).toMatch(
+      /\.panel--chip-library[\s\S]*?\.slot-id-choice select[\s\S]*?width:\s*100%\s*!important/s,
     );
   });
 

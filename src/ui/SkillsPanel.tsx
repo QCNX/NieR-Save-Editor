@@ -1042,12 +1042,6 @@ export function ChipsPanel({ slot, onSlotChange }: PanelProps) {
   );
   const pairs = useMemo(() => chipLibraryRowPairs(chips), [chips]);
   const chipChoices = pluginChipChoices(language);
-  // Slightly lower cap so two name selects fit the default 980 window.
-  const chipSelectWidthCh = estimateSelectWidthCh(
-    [t("list.empty"), ...chipChoices.map((choice) => choice.label)],
-    8,
-    22,
-  );
   const choiceLabels = {
     clear: t("actions.clear"),
     empty: t("list.empty"),
@@ -1115,7 +1109,7 @@ export function ChipsPanel({ slot, onSlotChange }: PanelProps) {
                   value={chip.id.type}
                   emptyValue={EMPTY_PLUGIN_CHIP_ID.type}
                   choices={chipChoices}
-                  selectWidthCh={chipSelectWidthCh}
+                  // Dual-col: fluid select width via CSS; fixed ch would clip Level/Cost.
                   labels={{
                     ...choiceLabels,
                     select: `${t("skills.pluginChips")} ${chip.position + 1}`,

@@ -68,6 +68,17 @@ describe("ChipsPanel dual-column virtual list", () => {
     expect(html).toContain("Weapon Attack Up");
     expect(html).toContain("Plug-in Chips");
     expect(html).toContain("◆");
+    // Level / Cost headers must remain in the dual-col head (not name-only).
+    expect(html).toContain(">Level</th>");
+    expect(html).toContain(">Cost</th>");
+
+    const zh = renderToStaticMarkup(
+      <I18nProvider language="zh-CN">
+        <ChipsPanel slot={slot} onSlotChange={vi.fn()} />
+      </I18nProvider>,
+    );
+    expect(zh).toContain(">等级</th>");
+    expect(zh).toContain(">占用</th>");
 
     // Virtual window: not every library slot as a full dual-col row.
     const pairCount = (html.match(/chip-library-pair--row/g) ?? []).length;
