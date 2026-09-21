@@ -402,35 +402,11 @@ input[type="text"],
   grid-template-columns: max-content max-content minmax(12rem, max-content);
 }
 
-.chip-loadout-library-filters {
-  flex-direction: column;
-  flex-wrap: nowrap;
-  align-items: stretch;
-  gap: 6px;
-}
-
-.chip-loadout-library-filters > label {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-
-.chip-loadout-library-filters input[type="search"] {
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-.chip-loadout-library-filters select {
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
 .panel-split--chip-loadout .panel-split__side {
   width: max-content;
   max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .panel-split--chip-loadout .panel-split__side > .table-wrap {
@@ -442,12 +418,24 @@ input[type="text"],
 .panel-split--chip-loadout .panel-split__main {
   width: max-content;
   max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .panel-split--chip-loadout .panel-split__main > .table-wrap {
   width: max-content;
   max-width: 100%;
   flex: 0 1 auto;
+}
+
+.panel-split--chip-loadout .table-wrap {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.panel-split--chip-loadout .chip-loadout-stats {
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .panel-split--chip-loadout .slot-table .col-level,
@@ -1237,6 +1225,7 @@ input[type="text"],
   flex: 1 1 auto;
   min-height: 0;
   max-width: 100%;
+  overflow-x: hidden;
   padding: 10px;
   border: 1px solid var(--ui-border-soft);
   background: var(--ui-panel-soft);
@@ -1329,6 +1318,29 @@ input[type="text"],
   gap: 8px;
   align-items: center;
   margin-bottom: 8px;
+}
+
+/* Dual-class must follow shared .list-toolbar so stretch/column/nowrap win. */
+.list-toolbar.chip-loadout-library-filters {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.list-toolbar.chip-loadout-library-filters > label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  width: 100%;
+}
+
+.list-toolbar.chip-loadout-library-filters input[type="search"],
+.list-toolbar.chip-loadout-library-filters select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .table-wrap {

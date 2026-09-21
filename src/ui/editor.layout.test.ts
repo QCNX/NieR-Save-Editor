@@ -47,9 +47,10 @@ describe("content-width collection tables", () => {
 
 describe("chip loadout three-column layout CSS", () => {
   it("opens wide enough that the default window keeps three columns", () => {
-    // Content-driven three columns fit in the 1000–1080 default band.
-    expect(defaultWindow.width).toBeGreaterThanOrEqual(1000);
-    expect(defaultWindow.width).toBeLessThanOrEqual(1080);
+    // After cascade fix, hug content-driven columns (~960–1000), still above collapse.
+    expect(defaultWindow.width).toBeGreaterThan(900);
+    expect(defaultWindow.width).toBeGreaterThanOrEqual(960);
+    expect(defaultWindow.width).toBeLessThanOrEqual(1000);
     expect(defaultWindow.height).toBe(720);
     expect(chipLoadoutCollapsePx).toBeLessThan(defaultWindow.width);
     // Prefer ~900 (align with other splits); must stay clearly below default.
@@ -68,12 +69,41 @@ describe("chip loadout three-column layout CSS", () => {
     expect(tracks).toMatch(/max-content/);
   });
 
-  it("stacks loadout library filters and scopes search to the column", () => {
+  it("lets dual-class library filters win stretch after shared list-toolbar", () => {
+    const sharedIdx = css.search(/\.slot-list-toolbar,\s*\.list-toolbar\s*\{/);
+    const dualIdx = css.search(/\.list-toolbar\.chip-loadout-library-filters\s*\{/);
+    expect(sharedIdx).toBeGreaterThanOrEqual(0);
+    expect(dualIdx).toBeGreaterThan(sharedIdx);
+
+    const dualBlock = css
+      .slice(dualIdx)
+      .match(/\.list-toolbar\.chip-loadout-library-filters\s*\{[^}]+\}/)?.[0];
+    expect(dualBlock).toMatch(/flex-direction:\s*column/);
+    expect(dualBlock).toMatch(/flex-wrap:\s*nowrap/);
+    expect(dualBlock).toMatch(/align-items:\s*stretch/);
+  });
+
+  it("clips horizontal overflow in chip-loadout and collection containers", () => {
     expect(css).toMatch(
-      /\.chip-loadout-library-filters\s*\{[^}]*flex-direction:\s*column/s,
+      /\.panel-split--chip-loadout\s+\.table-wrap\s*\{[^}]*overflow-x:\s*hidden/s,
     );
     expect(css).toMatch(
-      /\.chip-loadout-library-filters\s+input\[type="search"\]\s*\{[^}]*width:\s*100%/s,
+      /\.panel-split--chip-loadout\s+\.table-wrap\s*\{[^}]*overflow-y:\s*auto/s,
+    );
+    expect(css).toMatch(
+      /\.panel-split--chip-loadout\s+\.panel-split__side\s*\{[^}]*overflow-x:\s*hidden/s,
+    );
+    expect(css).toMatch(
+      /\.collection-workspace\s*\{[^}]*overflow-x:\s*hidden/s,
+    );
+  });
+
+  it("stacks loadout library filters and scopes search to the column", () => {
+    expect(css).toMatch(
+      /\.list-toolbar\.chip-loadout-library-filters\s*\{[^}]*flex-direction:\s*column/s,
+    );
+    expect(css).toMatch(
+      /\.list-toolbar\.chip-loadout-library-filters\s+input\[type="search"\][\s\S]*?\{[^}]*width:\s*100%/s,
     );
     // Global list-toolbar search may stay fixed-width elsewhere.
     expect(css).toMatch(
