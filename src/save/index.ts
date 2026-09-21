@@ -110,14 +110,20 @@ export {
 export {
   EMPTY_PLUGIN_CHIP_ID,
   minimumWeightForLevel,
+  optimizePluginChipLoadout,
+  OsChipLockedError,
+  OS_PLUGIN_CHIP_TYPE,
   parsePluginChips,
   PluginChipsSizeError,
   replacePluginChipType,
   serializePluginChips,
+  setEquippedPluginChipWeight,
   setPluginChip,
+  unequipPluginChipFromLoadout,
   VANILLA_PLUGIN_CHIP_IDS,
   type PluginChip,
   type PluginChipId,
+  type PluginChipLoadoutSet,
   type PluginChipPatch,
 } from "./pluginChips";
 

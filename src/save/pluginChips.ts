@@ -135,6 +135,128 @@ export class PluginChipsSizeError extends Error {
   }
 }
 
+/** Loadout set keys matching `slotA` / `slotB` / `slotC`. */
+export type PluginChipLoadoutSet = "A" | "B" | "C";
+
+/** OS chip type — cannot be unequipped from a loadout set. */
+export const OS_PLUGIN_CHIP_TYPE = 0x2a;
+
+const LOADOUT_SLOT_KEY: Record<
+  PluginChipLoadoutSet,
+  "slotA" | "slotB" | "slotC"
+> = {
+  A: "slotA",
+  B: "slotB",
+  C: "slotC",
+};
+
+export class OsChipLockedError extends Error {
+  constructor(
+    message = "OS chip (type 0x2A) cannot be unequipped or cleared from a loadout",
+  ) {
+    super(message);
+    this.name = "OsChipLockedError";
+  }
+}
+
+/**
+ * Rewrite one set’s strip start indices tightly from 0 (in-game Optimize).
+ * Equipped chips keep left-to-right order by current start; unequipped stay -1.
+ * Other sets’ slot fields are unchanged. Corpse slots are ignored.
+ */
+export function optimizePluginChipLoadout(
+  chips: PluginChip[],
+  set: PluginChipLoadoutSet,
+): PluginChip[] {
+  if (chips.length !== PLUGIN_CHIPS_SIZE_ITEMS) {
+    throw new PluginChipsSizeError(
+      chips.length * PLUGIN_CHIPS_ITEM_SIZE_BYTES,
+    );
+  }
+
+  const key = LOADOUT_SLOT_KEY[set];
+  const equipped = chips
+    .map((chip, index) => ({ chip, index }))
+    .filter(({ chip }) => chip[key] >= 0)
+    .sort(
+      (a, b) => a.chip[key] - b.chip[key] || a.index - b.index,
+    );
+
+  const starts = new Map<number, number>();
+  let cursor = 0;
+  for (const { chip, index } of equipped) {
+    starts.set(index, cursor);
+    cursor += chip.weight;
+  }
+
+  return chips.map((chip, index) => {
+    const start = starts.get(index);
+    if (start === undefined) return chip;
+    if (chip[key] === start) return chip;
+    return { ...chip, [key]: start };
+  });
+}
+
+/**
+ * Unequip a chip from one loadout set, then Optimize that set.
+ * OS chips (type 0x2A) cannot be unequipped while present on the set.
+ */
+export function unequipPluginChipFromLoadout(
+  chips: PluginChip[],
+  index: number,
+  set: PluginChipLoadoutSet,
+): PluginChip[] {
+  if (index < 0 || index >= PLUGIN_CHIPS_SIZE_ITEMS) {
+    throw new RangeError(
+      `Plugin chip index out of range: ${index} (expected 0..${PLUGIN_CHIPS_SIZE_ITEMS - 1})`,
+    );
+  }
+  if (chips.length !== PLUGIN_CHIPS_SIZE_ITEMS) {
+    throw new PluginChipsSizeError(
+      chips.length * PLUGIN_CHIPS_ITEM_SIZE_BYTES,
+    );
+  }
+
+  const key = LOADOUT_SLOT_KEY[set];
+  const chip = chips[index]!;
+  if (chip[key] < 0) return chips;
+  if (chip.id.type === OS_PLUGIN_CHIP_TYPE) {
+    throw new OsChipLockedError();
+  }
+
+  const cleared = setPluginChip(chips, index, { [key]: -1 });
+  return optimizePluginChipLoadout(cleared, set);
+}
+
+/**
+ * Change a chip’s weight and re-Optimize every loadout set where it is equipped.
+ */
+export function setEquippedPluginChipWeight(
+  chips: PluginChip[],
+  index: number,
+  weight: number,
+): PluginChip[] {
+  if (index < 0 || index >= PLUGIN_CHIPS_SIZE_ITEMS) {
+    throw new RangeError(
+      `Plugin chip index out of range: ${index} (expected 0..${PLUGIN_CHIPS_SIZE_ITEMS - 1})`,
+    );
+  }
+  if (chips.length !== PLUGIN_CHIPS_SIZE_ITEMS) {
+    throw new PluginChipsSizeError(
+      chips.length * PLUGIN_CHIPS_ITEM_SIZE_BYTES,
+    );
+  }
+
+  let next = setPluginChip(chips, index, { weight });
+  const chip = next[index]!;
+  for (const set of ["A", "B", "C"] as const) {
+    if (chip[LOADOUT_SLOT_KEY[set]] >= 0) {
+      next = optimizePluginChipLoadout(next, set);
+    }
+  }
+  return next;
+}
+
 /**
  * Minimum diamond (◆) weight for a chip level — NieREdit TabSkills rule.
  * Out-of-range levels fall back to 4.
@@ -336,6 +458,11 @@ export function replacePluginChipType(
     throw new PluginChipsSizeError(
       chips.length * PLUGIN_CHIPS_ITEM_SIZE_BYTES,
     );
+  }
+
+  const current = chips[index]!;
+  if (current.id.type === OS_PLUGIN_CHIP_TYPE) {
+    throw new OsChipLockedError();
   }
 
   const next = chips.slice();
