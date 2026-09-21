@@ -48,10 +48,10 @@ function baseSlot(): SlotData {
   };
 }
 
-/** Five Weapon Attack Up L8 on set A → raw 120% → effective 100%. */
+/** Two Weapon Attack Up L8 on set A → raw 200% → effective 100%. */
 function overflowAttackSlot(): SlotData {
   let chips = parsePluginChips(emptyPluginChipsRegion());
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 2; i++) {
     chips = replacePluginChipType(chips, i, chipId(0x01));
     chips = setPluginChip(chips, i, {
       weight: 4,
@@ -80,12 +80,25 @@ function listedEffectsSlot(): SlotData {
   );
 }
 
-/** Drop Rate Up with unknown cap — must not silently clamp. */
-function unknownCapSlot(): SlotData {
+/** Drop Rate Up over cap — clamps at 90% with overflow styling. */
+function dropRateOverflowSlot(): SlotData {
   let chips = parsePluginChips(emptyPluginChipsRegion());
-  chips = replacePluginChipType(chips, 0, chipId(0x0e));
+  chips = replacePluginChipType(chips, 0, chipId(0x0f));
   chips = setPluginChip(chips, 0, { weight: 4, level: 8, slotA: 0 });
-  chips = replacePluginChipType(chips, 1, chipId(0x0e));
+  chips = replacePluginChipType(chips, 1, chipId(0x0f));
+  chips = setPluginChip(chips, 1, { weight: 4, level: 8, slotA: 4 });
+  return setPurchasedChipCapacity(
+    { ...baseSlot(), pluginChips: serializePluginChips(chips) },
+    40,
+  );
+}
+
+/** EXP Gain with disputed cap — clamps at 100% and marks pending confirm. */
+function expPendingSlot(): SlotData {
+  let chips = parsePluginChips(emptyPluginChipsRegion());
+  chips = replacePluginChipType(chips, 0, chipId(0x10));
+  chips = setPluginChip(chips, 0, { weight: 4, level: 8, slotA: 0 });
+  chips = replacePluginChipType(chips, 1, chipId(0x10));
   chips = setPluginChip(chips, 1, { weight: 4, level: 8, slotA: 4 });
   return setPurchasedChipCapacity(
     { ...baseSlot(), pluginChips: serializePluginChips(chips) },
@@ -107,7 +120,7 @@ describe("ChipLoadoutPanel Stats Panel v1", () => {
     expect(html).toContain(translate("zh-CN", "chips.statsPanel"));
     expect(html).toContain('data-testid="chip-stats-stackable"');
     expect(html).toContain('data-overflow="true"');
-    expect(html).toContain("120% → 100%（上限 100%，+20% 无效）");
+    expect(html).toContain("200% → 100%（上限 100%，+100% 无效）");
     expect(html).toContain("chip-stats-row--overflow");
   });
 
@@ -121,11 +134,18 @@ describe("ChipLoadoutPanel Stats Panel v1", () => {
     expect(html).not.toMatch(/Offensive Heal[^<]*%/);
   });
 
-  it("never silently clamps unknown-cap stackables", () => {
-    const html = renderLoadout(unknownCapSlot(), "en");
-    expect(html).toContain('data-cap-known="false"');
-    expect(html).toContain("cap unknown");
-    expect(html).not.toContain("→");
+  it("clamps Drop Rate at 90% with overflow styling", () => {
+    const html = renderLoadout(dropRateOverflowSlot(), "en");
+    expect(html).toContain('data-cap-known="true"');
+    expect(html).toContain('data-overflow="true"');
+    expect(html).toContain("180% → 90% (cap 90%, +90% unused)");
+  });
+
+  it("marks disputed EXP Gain cap as pending confirm", () => {
+    const html = renderLoadout(expPendingSlot(), "zh-CN");
+    expect(html).toContain('data-cap-pending="true"');
+    expect(html).toContain(translate("zh-CN", "chips.stats.pendingConfirm"));
+    expect(html).toContain("200% → 100%（上限 100%，+100% 无效）");
   });
 
   it("updates the panel when equipped chips change via onSlotChange wiring", () => {

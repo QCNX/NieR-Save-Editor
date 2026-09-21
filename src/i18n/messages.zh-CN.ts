@@ -167,6 +167,7 @@ export const messagesZhCN = {
   "chips.purchasedCapacity": "已购容量",
   "chips.statsPanel": "数值面板",
   "chips.stats.estimate": "估算",
+  "chips.stats.pendingConfirm": "待确认",
   "chips.stats.enabled": "已启用",
   "chips.stats.empty": "当前套装无芯片加成",
   "chips.category": "分类",

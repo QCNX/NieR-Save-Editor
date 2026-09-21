@@ -856,6 +856,7 @@ export function ChipLoadoutPanel({
                   data-chip-type={line.type}
                   data-overflow={line.overflow > 0 ? "true" : "false"}
                   data-cap-known={line.capKnown ? "true" : "false"}
+                  data-cap-pending={line.capPendingConfirm ? "true" : "false"}
                 >
                   <span className="chip-stats-name">
                     {lookupChipName(baseId, language)}
@@ -863,6 +864,12 @@ export function ChipLoadoutPanel({
                       <span className="chip-stats-estimate">
                         {" "}
                         ({t("chips.stats.estimate")})
+                      </span>
+                    ) : null}
+                    {line.capPendingConfirm ? (
+                      <span className="chip-stats-pending">
+                        {" "}
+                        ({t("chips.stats.pendingConfirm")})
                       </span>
                     ) : null}
                   </span>

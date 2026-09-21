@@ -5,15 +5,19 @@
  * Best-of: highest equipped tier only.
  * Conditional / system / HUD: listed as text; no fake numeric aggregate.
  *
- * Caps: only confident community-table values are stored. Unknown caps stay
+ * Caps/ladders: community consensus (Fandom / Fextralife / player popup reports).
+ * High-confidence caps are applied; disputed values use the higher-confidence
+ * figure with `capPendingConfirm` (UI: 待确认 / Unconfirmed). Unknown caps stay
  * uncapped (`cap: null`) and must never invent a cutoff.
+ *
+ * Research notes (local, gitignored): `.scratch/chips/research-chip-caps.md`
  */
 import { chipCategoryForType } from "../names/chipCategory";
 import type { Language } from "../i18n";
 import type { PluginChip } from "./pluginChips";
 import { EMPTY_PLUGIN_CHIP_ID } from "./pluginChips";
 
-export type ChipStatUnit = "percent" | "flat";
+export type ChipStatUnit = "percent" | "flat" | "seconds";
 
 export type StackableStatLine = {
   kind: "stackable";
@@ -25,6 +29,8 @@ export type StackableStatLine = {
   cap: number | null;
   overflow: number;
   estimate: boolean;
+  /** Cap taken from community consensus but still awaiting in-game confirm. */
+  capPendingConfirm: boolean;
   capKnown: boolean;
 };
 
@@ -64,6 +70,8 @@ type EffectDef =
       /** Omit when unknown — never invent. */
       cap?: number;
       estimate?: boolean;
+      /** High-confidence but disputed across sources — show 待确认. */
+      capPendingConfirm?: boolean;
     }
   | {
       kind: "bestOf";
@@ -77,134 +85,202 @@ type EffectDef =
       estimate?: boolean;
     };
 
+/** Community Rank 0–8 ladders (Fextralife / shared sheet); all marked estimate. */
+const ATK_PCT = [2, 4, 8, 10, 15, 20, 50, 80, 100] as const;
+const CRIT_PCT = [1, 2, 3, 4, 6, 8, 10, 15, 30] as const;
+const DEF_PCT = [2, 4, 8, 10, 15, 20, 30, 60, 80] as const;
+const FAST_CD_PCT = [2, 4, 8, 10, 15, 20, 25, 35, 50] as const;
+const MAX_HP_PCT = [5, 10, 15, 20, 25, 30, 40, 60, 100] as const;
+const EVADE_PCT = [10, 20, 30, 40, 60, 80, 100, 150, 200] as const;
+const MOVE_PCT = [2, 4, 8, 10, 12, 14, 16, 18, 20] as const;
+const DROP_PCT = [10, 20, 30, 40, 50, 60, 70, 80, 90] as const;
+const EXP_PCT = [2, 4, 8, 10, 20, 30, 50, 80, 100] as const;
+const ANTI_CHAIN_S = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 6] as const;
+const CHARGE_PCT = [120, 140, 160, 180, 200, 250, 300, 350, 400] as const;
+const COUNTER_PCT = [0, 10, 20, 40, 60, 80, 100, 150, 250] as const;
+const TAUNT_PCT = [180, 200, 220, 240, 260, 300, 350, 400, 500] as const;
+
 /**
  * Community-table effect metadata keyed by chip type.
- * Value ladders are community estimates unless noted; caps only when confident.
+ * Caps: high-confidence community consensus; disputed → capPendingConfirm.
  */
 const CHIP_EFFECT_DEFS: ReadonlyMap<number, EffectDef> = new Map([
-  // Product spec example: Weapon Attack Up hard-caps at 100%.
-  // Ladder: common community table (diamond-efficiency guides); marked estimate.
+  // Attack
   [
-    0x01,
+    0x01, // Weapon Attack Up
     {
       kind: "stackable",
       unit: "percent",
-      valuesByLevel: [4, 8, 10, 12, 14, 16, 18, 20, 24],
+      valuesByLevel: ATK_PCT,
       cap: 100,
       estimate: true,
     },
   ],
   [
-    0x02,
+    0x02, // Down-Attack Up
     {
       kind: "stackable",
       unit: "percent",
-      valuesByLevel: [5, 10, 15, 20, 30, 40, 50, 60, 80],
-      estimate: true,
-    },
-  ],
-  [
-    0x03,
-    {
-      kind: "stackable",
-      unit: "percent",
-      valuesByLevel: [1, 2, 3, 4, 5, 6, 8, 10, 15],
-      estimate: true,
-    },
-  ],
-  [
-    0x04,
-    {
-      kind: "stackable",
-      unit: "percent",
-      valuesByLevel: [2, 4, 8, 10, 15, 20, 25, 30, 40],
+      valuesByLevel: ATK_PCT,
       cap: 100,
       estimate: true,
     },
   ],
   [
-    0x05,
+    0x03, // Critical Up
     {
       kind: "stackable",
       unit: "percent",
-      valuesByLevel: [2, 4, 8, 10, 15, 20, 25, 30, 35],
-      cap: 80,
+      valuesByLevel: CRIT_PCT,
+      cap: 30,
       estimate: true,
     },
   ],
   [
-    0x06,
+    0x04, // Ranged Attack Up
     {
       kind: "stackable",
       unit: "percent",
-      valuesByLevel: [2, 4, 8, 10, 15, 20, 25, 30, 35],
-      cap: 80,
+      valuesByLevel: ATK_PCT,
+      cap: 100,
       estimate: true,
     },
   ],
   [
-    0x07,
+    0x1a, // Charge Attack — Fandom/Steam 400% vs GameWith ×3; use 400 pending confirm
     {
       kind: "stackable",
       unit: "percent",
-      valuesByLevel: [2, 4, 8, 10, 15, 20, 25, 30, 35],
-      cap: 80,
+      valuesByLevel: CHARGE_PCT,
+      cap: 400,
       estimate: true,
+      capPendingConfirm: true,
     },
   ],
-  // Anti Chain Damage — only the best equipped tier applies.
   [
-    0x08,
+    0x18, // Counter — Fandom: does not stack; highest tier only
     {
       kind: "bestOf",
       unit: "percent",
-      valuesByLevel: [10, 20, 30, 40, 50, 60, 70, 80, 90],
+      valuesByLevel: COUNTER_PCT,
+      estimate: true,
+    },
+  ],
+  // Defense
+  [
+    0x06, // Melee Defense
+    {
+      kind: "stackable",
+      unit: "percent",
+      valuesByLevel: DEF_PCT,
+      cap: 80,
       estimate: true,
     },
   ],
   [
-    0x09,
+    0x07, // Ranged Defense
     {
       kind: "stackable",
       unit: "percent",
-      valuesByLevel: [5, 10, 15, 20, 25, 30, 35, 40, 50],
-      estimate: true,
-    },
-  ],
-  // Drop Rate Up — values community-known; hard cap not confident → uncapped.
-  [
-    0x0e,
-    {
-      kind: "stackable",
-      unit: "percent",
-      valuesByLevel: [10, 20, 30, 40, 50, 60, 70, 80, 90],
+      valuesByLevel: DEF_PCT,
+      cap: 80,
       estimate: true,
     },
   ],
   [
-    0x0f,
+    0x08, // Anti Chain Damage — stacks in seconds, clamp 6.0s
+    {
+      kind: "stackable",
+      unit: "seconds",
+      valuesByLevel: ANTI_CHAIN_S,
+      cap: 6,
+      estimate: true,
+    },
+  ],
+  // Support
+  [
+    0x05, // Fast Cooldown
     {
       kind: "stackable",
       unit: "percent",
-      valuesByLevel: [2, 4, 8, 10, 15, 20, 25, 30, 35],
+      valuesByLevel: FAST_CD_PCT,
+      cap: 50,
+      estimate: true,
+    },
+  ],
+  [
+    0x09, // Max HP Up
+    {
+      kind: "stackable",
+      unit: "percent",
+      valuesByLevel: MAX_HP_PCT,
       cap: 100,
       estimate: true,
     },
   ],
-  // Conditional / trigger chips — list text + level; no fake aggregate.
-  [0x0a, { kind: "listed", role: "conditional", estimate: true }],
-  [0x0b, { kind: "listed", role: "conditional", estimate: true }],
-  [0x0c, { kind: "listed", role: "conditional", estimate: true }],
-  [0x11, { kind: "listed", role: "conditional", estimate: true }],
-  [0x12, { kind: "listed", role: "conditional", estimate: true }],
-  [0x13, { kind: "listed", role: "conditional", estimate: true }],
-  [0x14, { kind: "listed", role: "conditional", estimate: true }],
-  [0x15, { kind: "listed", role: "conditional", estimate: true }],
-  [0x16, { kind: "listed", role: "conditional", estimate: true }],
-  [0x18, { kind: "listed", role: "conditional", estimate: true }],
-  [0x19, { kind: "listed", role: "conditional", estimate: true }],
-  [0x1a, { kind: "listed", role: "conditional", estimate: true }],
-  [0x1b, { kind: "listed", role: "conditional", estimate: true }],
+  [
+    0x0d, // Evade Range Up
+    {
+      kind: "stackable",
+      unit: "percent",
+      valuesByLevel: EVADE_PCT,
+      cap: 200,
+      estimate: true,
+    },
+  ],
+  [
+    0x0e, // Moving Speed Up
+    {
+      kind: "stackable",
+      unit: "percent",
+      valuesByLevel: MOVE_PCT,
+      cap: 20,
+      estimate: true,
+    },
+  ],
+  [
+    0x0f, // Drop Rate Up
+    {
+      kind: "stackable",
+      unit: "percent",
+      valuesByLevel: DROP_PCT,
+      cap: 90,
+      estimate: true,
+    },
+  ],
+  [
+    // EXP Gain Up — Fandom/Steam/GameWith 100% vs Fextralife ~450%; use 100 pending confirm
+    0x10,
+    {
+      kind: "stackable",
+      unit: "percent",
+      valuesByLevel: EXP_PCT,
+      cap: 100,
+      estimate: true,
+      capPendingConfirm: true,
+    },
+  ],
+  [
+    0x19, // Taunt Up — Fandom: does not stack; highest tier only
+    {
+      kind: "bestOf",
+      unit: "percent",
+      valuesByLevel: TAUNT_PCT,
+      estimate: true,
+    },
+  ],
+  // Dual-param / intensity / conditional — list until stacking axes verified
+  [0x0a, { kind: "listed", role: "conditional", estimate: true }], // Offensive Heal
+  [0x0b, { kind: "listed", role: "conditional", estimate: true }], // Deadly Heal
+  [0x0c, { kind: "listed", role: "conditional", estimate: true }], // Auto-Heal
+  [0x11, { kind: "listed", role: "conditional", estimate: true }], // Shock Wave
+  [0x12, { kind: "listed", role: "conditional", estimate: true }], // Last Stand
+  [0x13, { kind: "listed", role: "conditional", estimate: true }], // Damage Absorb
+  [0x14, { kind: "listed", role: "conditional", estimate: true }], // Vengeance
+  [0x15, { kind: "listed", role: "conditional", estimate: true }], // Reset
+  [0x16, { kind: "listed", role: "conditional", estimate: true }], // Overclock
+  [0x17, { kind: "listed", role: "conditional", estimate: true }], // Resilience
+  [0x1b, { kind: "listed", role: "conditional", estimate: true }], // Auto-Use Item
   [0x1d, { kind: "listed", role: "conditional", estimate: true }],
   [0x1e, { kind: "listed", role: "conditional", estimate: true }],
   [0x1f, { kind: "listed", role: "conditional", estimate: true }],
@@ -289,10 +365,14 @@ export function summarizeEquippedChipStats(
         }
         continue;
       }
+      // Avoid float drift on second ladders (Anti Chain).
+      raw = Math.round(raw * 1000) / 1000;
       const capKnown = def.cap != null;
       const cap = def.cap ?? null;
       const effective = capKnown ? Math.min(raw, def.cap!) : raw;
-      const overflow = capKnown ? Math.max(0, raw - effective) : 0;
+      const overflow = capKnown
+        ? Math.round(Math.max(0, raw - effective) * 1000) / 1000
+        : 0;
       stackable.push({
         kind: "stackable",
         type,
@@ -302,6 +382,7 @@ export function summarizeEquippedChipStats(
         cap,
         overflow,
         estimate: def.estimate === true,
+        capPendingConfirm: def.capPendingConfirm === true,
         capKnown,
       });
       continue;
@@ -343,11 +424,13 @@ export function summarizeEquippedChipStats(
 }
 
 function formatUnit(value: number, unit: ChipStatUnit): string {
-  return unit === "percent" ? `${value}%` : `${value}`;
+  if (unit === "percent") return `${value}%`;
+  if (unit === "seconds") return `${value}s`;
+  return `${value}`;
 }
 
 /**
- * Display string for a stackable row (zh overflow phrasing).
+ * Display string for a stackable row.
  */
 export function formatStackableStatLine(
   line: StackableStatLine,

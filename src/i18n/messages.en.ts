@@ -169,6 +169,7 @@ export const messagesEn: Record<MessageKey, string> = {
   "chips.purchasedCapacity": "Purchased",
   "chips.statsPanel": "Stats Panel",
   "chips.stats.estimate": "Estimate",
+  "chips.stats.pendingConfirm": "Unconfirmed",
   "chips.stats.enabled": "Enabled",
   "chips.stats.empty": "No chip bonuses on this set",
   "chips.category": "Category",
