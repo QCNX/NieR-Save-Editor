@@ -3,6 +3,17 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const css = readFileSync(new URL("./editor.css", import.meta.url), "utf8");
+const tauriConf = JSON.parse(
+  readFileSync(new URL("../../src-tauri/tauri.conf.json", import.meta.url), "utf8"),
+) as { app: { windows: Array<{ width: number; height: number; minWidth: number }> } };
+
+const defaultWindow = tauriConf.app.windows[0];
+const chipLoadoutCollapseMatch = css.match(
+  /@media \(max-width: (\d+)px\)[\s\S]*?\.panel-split--chip-loadout\s*\{[^}]*grid-template-columns:\s*[^}]*1fr/s,
+);
+const chipLoadoutCollapsePx = chipLoadoutCollapseMatch
+  ? Number(chipLoadoutCollapseMatch[1])
+  : NaN;
 
 describe("responsive editor layout", () => {
   it.each([
@@ -27,28 +38,36 @@ describe("responsive editor layout", () => {
 });
 
 describe("chip loadout three-column layout CSS", () => {
+  it("opens wide enough that the default window keeps three columns", () => {
+    expect(defaultWindow.width).toBeGreaterThanOrEqual(1280);
+    expect(defaultWindow.width).toBeLessThanOrEqual(1400);
+    expect(defaultWindow.height).toBe(720);
+    expect(chipLoadoutCollapsePx).toBeLessThan(defaultWindow.width);
+    expect(chipLoadoutCollapsePx).toBeLessThanOrEqual(1100);
+  });
+
   it("defines a three-track chip loadout grid for wide viewports", () => {
     expect(css).toMatch(
       /\.panel-split--chip-loadout\s*\{[^}]*grid-template-columns:\s*[^;]*minmax[^;]*minmax[^;]*minmax/s,
     );
   });
 
-  it("collapses the chip loadout grid at Deck-ish width without page overflow", () => {
+  it("collapses the chip loadout grid only when clearly narrow, without page overflow", () => {
     expect(css).toMatch(
-      /@media \(max-width: 1280px\)[\s\S]*\.panel-split--chip-loadout\s*\{[^}]*grid-template-columns:\s*[^}]*1fr/s,
+      /@media \(max-width: 1[01]\d{2}px\)[\s\S]*\.panel-split--chip-loadout\s*\{[^}]*grid-template-columns:\s*[^}]*1fr/s,
     );
     expect(css).toMatch(
       /\.panel-split--chip-loadout\s*\{[^}]*min-width:\s*0/s,
     );
   });
 
-  it("right-aligns wrapped stats values and shrinks level/cost columns", () => {
+  it("right-aligns stats values and sizes level/cost inputs in ch units", () => {
     expect(css).toMatch(/\.chip-stats-value\s*\{[^}]*text-align:\s*right/s);
     expect(css).toMatch(
-      /\.panel-split--chip-loadout[\s\S]*?\.col-level[\s\S]*?max-width:\s*[0-9.]+rem/s,
+      /\.panel-split--chip-loadout[\s\S]*?\.col-level input[\s\S]*?width:\s*[0-9.]+ch/s,
     );
     expect(css).toMatch(
-      /\.panel-split--chip-loadout[\s\S]*?\.col-weight[\s\S]*?max-width:\s*[0-9.]+rem/s,
+      /\.panel-split--chip-loadout[\s\S]*?\.col-weight input[\s\S]*?width:\s*[0-9.]+ch/s,
     );
   });
 });

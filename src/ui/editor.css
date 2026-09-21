@@ -398,21 +398,27 @@ input[type="text"],
 
 .panel-split--chip-loadout {
   min-width: 0;
-  grid-template-columns: minmax(11rem, 0.72fr) minmax(0, 1.15fr) minmax(11rem, 0.9fr);
+  grid-template-columns: minmax(10rem, 0.65fr) minmax(0, 1.4fr) minmax(12rem, 1fr);
 }
 
 .panel-split--chip-loadout .slot-table .col-level,
 .panel-split--chip-loadout .slot-table .col-weight {
-  width: 3.25rem;
-  max-width: 3.5rem;
+  width: 1%;
+  max-width: none;
   padding-inline: 4px;
+  white-space: nowrap;
 }
 
-.panel-split--chip-loadout .slot-table .col-level input,
-.panel-split--chip-loadout .slot-table .col-weight input {
-  width: 100%;
+.panel-split--chip-loadout .slot-table .col-level input {
+  width: 3.5ch;
   min-width: 0;
-  max-width: 3.25rem;
+  max-width: none;
+}
+
+.panel-split--chip-loadout .slot-table .col-weight input {
+  width: 4.75ch;
+  min-width: 0;
+  max-width: none;
 }
 
 .chip-loadout-toolbar {
@@ -544,7 +550,7 @@ input[type="text"],
   margin-top: 4px;
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 1100px) {
   .panel-split--chip-loadout {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
   }
