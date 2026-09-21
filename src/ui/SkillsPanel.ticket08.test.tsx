@@ -65,10 +65,10 @@ function overflowAttackSlot(): SlotData {
   );
 }
 
-/** Offensive Heal + HUD HP + OS — listed, no fake percent aggregate. */
+/** Shock Wave + HUD HP + OS — listed, no fake percent aggregate. */
 function listedEffectsSlot(): SlotData {
   let chips = parsePluginChips(emptyPluginChipsRegion());
-  chips = replacePluginChipType(chips, 0, chipId(0x0a));
+  chips = replacePluginChipType(chips, 0, chipId(0x11)); // Shock Wave (dual-param)
   chips = setPluginChip(chips, 0, { weight: 4, level: 3, slotA: 0 });
   chips = replacePluginChipType(chips, 1, chipId(0x27));
   chips = setPluginChip(chips, 1, { weight: 2, level: 0, slotA: 4 });
@@ -131,7 +131,8 @@ describe("ChipLoadoutPanel Stats Panel v1", () => {
     expect(html).toContain('data-role="system"');
     expect(html).toContain(translate("en", "chips.stats.enabled"));
     expect(html).toContain("Lv.3");
-    expect(html).not.toMatch(/Offensive Heal[^<]*%/);
+    expect(html).toContain("Shock Wave");
+    expect(html).not.toMatch(/Shock Wave[^<]*%/);
   });
 
   it("clamps Drop Rate at 90% with overflow styling", () => {

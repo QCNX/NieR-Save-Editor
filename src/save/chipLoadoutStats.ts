@@ -85,7 +85,7 @@ type EffectDef =
       estimate?: boolean;
     };
 
-/** Community Rank 0–8 ladders (Fextralife / shared sheet); all marked estimate. */
+/** Community Rank 0–8 ladders (Fextralife / shared sheet / player-confirmed). */
 const ATK_PCT = [2, 4, 8, 10, 15, 20, 50, 80, 100] as const;
 const CRIT_PCT = [1, 2, 3, 4, 6, 8, 10, 15, 30] as const;
 const DEF_PCT = [2, 4, 8, 10, 15, 20, 30, 60, 80] as const;
@@ -99,13 +99,18 @@ const ANTI_CHAIN_S = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 6] as const;
 const CHARGE_PCT = [120, 140, 160, 180, 200, 250, 300, 350, 400] as const;
 const COUNTER_PCT = [0, 10, 20, 40, 60, 80, 100, 150, 250] as const;
 const TAUNT_PCT = [180, 200, 220, 240, 260, 300, 350, 400, 500] as const;
+const OFFENSIVE_HEAL_PCT = [2, 5, 10, 15, 20, 30, 50, 80, 100] as const;
+const DEADLY_HEAL_PCT = [5, 10, 20, 30, 40, 50, 60, 80, 100] as const;
+/** Auto-Heal uses fractional % per tick; keep decimals (not integer-only). */
+const AUTO_HEAL_PCT = [0.6, 1.2, 2.4, 3.6, 4.8, 7.2, 9.6, 12, 18] as const;
+const LAST_STAND_PCT = [5, 10, 15, 20, 30, 50, 60, 80, 100] as const;
 
 /**
  * Community-table effect metadata keyed by chip type.
  * Caps: high-confidence community consensus; disputed → capPendingConfirm.
  */
 const CHIP_EFFECT_DEFS: ReadonlyMap<number, EffectDef> = new Map([
-  // Attack
+  // Attack — confirmed stackable/bestOf caps (community + player reports)
   [
     0x01, // Weapon Attack Up
     {
@@ -113,7 +118,6 @@ const CHIP_EFFECT_DEFS: ReadonlyMap<number, EffectDef> = new Map([
       unit: "percent",
       valuesByLevel: ATK_PCT,
       cap: 100,
-      estimate: true,
     },
   ],
   [
@@ -123,7 +127,6 @@ const CHIP_EFFECT_DEFS: ReadonlyMap<number, EffectDef> = new Map([
       unit: "percent",
       valuesByLevel: ATK_PCT,
       cap: 100,
-      estimate: true,
     },
   ],
   [
@@ -133,7 +136,6 @@ const CHIP_EFFECT_DEFS: ReadonlyMap<number, EffectDef> = new Map([
       unit: "percent",
       valuesByLevel: CRIT_PCT,
       cap: 30,
-      estimate: true,
     },
   ],
   [
@@ -143,26 +145,23 @@ const CHIP_EFFECT_DEFS: ReadonlyMap<number, EffectDef> = new Map([
       unit: "percent",
       valuesByLevel: ATK_PCT,
       cap: 100,
-      estimate: true,
     },
   ],
   [
-    0x1a, // Charge Attack — player-confirmed hard cap 400% (「提升至」 ladder; sum→cap)
+    0x1a, // Charge Attack — player-confirmed hard cap 400% (sum→cap; special two-+4)
     {
       kind: "stackable",
       unit: "percent",
       valuesByLevel: CHARGE_PCT,
       cap: 400,
-      estimate: true,
     },
   ],
   [
-    0x18, // Counter — Fandom: does not stack; highest tier only
+    0x18, // Counter — does not stack; highest tier only
     {
       kind: "bestOf",
       unit: "percent",
       valuesByLevel: COUNTER_PCT,
-      estimate: true,
     },
   ],
   // Defense
@@ -173,7 +172,6 @@ const CHIP_EFFECT_DEFS: ReadonlyMap<number, EffectDef> = new Map([
       unit: "percent",
       valuesByLevel: DEF_PCT,
       cap: 80,
-      estimate: true,
     },
   ],
   [
@@ -183,7 +181,6 @@ const CHIP_EFFECT_DEFS: ReadonlyMap<number, EffectDef> = new Map([
       unit: "percent",
       valuesByLevel: DEF_PCT,
       cap: 80,
-      estimate: true,
     },
   ],
   [
@@ -193,7 +190,6 @@ const CHIP_EFFECT_DEFS: ReadonlyMap<number, EffectDef> = new Map([
       unit: "seconds",
       valuesByLevel: ANTI_CHAIN_S,
       cap: 6,
-      estimate: true,
     },
   ],
   // Support
@@ -204,7 +200,6 @@ const CHIP_EFFECT_DEFS: ReadonlyMap<number, EffectDef> = new Map([
       unit: "percent",
       valuesByLevel: FAST_CD_PCT,
       cap: 50,
-      estimate: true,
     },
   ],
   [
@@ -214,7 +209,32 @@ const CHIP_EFFECT_DEFS: ReadonlyMap<number, EffectDef> = new Map([
       unit: "percent",
       valuesByLevel: MAX_HP_PCT,
       cap: 100,
-      estimate: true,
+    },
+  ],
+  [
+    0x0a, // Offensive Heal — stackable, hard cap 100%
+    {
+      kind: "stackable",
+      unit: "percent",
+      valuesByLevel: OFFENSIVE_HEAL_PCT,
+      cap: 100,
+    },
+  ],
+  [
+    0x0b, // Deadly Heal — stackable, hard cap 100%
+    {
+      kind: "stackable",
+      unit: "percent",
+      valuesByLevel: DEADLY_HEAL_PCT,
+      cap: 100,
+    },
+  ],
+  [
+    0x0c, // Auto-Heal — best tier only (fractional % ladder)
+    {
+      kind: "bestOf",
+      unit: "percent",
+      valuesByLevel: AUTO_HEAL_PCT,
     },
   ],
   [
@@ -224,7 +244,6 @@ const CHIP_EFFECT_DEFS: ReadonlyMap<number, EffectDef> = new Map([
       unit: "percent",
       valuesByLevel: EVADE_PCT,
       cap: 200,
-      estimate: true,
     },
   ],
   [
@@ -234,7 +253,6 @@ const CHIP_EFFECT_DEFS: ReadonlyMap<number, EffectDef> = new Map([
       unit: "percent",
       valuesByLevel: MOVE_PCT,
       cap: 20,
-      estimate: true,
     },
   ],
   [
@@ -244,7 +262,6 @@ const CHIP_EFFECT_DEFS: ReadonlyMap<number, EffectDef> = new Map([
       unit: "percent",
       valuesByLevel: DROP_PCT,
       cap: 90,
-      estimate: true,
     },
   ],
   [
@@ -255,24 +272,26 @@ const CHIP_EFFECT_DEFS: ReadonlyMap<number, EffectDef> = new Map([
       unit: "percent",
       valuesByLevel: EXP_PCT,
       cap: 100,
-      estimate: true,
     },
   ],
   [
-    0x19, // Taunt Up — Fandom: does not stack; highest tier only
+    0x12, // Last Stand — best tier only
+    {
+      kind: "bestOf",
+      unit: "percent",
+      valuesByLevel: LAST_STAND_PCT,
+    },
+  ],
+  [
+    0x19, // Taunt Up — does not stack; highest tier only
     {
       kind: "bestOf",
       unit: "percent",
       valuesByLevel: TAUNT_PCT,
-      estimate: true,
     },
   ],
-  // Dual-param / intensity / conditional — list until stacking axes verified
-  [0x0a, { kind: "listed", role: "conditional", estimate: true }], // Offensive Heal
-  [0x0b, { kind: "listed", role: "conditional", estimate: true }], // Deadly Heal
-  [0x0c, { kind: "listed", role: "conditional", estimate: true }], // Auto-Heal
+  // Dual-param / intensity — list only; do not invent fake aggregates
   [0x11, { kind: "listed", role: "conditional", estimate: true }], // Shock Wave
-  [0x12, { kind: "listed", role: "conditional", estimate: true }], // Last Stand
   [0x13, { kind: "listed", role: "conditional", estimate: true }], // Damage Absorb
   [0x14, { kind: "listed", role: "conditional", estimate: true }], // Vengeance
   [0x15, { kind: "listed", role: "conditional", estimate: true }], // Reset

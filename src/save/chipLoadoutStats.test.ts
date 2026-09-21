@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { EMPTY_PLUGIN_CHIP_ID, VANILLA_PLUGIN_CHIP_IDS } from "./pluginChips";
 import type { PluginChip } from "./pluginChips";
 import {
+  formatBestOfStatLine,
   formatStackableStatLine,
   summarizeEquippedChipStats,
 } from "./chipLoadoutStats";
@@ -47,7 +48,7 @@ describe("summarizeEquippedChipStats", () => {
         effective: 100,
         cap: 100,
         overflow: 100,
-        estimate: true,
+        estimate: false,
         capPendingConfirm: false,
         capKnown: true,
       },
@@ -162,18 +163,98 @@ describe("summarizeEquippedChipStats", () => {
     }
   });
 
-  it("lists conditional chips with level params instead of summing percents", () => {
-    const summary = summarizeEquippedChipStats([chip(0x0a, 4, 0)]); // Offensive Heal
+  it("lists dual-param chips with level params instead of inventing aggregates", () => {
+    const summary = summarizeEquippedChipStats([chip(0x11, 4, 0)]); // Shock Wave
 
-    expect(summary.stackable.filter((s) => s.type === 0x0a)).toEqual([]);
+    expect(summary.stackable.filter((s) => s.type === 0x11)).toEqual([]);
+    expect(summary.bestOf.filter((s) => s.type === 0x11)).toEqual([]);
     expect(summary.listed).toContainEqual(
       expect.objectContaining({
         kind: "listed",
-        type: 0x0a,
+        type: 0x11,
         level: 4,
         aggregate: null,
       }),
     );
+  });
+
+  it("stacks Offensive Heal and Deadly Heal to the 100% hard cap", () => {
+    const offensive = summarizeEquippedChipStats([
+      chip(0x0a, 8, 0),
+      chip(0x0a, 4, 1),
+    ]).stackable.find((s) => s.type === 0x0a);
+    // L8=100 + L4=20 → raw 120 → effective 100
+    expect(offensive).toMatchObject({
+      kind: "stackable",
+      unit: "percent",
+      raw: 120,
+      effective: 100,
+      cap: 100,
+      overflow: 20,
+      estimate: false,
+      capPendingConfirm: false,
+      capKnown: true,
+    });
+    expect(
+      summarizeEquippedChipStats([chip(0x0a, 4, 0)]).listed.filter(
+        (l) => l.type === 0x0a,
+      ),
+    ).toEqual([]);
+
+    const deadly = summarizeEquippedChipStats([
+      chip(0x0b, 8, 0),
+      chip(0x0b, 8, 1),
+    ]).stackable.find((s) => s.type === 0x0b);
+    // Two L8=100 → raw 200 → effective 100
+    expect(deadly).toMatchObject({
+      kind: "stackable",
+      unit: "percent",
+      raw: 200,
+      effective: 100,
+      cap: 100,
+      overflow: 100,
+      estimate: false,
+      capPendingConfirm: false,
+      capKnown: true,
+    });
+  });
+
+  it("keeps only the best Auto-Heal tier including fractional percents", () => {
+    const summary = summarizeEquippedChipStats([
+      chip(0x0c, 0, 0), // L0 = 0.6%
+      chip(0x0c, 3, 1), // L3 = 3.6%
+      chip(0x0c, 1, 2), // L1 = 1.2%
+    ]);
+
+    expect(summary.stackable.filter((s) => s.type === 0x0c)).toEqual([]);
+    expect(summary.listed.filter((l) => l.type === 0x0c)).toEqual([]);
+    expect(summary.bestOf).toHaveLength(1);
+    expect(summary.bestOf[0]).toMatchObject({
+      kind: "bestOf",
+      type: 0x0c,
+      unit: "percent",
+      level: 3,
+      value: 3.6,
+      estimate: false,
+    });
+  });
+
+  it("keeps only the best Last Stand tier", () => {
+    const summary = summarizeEquippedChipStats([
+      chip(0x12, 2, 0),
+      chip(0x12, 8, 1),
+      chip(0x12, 5, 2),
+    ]);
+
+    expect(summary.stackable.filter((s) => s.type === 0x12)).toEqual([]);
+    expect(summary.listed.filter((l) => l.type === 0x12)).toEqual([]);
+    expect(summary.bestOf.find((s) => s.type === 0x12)).toMatchObject({
+      kind: "bestOf",
+      type: 0x12,
+      level: 8,
+      value: 100,
+      estimate: false,
+    });
   });
 });
 
@@ -253,5 +334,40 @@ describe("formatStackableStatLine", () => {
         "en",
       ),
     ).toMatch(/unknown|Unknown|cap unknown/i);
+  });
+});
+
+describe("formatBestOfStatLine", () => {
+  it("formats fractional Auto-Heal percents without integer-only rounding", () => {
+    expect(
+      formatBestOfStatLine({
+        kind: "bestOf",
+        type: 0x0c,
+        unit: "percent",
+        level: 0,
+        value: 0.6,
+        estimate: false,
+      }),
+    ).toBe("Lv.0 0.6%");
+    expect(
+      formatBestOfStatLine({
+        kind: "bestOf",
+        type: 0x0c,
+        unit: "percent",
+        level: 5,
+        value: 7.2,
+        estimate: false,
+      }),
+    ).toBe("Lv.5 7.2%");
+    expect(
+      formatBestOfStatLine({
+        kind: "bestOf",
+        type: 0x0c,
+        unit: "percent",
+        level: 8,
+        value: 18,
+        estimate: false,
+      }),
+    ).toBe("Lv.8 18%");
   });
 });
