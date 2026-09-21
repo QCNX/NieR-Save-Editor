@@ -48,6 +48,34 @@ export function resolveVersionedBackupRoot(
   return `${dir}${sep}${BACKUP_DIR_NAME}`;
 }
 
+export type RevealBackupRootResult =
+  | { status: "ok"; path: string }
+  | { status: "unavailable"; reason: "no-context" };
+
+/**
+ * Resolved backup root for opening in the OS file manager.
+ * Custom root wins; otherwise requires a save path for the beside-save default.
+ */
+export function resolveRevealBackupRoot(options: {
+  saveFilePath?: string | null;
+  customBackupRoot?: string | null;
+}): RevealBackupRootResult {
+  const configured = normalizeOptionalRoot(
+    options.customBackupRoot ?? undefined,
+  );
+  if (configured) {
+    return { status: "ok", path: configured };
+  }
+  const saveFilePath = normalizeOptionalRoot(options.saveFilePath ?? undefined);
+  if (!saveFilePath) {
+    return { status: "unavailable", reason: "no-context" };
+  }
+  return {
+    status: "ok",
+    path: resolveVersionedBackupRoot(saveFilePath),
+  };
+}
+
 /**
  * Target path for a pre-overwrite backup of `saveFilePath`.
  * Default lives under `<saveDir>/nier-save-editor-backup/<basename>`.

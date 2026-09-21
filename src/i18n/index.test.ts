@@ -133,6 +133,8 @@ describe("i18n public API", () => {
       "saveManager.stateUnreadable",
       "saveManager.viewBackups",
       "saveManager.createBackup",
+      "saveManager.openBackupFolder",
+      "saveManager.openBackupFolderHint",
       "saveManager.backupExcludesUnsaved",
       "saveManager.backupHelp",
       "saveManager.historyLoading",
@@ -189,6 +191,8 @@ describe("i18n public API", () => {
       "status.importSuccess",
       "errors.manualBackupUnavailable",
       "errors.manualBackupFailed",
+      "errors.revealBackupUnavailable",
+      "errors.revealBackupFailed",
     ] as const;
 
     for (const key of workflowKeys) {

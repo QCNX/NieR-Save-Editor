@@ -31,10 +31,12 @@ export type SaveManagerPanelProps = {
   historyLoading: boolean;
   historyTargetPath: string | null;
   canCreateBackup: boolean;
+  canRevealBackupFolder: boolean;
   replacementPreview: SaveReplacementPreview | null;
   replacementError: string | null;
   onClose: () => void;
   onCreateBackup: () => void;
+  onRevealBackupFolder: () => void;
   onRequestRestore: (item: BackupHistoryItem) => void;
   onImportReplacement: (file: File | undefined) => void;
   onCancelReplacement: () => void;
@@ -156,10 +158,12 @@ export function SaveManagerPanel({
   historyLoading,
   historyTargetPath,
   canCreateBackup,
+  canRevealBackupFolder,
   replacementPreview,
   replacementError,
   onClose,
   onCreateBackup,
+  onRevealBackupFolder,
   onRequestRestore,
   onImportReplacement,
   onCancelReplacement,
@@ -391,6 +395,19 @@ export function SaveManagerPanel({
             ) : null}
           </div>
           <div className="save-history-actions">
+            <button
+              type="button"
+              className="save-action"
+              disabled={pageBusy || !canRevealBackupFolder}
+              title={
+                canRevealBackupFolder
+                  ? undefined
+                  : t("saveManager.openBackupFolderHint")
+              }
+              onClick={onRevealBackupFolder}
+            >
+              {t("saveManager.openBackupFolder")}
+            </button>
             <button
               type="button"
               className="save-action"

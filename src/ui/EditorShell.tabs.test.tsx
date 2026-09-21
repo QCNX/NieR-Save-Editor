@@ -53,6 +53,8 @@ function renderShell(
             backupDraft=""
             onBackupDraftChange={vi.fn()}
             onSaveCustomBackupRoot={vi.fn()}
+            canRevealBackupFolder={false}
+            onRevealBackupFolder={vi.fn()}
           />
         }
         slot={loadedSlot}
@@ -145,6 +147,8 @@ describe("EditorShell tabs", () => {
               backupDraft=""
               onBackupDraftChange={vi.fn()}
               onSaveCustomBackupRoot={vi.fn()}
+              canRevealBackupFolder={false}
+              onRevealBackupFolder={vi.fn()}
             />
           }
           slot={slot}

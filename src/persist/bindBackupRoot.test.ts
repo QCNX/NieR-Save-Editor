@@ -25,6 +25,7 @@ function fakeHost(): PersistHost & SaveManagementHost {
     backupFile: vi.fn(),
     writeFile: vi.fn(),
     pickSaveAsPath: vi.fn(),
+    revealBackupFolder: vi.fn(),
     createVersionedBackup: vi.fn(
       async (): Promise<CreateBackupResult> => ({
         status: "ok",

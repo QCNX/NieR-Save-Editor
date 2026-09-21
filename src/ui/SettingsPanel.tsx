@@ -8,6 +8,8 @@ type Props = {
   backupDraft: string;
   onBackupDraftChange: (value: string) => void;
   onSaveCustomBackupRoot: () => void;
+  canRevealBackupFolder: boolean;
+  onRevealBackupFolder: () => void;
 };
 
 export function SettingsPanel({
@@ -18,6 +20,8 @@ export function SettingsPanel({
   backupDraft,
   onBackupDraftChange,
   onSaveCustomBackupRoot,
+  canRevealBackupFolder,
+  onRevealBackupFolder,
 }: Props) {
   const { t } = useI18n();
 
@@ -51,6 +55,18 @@ export function SettingsPanel({
         </label>
         <button type="button" disabled={busy} onClick={onSaveCustomBackupRoot}>
           {t("settings.saveBackupRoot")}
+        </button>
+        <button
+          type="button"
+          disabled={busy || !canRevealBackupFolder}
+          title={
+            canRevealBackupFolder
+              ? undefined
+              : t("saveManager.openBackupFolderHint")
+          }
+          onClick={onRevealBackupFolder}
+        >
+          {t("saveManager.openBackupFolder")}
         </button>
       </div>
       <p className="settings-help">{t("settings.customBackupRootHelp")}</p>

@@ -22,6 +22,8 @@ export interface PersistHost {
   backupFile(sourcePath: string, backupPath: string): Promise<PersistIoResult>;
   writeFile(path: string, bytes: Uint8Array): Promise<PersistIoResult>;
   pickSaveAsPath(opts: PickSaveAsOptions): Promise<PickSaveAsResult>;
+  /** Ensure `path` exists, then open it in the OS file manager. */
+  revealBackupFolder(path: string): Promise<PersistIoResult>;
 }
 
 function bytesEqual(left: Uint8Array, right: Uint8Array): boolean {

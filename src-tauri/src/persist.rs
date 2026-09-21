@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::{AppHandle, WebviewWindow};
 use tauri_plugin_dialog::DialogExt;
+use tauri_plugin_opener::OpenerExt;
 
 const BACKUP_DIR_NAME: &str = "nier-save-editor-backup";
 
@@ -812,6 +813,46 @@ fn map_io_kind(kind: ErrorKind) -> &'static str {
     }
 }
 
+/// Create `path` (and parents) so a reveal-folder click works before the first backup.
+fn ensure_backup_folder(path: &Path) -> Result<(), std::io::Error> {
+    fs::create_dir_all(path)
+}
+
+/// Ensure the backup folder exists, then open it in the OS file manager.
+#[tauri::command]
+pub fn persist_reveal_backup_folder(app: AppHandle, path: String) -> Result<IoResult, String> {
+    let trimmed = path.trim();
+    if trimmed.is_empty() {
+        return Ok(io_fail(
+            "error",
+            "",
+            "Backup folder path is empty".to_string(),
+        ));
+    }
+    let dir = Path::new(trimmed);
+    if let Err(err) = ensure_backup_folder(dir) {
+        let status = map_io_kind(err.kind());
+        let message = if err.kind() == ErrorKind::PermissionDenied {
+            format!("Permission denied creating backup folder: {trimmed}")
+        } else {
+            format!("Failed to create backup folder {trimmed}: {err}")
+        };
+        return Ok(io_fail(status, trimmed, message));
+    }
+    match app.opener().open_path(trimmed, None::<&str>) {
+        Ok(()) => Ok(IoResult {
+            status: "ok".to_string(),
+            path: Some(trimmed.to_string()),
+            message: None,
+        }),
+        Err(err) => Ok(io_fail(
+            "error",
+            trimmed,
+            format!("Failed to open backup folder {trimmed}: {err}"),
+        )),
+    }
+}
+
 /// Read raw save file bytes from an explicit user-selected path.
 #[tauri::command]
 pub fn persist_read_file(path: String) -> Result<ReadFileResult, String> {
@@ -1108,6 +1149,20 @@ mod tests {
             result.sha256.as_deref(),
             Some("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
         );
+    }
+
+    #[test]
+    fn ensure_backup_folder_creates_missing_parents() {
+        let temp = tempdir().unwrap();
+        let folder = temp
+            .path()
+            .join("synthetic")
+            .join("backups")
+            .join("custom-root");
+
+        ensure_backup_folder(&folder).unwrap();
+
+        assert!(folder.is_dir());
     }
 
     #[test]

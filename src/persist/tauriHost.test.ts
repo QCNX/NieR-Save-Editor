@@ -155,4 +155,35 @@ describe("createTauriPersistHost protocol validation", () => {
       backupRoot: null,
     });
   });
+
+  it("opens a resolved backup folder through persist_reveal_backup_folder", async () => {
+    invokeMock.mockResolvedValue({ status: "ok" });
+
+    const result = await createTauriPersistHost().revealBackupFolder(
+      "synthetic/backups/custom-root",
+    );
+
+    expect(result).toEqual({ status: "ok" });
+    expect(invokeMock).toHaveBeenCalledWith("persist_reveal_backup_folder", {
+      path: "synthetic/backups/custom-root",
+    });
+  });
+
+  it("maps reveal-folder permission failures from the opener command", async () => {
+    invokeMock.mockResolvedValue({
+      status: "permission",
+      path: "synthetic/backups/blocked",
+      message: "Permission denied creating backup folder: synthetic/backups/blocked",
+    });
+
+    const result = await createTauriPersistHost().revealBackupFolder(
+      "synthetic/backups/blocked",
+    );
+
+    expect(result).toEqual({
+      status: "permission",
+      path: "synthetic/backups/blocked",
+      message: "Permission denied creating backup folder: synthetic/backups/blocked",
+    });
+  });
 });

@@ -29,6 +29,7 @@ import {
   createTauriPersistHost,
   overwriteSave,
   reloadSave,
+  resolveRevealBackupRoot,
   saveAsSave,
   type PersistHost,
   type SaveManagementHost,
@@ -563,6 +564,29 @@ function AppContent({
     }
   }
 
+  async function onRevealBackupFolder() {
+    const resolved = resolveRevealBackupRoot({
+      saveFilePath: historyTargetPath ?? state.currentPath,
+      customBackupRoot,
+    });
+    if (!persistHost || resolved.status !== "ok") {
+      setErrorMessage({ key: "errors.revealBackupUnavailable" });
+      return;
+    }
+    setIoBusy(true);
+    clearAlerts();
+    try {
+      const result = await persistHost.revealBackupFolder(resolved.path);
+      if (result.status !== "ok") {
+        setErrorMessage({ key: "errors.revealBackupFailed" });
+      }
+    } catch {
+      setErrorMessage({ key: "errors.revealBackupFailed" });
+    } finally {
+      setIoBusy(false);
+    }
+  }
+
   function replacementFailure(
     phase: Parameters<typeof formatManagedError>[0]["phase"],
     status: Parameters<typeof formatManagedError>[0]["status"],
@@ -814,6 +838,13 @@ function AppContent({
   const historyTarget = historyTargetPath
     ? slotSummaries.find((summary) => summary.path === historyTargetPath)
     : undefined;
+  const revealBackupRoot = resolveRevealBackupRoot({
+    saveFilePath: historyTargetPath ?? state.currentPath,
+    customBackupRoot,
+  });
+  const canRevealBackupFolder = Boolean(
+    persistHost && revealBackupRoot.status === "ok",
+  );
   const replacementPreview: SaveReplacementPreview | null = preparedReplacement
     ? {
         kind: preparedReplacement.kind,
@@ -855,10 +886,12 @@ function AppContent({
             canCreateBackup={Boolean(
               persistHost && historyTarget?.status === "ready",
             )}
+            canRevealBackupFolder={canRevealBackupFolder}
             replacementPreview={replacementPreview}
             replacementError={replacementError}
             onClose={onClose}
             onCreateBackup={() => void onCreateBackup()}
+            onRevealBackupFolder={() => void onRevealBackupFolder()}
             onRequestRestore={(item) => void prepareRestore(item)}
             onImportReplacement={(file) => void prepareImport(file)}
             onCancelReplacement={cancelReplacement}
@@ -896,6 +929,8 @@ function AppContent({
             backupDraft={backupDraft}
             onBackupDraftChange={setBackupDraft}
             onSaveCustomBackupRoot={onSaveCustomBackupRoot}
+            canRevealBackupFolder={canRevealBackupFolder}
+            onRevealBackupFolder={() => void onRevealBackupFolder()}
           />
         }
         empty={

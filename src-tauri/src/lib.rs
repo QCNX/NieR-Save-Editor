@@ -18,6 +18,7 @@ pub fn run() {
             discovery::discovery_list_dir,
             persist::persist_read_file,
             persist::persist_backup_file,
+            persist::persist_reveal_backup_folder,
             persist::persist_create_versioned_backup,
             persist::persist_list_backups,
             persist::persist_safe_write_file,

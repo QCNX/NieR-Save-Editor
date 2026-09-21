@@ -41,6 +41,9 @@ describe("reloadSave", () => {
       async pickSaveAsPath() {
         throw new Error("unused");
       },
+      async revealBackupFolder() {
+        throw new Error("unused");
+      },
     };
 
     const result = await reloadSave(host, "/saves/SlotData_0.dat");
@@ -63,6 +66,9 @@ describe("reloadSave", () => {
         throw new Error("unused");
       },
       async pickSaveAsPath() {
+        throw new Error("unused");
+      },
+      async revealBackupFolder() {
         throw new Error("unused");
       },
     };
@@ -118,6 +124,9 @@ describe("overwriteSave", () => {
         throw new Error("legacy write must not be used");
       },
       async pickSaveAsPath() {
+        throw new Error("unused");
+      },
+      async revealBackupFolder() {
         throw new Error("unused");
       },
       async createVersionedBackup() {
@@ -221,6 +230,9 @@ describe("overwriteSave", () => {
       async pickSaveAsPath() {
         throw new Error("unused");
       },
+      async revealBackupFolder() {
+        throw new Error("unused");
+      },
     };
 
     const path = "/saves/SlotData_0.dat";
@@ -255,6 +267,9 @@ describe("overwriteSave", () => {
       async pickSaveAsPath() {
         throw new Error("unused");
       },
+      async revealBackupFolder() {
+        throw new Error("unused");
+      },
     };
 
     const result = await overwriteSave(host, "/saves/SlotData_0.dat", slot);
@@ -284,6 +299,9 @@ describe("overwriteSave", () => {
         return { status: "ok" };
       },
       async pickSaveAsPath() {
+        throw new Error("unused");
+      },
+      async revealBackupFolder() {
         throw new Error("unused");
       },
     };
@@ -316,6 +334,9 @@ describe("saveAsSave", () => {
         expect(opts.defaultName).toBe("SlotData_0.dat");
         return { status: "ok", path: "/exports/SlotData_copy.dat" };
       },
+      async revealBackupFolder() {
+        throw new Error("unused");
+      },
     };
 
     const result = await saveAsSave(host, slot, {
@@ -345,6 +366,9 @@ describe("saveAsSave", () => {
       },
       async pickSaveAsPath() {
         return { status: "cancelled" };
+      },
+      async revealBackupFolder() {
+        throw new Error("unused");
       },
     };
 

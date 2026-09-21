@@ -229,6 +229,13 @@ export function createTauriPersistHost(): PersistHost & SaveManagementHost {
       return { status: "cancelled" };
     },
 
+    async revealBackupFolder(path: string): Promise<PersistIoResult> {
+      const result = await invoke<RustIoResult>("persist_reveal_backup_folder", {
+        path,
+      });
+      return mapIoResult(result, path);
+    },
+
     async createVersionedBackup(
       sourcePath: string,
       reason: "manual",

@@ -1,7 +1,9 @@
 export {
   BACKUP_DIR_NAME,
   backupTargetPath,
+  resolveRevealBackupRoot,
   resolveVersionedBackupRoot,
+  type RevealBackupRootResult,
 } from "./backupPath";
 export { bindBackupRoot } from "./bindBackupRoot";
 export {

@@ -56,10 +56,12 @@ function renderPanel(
         historyLoading={false}
         historyTargetPath={readySlot.path}
         canCreateBackup
+        canRevealBackupFolder
         replacementPreview={null}
         replacementError={null}
         onClose={vi.fn()}
         onCreateBackup={vi.fn()}
+        onRevealBackupFolder={vi.fn()}
         onRequestRestore={vi.fn()}
         onImportReplacement={vi.fn()}
         onCancelReplacement={vi.fn()}
@@ -125,7 +127,7 @@ describe("SaveManagerPanel", () => {
   it("locks conflicting actions while I/O is busy", () => {
     const html = renderPanel({ busy: true });
 
-    expect(html.match(/disabled=""/g)).toHaveLength(10);
+    expect(html.match(/disabled=""/g)).toHaveLength(11);
   });
 
   it("renders distinct loading and empty slot states", () => {
@@ -240,6 +242,29 @@ describe("SaveManagerPanel", () => {
     expect(html).toContain("before save, import, and restore");
     expect(html).toContain("beside the save folder");
     expect(html).toContain("Settings");
+  });
+
+  it("offers an enabled open-backup-folder action when reveal context exists", () => {
+    const html = renderPanel({ canRevealBackupFolder: true });
+    const openButton = html.match(
+      /<button[^>]*>Open backup folder<\/button>/,
+    )?.[0];
+
+    expect(openButton).toBeDefined();
+    expect(openButton).not.toContain("disabled");
+  });
+
+  it("disables open-backup-folder when no reveal context is available", () => {
+    const html = renderPanel({ canRevealBackupFolder: false });
+    const openButton = html.match(
+      /<button[^>]*>Open backup folder<\/button>/,
+    )?.[0];
+
+    expect(openButton).toBeDefined();
+    expect(openButton).toContain("disabled");
+    expect(html).toContain(
+      "Load a save slot or set a custom backup folder in Settings",
+    );
   });
 
   it("renders restore/import entry points and a structured directional preview", () => {
