@@ -23,6 +23,9 @@ import { load, serialize } from "./slotData";
 
 type NameEntry = { en: string; zh: string };
 
+/** Provisional ids from the rejected catalog invention — must stay gone. */
+const REJECTED_PROVISIONAL_IDS = [8042, 8043, 8044] as const;
+
 function emptyItem(position: number): InventoryItem {
   return {
     position,
@@ -36,12 +39,6 @@ function emptyInventory(): InventoryItem[] {
   return Array.from({ length: INVENTORY_SIZE_ITEMS }, (_, i) => emptyItem(i));
 }
 
-function totalQty(items: InventoryItem[], id: number): number {
-  return items
-    .filter((item) => item.id === id)
-    .reduce((sum, item) => sum + item.quantity, 0);
-}
-
 function syntheticSaveWithInventory(inventory: Uint8Array): Uint8Array {
   const bytes = new Uint8Array(SAVEFILE_SIZE_BYTES);
   for (let i = 0; i < bytes.length; i++) {
@@ -51,18 +48,18 @@ function syntheticSaveWithInventory(inventory: Uint8Array): Uint8Array {
   return bytes;
 }
 
-describe("capacity expansion item name map", () => {
-  it("maps +8/+16/+24 expansion items via zh names in items.json", () => {
+describe("capacity expansion backpack item ids", () => {
+  it("lists no verified inventory ids (evidence: mask-only purchases)", () => {
+    // Slot1 progressive mask 0x01→0x03→0x07→0x2f→0x6f→0xef left inventory
+    // unchanged; Slot0/2 at 0xEF have no dedicated +8/+16/+24 stacks.
+    expect(CAPACITY_EXPANSION_ITEM_IDS).toEqual([]);
+  });
+
+  it("does not keep rejected provisional catalog ids 8042–8044", () => {
     const map = items as Record<string, NameEntry>;
-    expect(map[String(CAPACITY_EXPANSION_ITEM_IDS.plus8)]?.zh).toBe(
-      "扩充储存容量+8",
-    );
-    expect(map[String(CAPACITY_EXPANSION_ITEM_IDS.plus16)]?.zh).toBe(
-      "扩充储存容量+16",
-    );
-    expect(map[String(CAPACITY_EXPANSION_ITEM_IDS.plus24)]?.zh).toBe(
-      "扩充储存容量+24",
-    );
+    for (const id of REJECTED_PROVISIONAL_IDS) {
+      expect(map[String(id)]).toBeUndefined();
+    }
   });
 });
 
@@ -77,49 +74,7 @@ describe("purchasedCapacityTiers", () => {
 });
 
 describe("syncInventoryCapacityExpansionItems", () => {
-  it("leaves zero expansion items for capacity 40 tiers", () => {
-    const items = emptyInventory();
-    items[3] = {
-      position: 3,
-      id: CAPACITY_EXPANSION_ITEM_IDS.plus8,
-      status: ITEM_STATUS_ACTIVE,
-      quantity: 2,
-    };
-    items[5] = {
-      position: 5,
-      id: CAPACITY_EXPANSION_ITEM_IDS.plus16,
-      status: ITEM_STATUS_ACTIVE,
-      quantity: 1,
-    };
-    items[7] = {
-      position: 7,
-      id: CAPACITY_EXPANSION_ITEM_IDS.plus24,
-      status: ITEM_STATUS_ACTIVE,
-      quantity: 1,
-    };
-
-    const synced = syncInventoryCapacityExpansionItems(
-      items,
-      purchasedCapacityTiers(40),
-    );
-
-    expect(totalQty(synced, CAPACITY_EXPANSION_ITEM_IDS.plus8)).toBe(0);
-    expect(totalQty(synced, CAPACITY_EXPANSION_ITEM_IDS.plus16)).toBe(0);
-    expect(totalQty(synced, CAPACITY_EXPANSION_ITEM_IDS.plus24)).toBe(0);
-  });
-
-  it("sets four +8, two +16, and one +24 for capacity 128 tiers", () => {
-    const synced = syncInventoryCapacityExpansionItems(
-      emptyInventory(),
-      purchasedCapacityTiers(128),
-    );
-
-    expect(totalQty(synced, CAPACITY_EXPANSION_ITEM_IDS.plus8)).toBe(4);
-    expect(totalQty(synced, CAPACITY_EXPANSION_ITEM_IDS.plus16)).toBe(2);
-    expect(totalQty(synced, CAPACITY_EXPANSION_ITEM_IDS.plus24)).toBe(1);
-  });
-
-  it("increases and decreases expansion stacks without corrupting other rows", () => {
+  it("is a no-op because no backpack expansion item ids exist", () => {
     const items = emptyInventory();
     items[0] = {
       position: 0,
@@ -127,45 +82,26 @@ describe("syncInventoryCapacityExpansionItems", () => {
       status: ITEM_STATUS_ACTIVE,
       quantity: 9,
     };
-    items[1] = {
-      position: 1,
-      id: CAPACITY_EXPANSION_ITEM_IDS.plus8,
-      status: ITEM_STATUS_ACTIVE,
-      quantity: 1,
-    };
-    items[10] = {
-      position: 10,
+    items[3] = {
+      position: 3,
       id: 0x190,
       status: ITEM_STATUS_ACTIVE,
-      quantity: 3,
+      quantity: 2,
     };
 
-    const up = syncInventoryCapacityExpansionItems(
+    const synced = syncInventoryCapacityExpansionItems(
       items,
-      purchasedCapacityTiers(88),
+      purchasedCapacityTiers(128),
     );
-    expect(purchasedCapacityTiers(88)).toEqual({ n8: 4, n16: 1, n24: 0 });
-    expect(totalQty(up, CAPACITY_EXPANSION_ITEM_IDS.plus8)).toBe(4);
-    expect(totalQty(up, CAPACITY_EXPANSION_ITEM_IDS.plus16)).toBe(1);
-    expect(totalQty(up, CAPACITY_EXPANSION_ITEM_IDS.plus24)).toBe(0);
-    expect(up[0]).toEqual(items[0]);
-    expect(up[10]).toEqual(items[10]);
 
-    const down = syncInventoryCapacityExpansionItems(
-      up,
-      purchasedCapacityTiers(48),
-    );
-    expect(purchasedCapacityTiers(48)).toEqual({ n8: 1, n16: 0, n24: 0 });
-    expect(totalQty(down, CAPACITY_EXPANSION_ITEM_IDS.plus8)).toBe(1);
-    expect(totalQty(down, CAPACITY_EXPANSION_ITEM_IDS.plus16)).toBe(0);
-    expect(totalQty(down, CAPACITY_EXPANSION_ITEM_IDS.plus24)).toBe(0);
-    expect(down[0]).toEqual(items[0]);
-    expect(down[10]).toEqual(items[10]);
+    expect(synced).toEqual(items);
+    expect(synced[0]).toEqual(items[0]);
+    expect(synced[3]).toEqual(items[3]);
   });
 });
 
 describe("setPurchasedChipCapacityWithInventorySync", () => {
-  it("writes mask and syncs main-inventory expansion counts together", () => {
+  it("writes the purchase mask and leaves main inventory byte-identical", () => {
     const inventory = emptyInventory();
     inventory[2] = {
       position: 2,
@@ -173,31 +109,18 @@ describe("setPurchasedChipCapacityWithInventorySync", () => {
       status: ITEM_STATUS_ACTIVE,
       quantity: 5,
     };
-    inventory[4] = {
-      position: 4,
-      id: CAPACITY_EXPANSION_ITEM_IDS.plus8,
-      status: ITEM_STATUS_ACTIVE,
-      quantity: 9,
-    };
-    const input = syntheticSaveWithInventory(serializeInventory(inventory));
+    const serialized = serializeInventory(inventory);
+    const input = syntheticSaveWithInventory(serialized);
     const slot = load(input);
 
     const edited = setPurchasedChipCapacityWithInventorySync(slot, 128);
     expect(getPurchasedChipCapacity(edited)).toBe(128);
-
-    const items = parseInventory(edited.inventory);
-    expect(totalQty(items, CAPACITY_EXPANSION_ITEM_IDS.plus8)).toBe(4);
-    expect(totalQty(items, CAPACITY_EXPANSION_ITEM_IDS.plus16)).toBe(2);
-    expect(totalQty(items, CAPACITY_EXPANSION_ITEM_IDS.plus24)).toBe(1);
-    expect(items[2]).toEqual(inventory[2]);
+    expect(edited.inventory).toEqual(serialized);
+    expect(parseInventory(edited.inventory)[2]).toEqual(inventory[2]);
 
     const cleared = setPurchasedChipCapacityWithInventorySync(edited, 40);
     expect(getPurchasedChipCapacity(cleared)).toBe(40);
-    const clearedItems = parseInventory(cleared.inventory);
-    expect(totalQty(clearedItems, CAPACITY_EXPANSION_ITEM_IDS.plus8)).toBe(0);
-    expect(totalQty(clearedItems, CAPACITY_EXPANSION_ITEM_IDS.plus16)).toBe(0);
-    expect(totalQty(clearedItems, CAPACITY_EXPANSION_ITEM_IDS.plus24)).toBe(0);
-    expect(clearedItems[2]).toEqual(inventory[2]);
+    expect(cleared.inventory).toEqual(serialized);
 
     expect(serialize(cleared).length).toBe(SAVEFILE_SIZE_BYTES);
   });

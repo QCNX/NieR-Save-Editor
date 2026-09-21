@@ -94,6 +94,7 @@ describe("public save edit API", () => {
   it("exports capacity expansion backpack sync", () => {
     expect(setPurchasedChipCapacityWithInventorySync).toBeTypeOf("function");
     expect(purchasedCapacityTiers).toBeTypeOf("function");
-    expect(CAPACITY_EXPANSION_ITEM_IDS.plus8).toBe(8042);
+    // Verified absence: purchases are mask-only (no backpack item ids).
+    expect(CAPACITY_EXPANSION_ITEM_IDS).toEqual([]);
   });
 });
