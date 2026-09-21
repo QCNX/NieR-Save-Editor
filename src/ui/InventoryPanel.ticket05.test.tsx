@@ -62,6 +62,7 @@ function slot(): SlotData {
     weapons: new Uint8Array(),
     podPrograms: new Uint8Array(),
     betweenPodAndChips: new Uint8Array(),
+    purchasedChipCapacity: new Uint8Array(4),
     pluginChips: new Uint8Array(),
     betweenChipsAndOutfitConfig: new Uint8Array(),
     outfitConfig: new Uint8Array(),

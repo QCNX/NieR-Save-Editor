@@ -5,12 +5,16 @@ import {
   getDebugFlag,
   getPlayTime,
   getSteamId,
+  decodePurchasedCapacity,
+  encodePurchasedCapacity,
+  getPurchasedChipCapacity,
   parseEmilBulletsEquipped,
   parseHairColors,
   parseOutfitConfig,
   parsePlayRecords,
   parsePodCosmeticConfig,
   POD_PROGRAM_IDS,
+  PURCHASED_CAPACITY_OPTIONS,
   VANILLA_PLUGIN_CHIP_IDS,
   replacePluginChipType,
   replaceWeaponId,
@@ -25,6 +29,7 @@ import {
   setPlayRecordCounter,
   setPodCosmetic,
   setPodProgramId,
+  setPurchasedChipCapacity,
 } from "./index";
 
 describe("public save edit API", () => {
@@ -73,5 +78,13 @@ describe("public save edit API", () => {
     expect(setPodCosmetic).toBeTypeOf("function");
     expect(parseHairColors).toBeTypeOf("function");
     expect(setHairColor).toBeTypeOf("function");
+  });
+
+  it("exports purchased chip capacity encode/decode", () => {
+    expect(decodePurchasedCapacity).toBeTypeOf("function");
+    expect(encodePurchasedCapacity).toBeTypeOf("function");
+    expect(getPurchasedChipCapacity).toBeTypeOf("function");
+    expect(setPurchasedChipCapacity).toBeTypeOf("function");
+    expect(PURCHASED_CAPACITY_OPTIONS).toContain(128);
   });
 });

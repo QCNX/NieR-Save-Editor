@@ -45,6 +45,7 @@ export {
   POD_PROGRAMS_ITEM_SIZE_BYTES,
   POD_PROGRAMS_SIZE_BYTES,
   POD_PROGRAMS_SIZE_ITEMS,
+  PURCHASED_CHIP_CAPACITY_SIZE_BYTES,
   SAVEFILE_CHARACTER_NAME_START_BYTE,
   SAVEFILE_CORPSE_INVENTORY_START_BYTE,
   SAVEFILE_DEBUG_FLAG_START_BYTE,
@@ -59,6 +60,7 @@ export {
   SAVEFILE_POD_CONFIG_START_BYTE,
   SAVEFILE_POD_COSMETIC_CONFIG_START_BYTE,
   SAVEFILE_POD_PROGRAMS_START_BYTE,
+  SAVEFILE_PURCHASED_CHIP_CAPACITY_START_BYTE,
   SAVEFILE_SIZE_BYTES,
   SAVEFILE_STEAM_ID_START_BYTE,
   SAVEFILE_WEAPON_SLOT_1_START_BYTE,
@@ -131,6 +133,13 @@ export {
 } from "./podPrograms";
 
 export { getMoney, setMoney } from "./money";
+export {
+  decodePurchasedCapacity,
+  encodePurchasedCapacity,
+  getPurchasedChipCapacity,
+  PURCHASED_CAPACITY_OPTIONS,
+  setPurchasedChipCapacity,
+} from "./purchasedCapacity";
 export { getXp, setXp } from "./xp";
 export {
   DEBUG_FLAG_VALUES,

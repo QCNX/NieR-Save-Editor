@@ -39,6 +39,7 @@ import {
   POD_COSMETIC_CONFIG_SIZE_BYTES,
   POD_CONFIG_SIZE_BYTES,
   POD_PROGRAMS_SIZE_BYTES,
+  PURCHASED_CHIP_CAPACITY_SIZE_BYTES,
   SAVEFILE_CORPSE_INVENTORY_START_BYTE,
   SAVEFILE_CHARACTER_NAME_START_BYTE,
   SAVEFILE_DEBUG_FLAG_START_BYTE,
@@ -53,6 +54,7 @@ import {
   SAVEFILE_POD_CONFIG_START_BYTE,
   SAVEFILE_POD_COSMETIC_CONFIG_START_BYTE,
   SAVEFILE_POD_PROGRAMS_START_BYTE,
+  SAVEFILE_PURCHASED_CHIP_CAPACITY_START_BYTE,
   SAVEFILE_SIZE_BYTES,
   SAVEFILE_STEAM_ID_START_BYTE,
   SAVEFILE_WEAPON_SLOT_1_START_BYTE,
@@ -95,8 +97,10 @@ export type SlotData = {
   weapons: Uint8Array;
   /** Known field placeholder: POD programs block. */
   podPrograms: Uint8Array;
-  /** Opaque gap between POD programs and plug-in chips. */
+  /** Opaque gap between POD programs and the purchased capacity mask. */
   betweenPodAndChips: Uint8Array;
+  /** Purchased motherboard capacity mask (i32 LE at 0x324B8). */
+  purchasedChipCapacity: Uint8Array;
   /** Known field placeholder: plug-in chips block. */
   pluginChips: Uint8Array;
   /** Opaque region from after chips through before OutfitConfig. */
@@ -216,6 +220,11 @@ export function load(bytes: Uint8Array): SlotData {
       BETWEEN_POD_AND_CHIPS_START_BYTE,
       BETWEEN_POD_AND_CHIPS_SIZE_BYTES,
     ),
+    purchasedChipCapacity: sliceCopy(
+      bytes,
+      SAVEFILE_PURCHASED_CHIP_CAPACITY_START_BYTE,
+      PURCHASED_CHIP_CAPACITY_SIZE_BYTES,
+    ),
     pluginChips: sliceCopy(
       bytes,
       SAVEFILE_PLUGIN_CHIPS_START_BYTE,
@@ -334,6 +343,7 @@ export function serialize(slot: SlotData): Uint8Array {
     slot.weapons,
     slot.podPrograms,
     slot.betweenPodAndChips,
+    slot.purchasedChipCapacity,
     slot.pluginChips,
     slot.betweenChipsAndOutfitConfig,
     slot.outfitConfig,
