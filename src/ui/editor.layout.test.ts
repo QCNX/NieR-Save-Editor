@@ -69,5 +69,12 @@ describe("chip loadout three-column layout CSS", () => {
     expect(css).toMatch(
       /\.panel-split--chip-loadout[\s\S]*?\.col-weight input[\s\S]*?width:\s*[0-9.]+ch/s,
     );
+    // Tight horizontal padding so ch widths fit digits + spinner under border-box.
+    expect(css).toMatch(
+      /\.panel-split--chip-loadout[\s\S]*?\.col-level input[\s\S]*?padding:\s*0\s+0\.(?:0\d|[1-3]\d?)em/s,
+    );
+    expect(css).toMatch(
+      /\.panel-split--chip-loadout[\s\S]*?\.col-weight input[\s\S]*?padding:\s*0\s+0\.(?:0\d|[1-3]\d?)em/s,
+    );
   });
 });

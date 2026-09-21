@@ -413,12 +413,14 @@ input[type="text"],
   width: 3.5ch;
   min-width: 0;
   max-width: none;
+  padding: 0 0.15em;
 }
 
 .panel-split--chip-loadout .slot-table .col-weight input {
   width: 4.75ch;
   min-width: 0;
   max-width: none;
+  padding: 0 0.15em;
 }
 
 .chip-loadout-toolbar {
