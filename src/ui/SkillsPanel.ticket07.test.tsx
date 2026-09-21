@@ -170,9 +170,53 @@ describe("chip loadout write seams", () => {
 
   it("writes purchased capacity through the inventory-sync API", () => {
     const slot = loadoutSampleSlot();
-    const next = applyChipLoadoutCapacity(slot, 128);
+    const next = applyChipLoadoutCapacity(slot, 128, { overload: false });
     expect(getPurchasedChipCapacity(next)).toBe(128);
     expect(PURCHASED_CAPACITY_OPTIONS).toContain(128);
+  });
+
+  it("blocks capacity drops below used when overload is off", () => {
+    // used = 52 on A; purchased starts at 128 so 40 is a legal dropdown drop.
+    let chips = parsePluginChips(emptyPluginChipsRegion());
+    chips = replacePluginChipType(chips, 0, chipId(OS_PLUGIN_CHIP_TYPE));
+    chips = setPluginChip(chips, 0, { weight: 2, slotA: 0 });
+    chips = replacePluginChipType(chips, 1, chipId(0x01));
+    chips = setPluginChip(chips, 1, { weight: 50, level: 0, slotA: 2 });
+    const slot = setPurchasedChipCapacity(
+      { ...baseSlot(), pluginChips: serializePluginChips(chips) },
+      128,
+    );
+
+    expect(() =>
+      applyChipLoadoutCapacity(slot, 40, { overload: false }),
+    ).toThrow(ChipLoadoutCapacityError);
+    expect(getPurchasedChipCapacity(slot)).toBe(128);
+  });
+
+  it("allows capacity drops below used when overload is on", () => {
+    let chips = parsePluginChips(emptyPluginChipsRegion());
+    chips = replacePluginChipType(chips, 0, chipId(OS_PLUGIN_CHIP_TYPE));
+    chips = setPluginChip(chips, 0, { weight: 2, slotA: 0 });
+    chips = replacePluginChipType(chips, 1, chipId(0x01));
+    chips = setPluginChip(chips, 1, { weight: 50, level: 0, slotA: 2 });
+    const slot = setPurchasedChipCapacity(
+      { ...baseSlot(), pluginChips: serializePluginChips(chips) },
+      128,
+    );
+
+    const next = applyChipLoadoutCapacity(slot, 40, { overload: true });
+    expect(getPurchasedChipCapacity(next)).toBe(40);
+
+    const html = renderToStaticMarkup(
+      <I18nProvider language="en">
+        <ChipLoadoutPanel
+          slot={next}
+          onSlotChange={vi.fn()}
+          initialOverload
+        />
+      </I18nProvider>,
+    );
+    expect(html).toContain('data-over-capacity="true"');
   });
 
   it("syncs Level and Cost edits with the shared pluginChips records", () => {

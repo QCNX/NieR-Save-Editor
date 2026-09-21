@@ -423,7 +423,16 @@ export function applyChipLoadoutCopy(
 export function applyChipLoadoutCapacity(
   slot: SlotData,
   capacity: number,
+  options: { overload: boolean },
 ): SlotData {
+  const chips = parsePluginChips(slot.pluginChips);
+  for (const set of LOADOUT_SETS) {
+    assertWithinCapacity(
+      pluginChipLoadoutUsedCost(chips, set),
+      capacity,
+      options.overload,
+    );
+  }
   return setPurchasedChipCapacityWithInventorySync(slot, capacity);
 }
 
@@ -591,7 +600,9 @@ export function ChipLoadoutPanel({
               onChange={(event) => {
                 const capacity = Number(event.currentTarget.value);
                 if (!Number.isFinite(capacity)) return;
-                onSlotChange(applyChipLoadoutCapacity(slot, capacity));
+                runGuarded(() =>
+                  applyChipLoadoutCapacity(slot, capacity, { overload }),
+                );
               }}
             >
               {PURCHASED_CAPACITY_OPTIONS.map((option) => (
