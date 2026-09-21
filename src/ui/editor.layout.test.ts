@@ -39,16 +39,37 @@ describe("responsive editor layout", () => {
 
 describe("chip loadout three-column layout CSS", () => {
   it("opens wide enough that the default window keeps three columns", () => {
-    expect(defaultWindow.width).toBeGreaterThanOrEqual(1280);
-    expect(defaultWindow.width).toBeLessThanOrEqual(1400);
+    // Middle track is content-sized, so default can sit just above collapse.
+    expect(defaultWindow.width).toBeGreaterThanOrEqual(1120);
+    expect(defaultWindow.width).toBeLessThanOrEqual(1240);
     expect(defaultWindow.height).toBe(720);
     expect(chipLoadoutCollapsePx).toBeLessThan(defaultWindow.width);
     expect(chipLoadoutCollapsePx).toBeLessThanOrEqual(1100);
   });
 
-  it("defines a three-track chip loadout grid for wide viewports", () => {
+  it("sizes the equipped middle track to content, not a fat fr share", () => {
+    const gridDecl = css.match(
+      /\.panel-split--chip-loadout\s*\{[^}]*grid-template-columns:\s*([^;]+);/s,
+    );
+    expect(gridDecl?.[1]).toBeTruthy();
+    const tracks = gridDecl![1].trim();
+    // Three tracks: library + stats take fr; equipped is auto/max-content.
+    expect(tracks).toMatch(
+      /minmax\([^)]+\)\s+(?:max-content|auto|fit-content)\s+minmax\([^)]+\)/,
+    );
+    expect(tracks).not.toMatch(/1\.4fr/);
+  });
+
+  it("keeps loadout tables content-sized inside the equipped track", () => {
+    expect(css).toMatch(/\.slot-table\s*\{[^}]*width:\s*max-content/s);
     expect(css).toMatch(
-      /\.panel-split--chip-loadout\s*\{[^}]*grid-template-columns:\s*[^;]*minmax[^;]*minmax[^;]*minmax/s,
+      /\.panel-split--chip-loadout\s+\.panel-split__main\s*\{[^}]*width:\s*max-content/s,
+    );
+    expect(css).toMatch(
+      /\.panel-split--chip-loadout\s+\.panel-split__main\s*\{[^}]*max-width:\s*100%/s,
+    );
+    expect(css).toMatch(
+      /\.panel-split--chip-loadout\s+\.panel-split__main\s*>\s*\.table-wrap\s*\{[^}]*width:\s*max-content/s,
     );
   });
 
@@ -75,6 +96,21 @@ describe("chip loadout three-column layout CSS", () => {
     );
     expect(css).toMatch(
       /\.panel-split--chip-loadout[\s\S]*?\.col-weight input[\s\S]*?padding:\s*0\s+0\.(?:0\d|[1-3]\d?)em/s,
+    );
+  });
+});
+
+describe("editor status bar chrome height", () => {
+  it("keeps the footer compact with reduced vertical padding", () => {
+    expect(css).toMatch(
+      /\.editor-status-bar\s*\{[^}]*padding:\s*[0-4]px\s+\d+px/s,
+    );
+    expect(css).toMatch(
+      /\.editor-status-bar\s*\{[^}]*gap:\s*(?:[4-9]|1[0-2])px/s,
+    );
+    // Theme toggle inside the bar should not re-inflate height.
+    expect(css).toMatch(
+      /\.theme-toggle\s*\{[^}]*padding:\s*[0-4]px\s+\d+px/s,
     );
   });
 });
