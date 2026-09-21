@@ -91,7 +91,7 @@ describe("SaveManagerPanel", () => {
     expect(html).toContain("Level 30");
     expect(html).toContain("01:01:01");
     expect(html).toContain("Modified");
-    expect(html.match(/save-action--primary/g)).toHaveLength(1);
+    expect(html.match(/save-action--primary/g)).toHaveLength(2);
     expect(html).toContain(">Save changes</button>");
     expect(html).toContain('class="save-actions"');
     expect(html).toContain('class="save-slot-card save-slot-card--current"');
@@ -238,6 +238,14 @@ describe("SaveManagerPanel", () => {
     const html = renderPanel({ dirty: false });
 
     expect(html).toContain('aria-label="Backup actions"');
+    expect(html).toContain('class="save-history-actions save-history-actions--backup"');
+    expect(html).toContain('class="save-history-actions__label">Backup actions</span>');
+    expect(html).toMatch(
+      /class="save-action save-action--primary"[^>]*>Manual backup<\/button>/,
+    );
+    expect(html).toMatch(
+      /class="save-action save-action--caution file-button"[^>]*>Import and replace…/,
+    );
     expect(html).toContain('class="save-backup-help"');
     expect(html).toContain("snapshots the save on disk");
     expect(html).toContain("before save, import, and restore");

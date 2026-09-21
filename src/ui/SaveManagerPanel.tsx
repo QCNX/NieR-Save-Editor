@@ -402,9 +402,13 @@ export function SaveManagerPanel({
             ) : null}
           </div>
           <div
-            className="save-history-actions"
+            className="save-history-actions save-history-actions--backup"
             aria-label={t("saveManager.backupActions")}
+            role="group"
           >
+            <span className="save-history-actions__label">
+              {t("saveManager.backupActions")}
+            </span>
             <button
               type="button"
               className="save-action"
@@ -420,13 +424,16 @@ export function SaveManagerPanel({
             </button>
             <button
               type="button"
-              className="save-action"
+              className="save-action save-action--primary"
               disabled={pageBusy || !canCreateBackup}
               onClick={onCreateBackup}
             >
               {t("saveManager.createBackup")}
             </button>
-            <label className="save-action file-button" htmlFor={importInputId}>
+            <label
+              className="save-action save-action--caution file-button"
+              htmlFor={importInputId}
+            >
               {t("replacement.import")}
               <input
                 id={importInputId}

@@ -819,6 +819,12 @@ input[type="text"],
   font-weight: 650;
 }
 
+.save-action--caution {
+  border-color: var(--ui-dirty);
+  color: var(--ui-dirty);
+  font-weight: 600;
+}
+
 .save-action:disabled,
 .save-slot-actions button:disabled,
 .save-action.file-button:has(input:disabled) {
@@ -948,6 +954,19 @@ input[type="text"],
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
+}
+
+.save-history-actions--backup {
+  align-items: center;
+  padding: 6px;
+  border: 1px solid var(--ui-border-soft);
+  background: var(--ui-panel-soft);
+}
+
+.save-history-actions__label {
+  color: var(--ui-muted);
+  font-size: 0.82rem;
+  font-weight: 650;
 }
 
 .save-history-item__actions {
