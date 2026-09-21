@@ -398,7 +398,34 @@ input[type="text"],
 
 .panel-split--chip-loadout {
   min-width: 0;
-  grid-template-columns: max-content minmax(14rem, 1.2fr) minmax(12rem, 1fr);
+  justify-content: start;
+  grid-template-columns: max-content max-content minmax(12rem, max-content);
+}
+
+.chip-loadout-library-filters {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.chip-loadout-library-filters > label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.chip-loadout-library-filters input[type="search"] {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.chip-loadout-library-filters select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .panel-split--chip-loadout .panel-split__side {
@@ -531,10 +558,12 @@ input[type="text"],
 
 .chip-stats-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) max-content;
+  grid-template-columns: max-content max-content;
   gap: 2px 12px;
   align-items: baseline;
   font-size: 0.95rem;
+  width: max-content;
+  max-width: 100%;
 }
 
 .chip-stats-row--overflow .chip-stats-value {

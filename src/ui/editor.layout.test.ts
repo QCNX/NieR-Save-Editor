@@ -55,20 +55,40 @@ describe("chip loadout three-column layout CSS", () => {
     expect(chipLoadoutCollapsePx).toBeLessThanOrEqual(1100);
   });
 
-  it("sizes library to content and gives equipped a flexible minmax track", () => {
+  it("sizes all three chip-loadout columns to content (no fr void-feeding)", () => {
     const gridDecl = css.match(
       /\.panel-split--chip-loadout\s*\{[^}]*grid-template-columns:\s*([^;]+);/s,
     );
     expect(gridDecl?.[1]).toBeTruthy();
     const tracks = gridDecl![1].trim();
-    // Three tracks: library content-sized; equipped minmax(..., fr); stats minmax(..., 1fr).
-    expect(tracks).toMatch(
-      /^(?:max-content|auto|fit-content)\s+minmax\(\s*\d+(?:\.\d+)?rem\s*,\s*1\.2fr\s*\)\s+minmax\(\s*\d+(?:\.\d+)?rem\s*,\s*1fr\s*\)$/,
-    );
-    // Library must not soak a fat 1fr share.
-    expect(tracks).not.toMatch(/^minmax\([^)]*1fr/);
+    // Three content-driven tracks — no 1.2fr / 1fr eating leftover chrome.
+    expect(tracks.split(/\s+/).filter(Boolean).length).toBeGreaterThanOrEqual(3);
+    expect(tracks).not.toMatch(/\d+(?:\.\d+)?fr/);
+    expect(tracks).toMatch(/max-content/);
   });
 
+  it("stacks loadout library filters and scopes search to the column", () => {
+    expect(css).toMatch(
+      /\.chip-loadout-library-filters\s*\{[^}]*flex-direction:\s*column/s,
+    );
+    expect(css).toMatch(
+      /\.chip-loadout-library-filters\s+input\[type="search"\]\s*\{[^}]*width:\s*100%/s,
+    );
+    // Global list-toolbar search may stay fixed-width elsewhere.
+    expect(css).toMatch(
+      /\.list-toolbar input\[type="search"\][\s\S]*?width:\s*14rem/s,
+    );
+  });
+
+  it("keeps chip stats name↔value scannable without a greedy 1fr name track", () => {
+    const rowDecl = css.match(
+      /\.chip-stats-row\s*\{[^}]*grid-template-columns:\s*([^;]+);/s,
+    );
+    expect(rowDecl?.[1]).toBeTruthy();
+    const tracks = rowDecl![1].trim();
+    expect(tracks).not.toMatch(/1fr/);
+    expect(tracks).toMatch(/max-content/);
+  });
   it("keeps equipped and library tables content-sized so name↔level void stays gone", () => {
     expect(css).toMatch(/\.slot-table\s*\{[^}]*width:\s*max-content/s);
     expect(css).toMatch(

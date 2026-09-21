@@ -96,4 +96,15 @@ describe("ChipLoadoutPanel three-column layout", () => {
     expect(html).toContain('class="col-level"');
     expect(html).toContain('class="col-weight"');
   });
+
+  it("places library category on the line below search", () => {
+    const html = renderLoadout("en");
+    expect(html).toContain("chip-loadout-library-filters");
+    const filtersIdx = html.indexOf("chip-loadout-library-filters");
+    const side = html.slice(filtersIdx, html.indexOf("table-wrap", filtersIdx));
+    const searchIdx = side.indexOf("Search");
+    const categoryIdx = side.indexOf("Category");
+    expect(searchIdx).toBeGreaterThanOrEqual(0);
+    expect(categoryIdx).toBeGreaterThan(searchIdx);
+  });
 });

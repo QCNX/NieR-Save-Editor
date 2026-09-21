@@ -683,7 +683,7 @@ export function ChipLoadoutPanel({
       <div className="panel-split panel-split--chip-loadout">
         <div className="panel-split__side">
           <h3>{t("chips.fromLibrary")}</h3>
-          <div className="list-toolbar">
+          <div className="list-toolbar chip-loadout-library-filters">
             <label>
               <span>{t("list.search")}</span>
               <input
