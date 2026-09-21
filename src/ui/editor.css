@@ -500,7 +500,7 @@ input[type="text"],
 .chip-loadout-control-group label {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
   white-space: nowrap;
 }
 
@@ -696,6 +696,17 @@ input[type="text"],
 .slot-list-toolbar button[aria-pressed="true"] {
   font-weight: 650;
   background: var(--ui-panel);
+}
+
+/* In-game active loadout set: invert fill/ink instead of a star glyph. */
+.slot-list-toolbar button[data-in-game-active="true"] {
+  background: var(--ui-ink);
+  color: var(--ui-control-bg);
+  border-color: var(--ui-ink);
+}
+
+.slot-list-toolbar button[data-in-game-active="true"][aria-pressed="true"] {
+  font-weight: 650;
 }
 
 
@@ -1329,18 +1340,32 @@ input[type="text"],
   margin-bottom: 8px;
 }
 
+.list-toolbar > label,
+.slot-list-toolbar > label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.list-toolbar > label > span,
+.slot-list-toolbar > label > span {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 /* Dual-class must follow shared .list-toolbar so stretch/column/nowrap win. */
 .list-toolbar.chip-loadout-library-filters {
   flex-direction: column;
   flex-wrap: nowrap;
   align-items: stretch;
-  gap: 6px;
+  gap: 8px;
 }
 
 .list-toolbar.chip-loadout-library-filters > label {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  align-items: stretch;
+  gap: 6px;
   min-width: 0;
   width: 100%;
 }

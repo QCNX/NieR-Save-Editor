@@ -578,12 +578,14 @@ export function ChipLoadoutPanel({
                 key={set}
                 type="button"
                 aria-pressed={editSet === set}
+                data-in-game-active={
+                  ACTIVE_CHIP_LOADOUT_SET_SUPPORTED && activeSet === set
+                    ? "true"
+                    : undefined
+                }
                 onClick={() => setEditSet(set)}
               >
                 {set}
-                {ACTIVE_CHIP_LOADOUT_SET_SUPPORTED && activeSet === set
-                  ? "★"
-                  : ""}
               </button>
             ))}
           </div>

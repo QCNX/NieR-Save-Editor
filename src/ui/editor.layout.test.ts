@@ -106,6 +106,24 @@ describe("chip loadout three-column layout CSS", () => {
     expect(dualBlock).toMatch(/align-items:\s*stretch/);
   });
 
+  it("spaces toolbar labels away from their controls", () => {
+    expect(css).toMatch(
+      /\.list-toolbar\s*>\s*label[\s\S]*?gap:\s*(?:[8-9]|1\d)px/s,
+    );
+    expect(css).toMatch(
+      /\.list-toolbar\.chip-loadout-library-filters\s*>\s*label\s*\{[^}]*gap:\s*(?:[6-9]|1\d)px/s,
+    );
+  });
+
+  it("inverts in-game active loadout set buttons instead of starring them", () => {
+    expect(css).toMatch(
+      /\.slot-list-toolbar button\[data-in-game-active="true"\]\s*\{[^}]*background:\s*var\(--ui-ink\)/s,
+    );
+    expect(css).toMatch(
+      /\.slot-list-toolbar button\[data-in-game-active="true"\]\s*\{[^}]*color:\s*var\(--ui-control-bg\)/s,
+    );
+  });
+
   it("clips horizontal overflow in chip-loadout and collection containers", () => {
     expect(css).toMatch(
       /\.panel-split--chip-loadout\s+\.table-wrap\s*\{[^}]*overflow-x:\s*hidden/s,
