@@ -265,6 +265,19 @@ describe("ChipLoadoutPanel wireframe", () => {
     expect(html).toContain("Purchased");
   });
 
+  it("groups editing, in-game, copy, and capacity controls by their jobs", () => {
+    const html = renderLoadout("en");
+
+    expect(html).toContain('data-testid="chip-loadout-editing-set"');
+    expect(html).toContain('data-testid="chip-loadout-in-game-set"');
+    expect(html).toContain('data-testid="chip-loadout-copy"');
+    expect(html).toContain('data-testid="chip-loadout-capacity-controls"');
+    expect(html).toContain("Editing set");
+    expect(html).toContain("In-game active set");
+    expect(html).toContain("Copy loadout");
+    expect(html).toContain("Capacity");
+  });
+
   it("marks the in-game active set with a star and exposes a switch", () => {
     const slot = setActiveChipLoadoutSet(loadoutSampleSlot(), "B");
     const html = renderLoadout("en", slot);

@@ -115,6 +115,14 @@ function renderLoadout(slot: SlotData, language: "zh-CN" | "en" = "zh-CN") {
 }
 
 describe("ChipLoadoutPanel Stats Panel v1", () => {
+  it("keeps each raw-to-effective stat value together for scanning", () => {
+    const html = renderLoadout(overflowAttackSlot(), "en");
+
+    expect(html).toContain('class="chip-stats-value"');
+    expect(html).toContain('class="chip-stats-value-text"');
+    expect(html).toContain("200% → 100% (cap 100%, +100% unused)");
+  });
+
   it("shows stackable overflow with raw → effective + cap styling", () => {
     const html = renderLoadout(overflowAttackSlot(), "zh-CN");
     expect(html).toContain(translate("zh-CN", "chips.statsPanel"));

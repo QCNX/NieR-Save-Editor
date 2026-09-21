@@ -537,117 +537,145 @@ export function ChipLoadoutPanel({
       data-testid="chip-loadout-panel"
     >
       <div className="list-toolbar chip-loadout-toolbar">
-        <div
-          className="slot-list-toolbar"
-          role="group"
-          aria-label={t("chips.loadoutSet")}
+        <fieldset
+          className="chip-loadout-control-group"
+          data-testid="chip-loadout-editing-set"
         >
-          {LOADOUT_SETS.map((set) => (
-            <button
-              key={set}
-              type="button"
-              aria-pressed={editSet === set}
-              onClick={() => setEditSet(set)}
-            >
-              {set}
-              {ACTIVE_CHIP_LOADOUT_SET_SUPPORTED && activeSet === set
-                ? "★"
-                : ""}
-            </button>
-          ))}
-        </div>
-
-        <label>
-          <span>{t("chips.activeSet")}</span>
-          <select
-            data-testid="chip-loadout-active"
-            aria-label={t("chips.activeSet")}
-            value={activeSet}
-            disabled={!ACTIVE_CHIP_LOADOUT_SET_SUPPORTED}
-            onChange={(event) =>
-              onSlotChange(
-                applyChipLoadoutActiveSet(
-                  slot,
-                  event.currentTarget.value as PluginChipLoadoutSet,
-                ),
-              )
-            }
+          <legend>{t("chips.editingSet")}</legend>
+          <div
+            className="slot-list-toolbar"
+            role="group"
+            aria-label={t("chips.loadoutSet")}
           >
             {LOADOUT_SETS.map((set) => (
-              <option key={set} value={set}>
+              <button
+                key={set}
+                type="button"
+                aria-pressed={editSet === set}
+                onClick={() => setEditSet(set)}
+              >
                 {set}
-              </option>
+                {ACTIVE_CHIP_LOADOUT_SET_SUPPORTED && activeSet === set
+                  ? "★"
+                  : ""}
+              </button>
             ))}
-          </select>
-        </label>
+          </div>
+        </fieldset>
 
-        <label>
-          <span>{t("chips.copyFrom")}</span>
-          <select
-            aria-label={t("chips.copyFrom")}
-            value={copySource}
-            onChange={(event) =>
-              setCopySource(event.currentTarget.value as PluginChipLoadoutSet)
-            }
-          >
-            {LOADOUT_SETS.map((set) => (
-              <option key={set} value={set}>
-                {set}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button
-          type="button"
-          onClick={() =>
-            runGuarded(() =>
-              applyChipLoadoutCopy(slot, copySource, editSet, { overload }),
-            )
-          }
+        <fieldset
+          className="chip-loadout-control-group"
+          data-testid="chip-loadout-in-game-set"
         >
-          {t("chips.copy")}
-        </button>
-
-        <label>
-          <input
-            type="checkbox"
-            checked={overload}
-            onChange={(event) => setOverload(event.currentTarget.checked)}
-          />
-          {t("chips.overload")}
-        </label>
-
-        <label
-          data-testid="chip-loadout-usage"
-          data-over-capacity={overCapacity ? "true" : "false"}
-          className={overCapacity ? "chip-loadout-usage--over" : undefined}
-        >
-          <span>{t("chips.usage")}</span>
-          <span>
-            {used} /{" "}
+          <legend>{t("chips.inGameSet")}</legend>
+          <label>
+            <span>{t("chips.activeSet")}</span>
             <select
-              data-testid="chip-loadout-capacity"
-              aria-label={t("chips.purchasedCapacity")}
-              value={purchased}
-              onChange={(event) => {
-                const capacity = Number(event.currentTarget.value);
-                if (!Number.isFinite(capacity)) return;
-                runGuarded(() =>
-                  applyChipLoadoutCapacity(slot, capacity, { overload }),
-                );
-              }}
+              data-testid="chip-loadout-active"
+              aria-label={t("chips.activeSet")}
+              value={activeSet}
+              disabled={!ACTIVE_CHIP_LOADOUT_SET_SUPPORTED}
+              onChange={(event) =>
+                onSlotChange(
+                  applyChipLoadoutActiveSet(
+                    slot,
+                    event.currentTarget.value as PluginChipLoadoutSet,
+                  ),
+                )
+              }
             >
-              {PURCHASED_CAPACITY_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}
+              {LOADOUT_SETS.map((set) => (
+                <option key={set} value={set}>
+                  {set}
                 </option>
               ))}
             </select>
-          </span>
-          <span className="chip-loadout-capacity-label">
-            {t("chips.purchasedCapacity")}
-          </span>
-        </label>
+          </label>
+        </fieldset>
+
+        <fieldset
+          className="chip-loadout-control-group"
+          data-testid="chip-loadout-copy"
+        >
+          <legend>{t("chips.copyLoadout")}</legend>
+          <label>
+            <span>{t("chips.copyFrom")}</span>
+            <select
+              aria-label={t("chips.copyFrom")}
+              value={copySource}
+              onChange={(event) =>
+                setCopySource(event.currentTarget.value as PluginChipLoadoutSet)
+              }
+            >
+              {LOADOUT_SETS.map((set) => (
+                <option key={set} value={set}>
+                  {set}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            onClick={() =>
+              runGuarded(() =>
+                applyChipLoadoutCopy(slot, copySource, editSet, { overload }),
+              )
+            }
+          >
+            {t("chips.copy")}
+          </button>
+        </fieldset>
+
+        <fieldset
+          className="chip-loadout-control-group chip-loadout-control-group--capacity"
+          data-testid="chip-loadout-capacity-controls"
+        >
+          <legend>{t("chips.capacityControls")}</legend>
+          <label className="chip-loadout-overload">
+            <input
+              type="checkbox"
+              checked={overload}
+              onChange={(event) => setOverload(event.currentTarget.checked)}
+            />
+            {t("chips.overload")}
+          </label>
+
+          <label
+            data-testid="chip-loadout-usage"
+            data-over-capacity={overCapacity ? "true" : "false"}
+            className={
+              overCapacity
+                ? "chip-loadout-usage chip-loadout-usage--over"
+                : "chip-loadout-usage"
+            }
+          >
+            <span>{t("chips.usage")}</span>
+            <span>
+              {used} /{" "}
+              <select
+                data-testid="chip-loadout-capacity"
+                aria-label={t("chips.purchasedCapacity")}
+                value={purchased}
+                onChange={(event) => {
+                  const capacity = Number(event.currentTarget.value);
+                  if (!Number.isFinite(capacity)) return;
+                  runGuarded(() =>
+                    applyChipLoadoutCapacity(slot, capacity, { overload }),
+                  );
+                }}
+              >
+                {PURCHASED_CAPACITY_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </span>
+            <span className="chip-loadout-capacity-label">
+              {t("chips.purchasedCapacity")}
+            </span>
+          </label>
+        </fieldset>
       </div>
 
       <div className="panel-split panel-split--chip-loadout">
@@ -873,7 +901,9 @@ export function ChipLoadoutPanel({
                       ) : null}
                     </span>
                     <span className="chip-stats-value">
-                      {formatStackableStatLine(line, language)}
+                      <span className="chip-stats-value-text">
+                        {formatStackableStatLine(line, language)}
+                      </span>
                     </span>
                   </li>
                 );

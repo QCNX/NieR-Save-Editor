@@ -446,8 +446,50 @@ input[type="text"],
 }
 
 .chip-loadout-toolbar {
+  gap: 10px;
   flex-wrap: wrap;
-  align-items: end;
+  align-items: stretch;
+}
+
+.chip-loadout-control-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 3.65rem;
+  margin: 0;
+  padding: 5px 8px 7px;
+  border: 1px solid var(--ui-border-soft);
+  background: var(--ui-panel-soft);
+}
+
+.chip-loadout-control-group legend {
+  padding: 0 4px;
+  color: var(--ui-muted);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.chip-loadout-control-group .slot-list-toolbar {
+  margin: 0;
+}
+
+.chip-loadout-control-group label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.chip-loadout-control-group--capacity {
+  gap: 10px;
+}
+
+.chip-loadout-control-group--capacity .chip-loadout-usage {
+  gap: 3px;
+}
+
+.chip-loadout-overload {
+  color: var(--ui-muted);
 }
 
 .chip-loadout-usage--over,
@@ -488,10 +530,9 @@ input[type="text"],
 }
 
 .chip-stats-row {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
   gap: 2px 12px;
-  justify-content: space-between;
   align-items: baseline;
   font-size: 0.95rem;
 }
@@ -502,15 +543,17 @@ input[type="text"],
 }
 
 .chip-stats-name {
-  flex: 1 1 7rem;
   min-width: 0;
 }
 
 .chip-stats-value {
-  flex: 1 1 7rem;
-  margin-left: auto;
   text-align: right;
   max-width: 100%;
+  min-width: 0;
+}
+
+.chip-stats-value-text {
+  white-space: nowrap;
 }
 
 .chip-stats-estimate {
