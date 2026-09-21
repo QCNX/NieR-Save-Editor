@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import type { BackupEntry } from "../persist";
 import {
   SAVEFILE_SIZE_BYTES,
   load,
@@ -13,6 +14,7 @@ import {
   characterNameLabel,
   createReplacementPreview,
   summarizeDiscoveredSaves,
+  summarizeBackupHistory,
   summarizeSave,
   validateSaveBytes,
   verifySaveBytes,
@@ -48,6 +50,86 @@ describe("validateSaveBytes", () => {
     if (result.status === "ready") {
       expect(result.slot).toEqual(load(bytes));
     }
+  });
+});
+
+describe("summarizeBackupHistory", () => {
+  it("sorts newest first and isolates an invalid legacy backup", async () => {
+    const entries: BackupEntry[] = [
+      {
+        path: "~/backups/legacy/SlotData_0.dat",
+        slotFileName: "SlotData_0.dat",
+        reason: "legacy",
+        size: 12,
+        mtimeMs: 10,
+        sha256: "",
+        metadataStatus: "legacy",
+      },
+      {
+        path: "~/backups/SlotData_0/2026-before-save.dat",
+        slotFileName: "SlotData_0.dat",
+        reason: "before-save",
+        size: SAVEFILE_SIZE_BYTES,
+        mtimeMs: 20,
+        sha256: "abc123",
+        metadataStatus: "ok",
+      },
+    ];
+
+    const history = await summarizeBackupHistory(entries, async (path) =>
+      path.includes("legacy")
+        ? new Uint8Array(12)
+        : syntheticSave("2B", 30, 3_661),
+    );
+
+    expect(history.map((item) => item.entry.mtimeMs)).toEqual([20, 10]);
+    expect(history[0].summary).toMatchObject({
+      status: "ready",
+      characterName: "2B",
+    });
+    expect(history[1]).toMatchObject({
+      entry: { reason: "legacy", metadataStatus: "legacy" },
+      summary: { status: "invalid" },
+    });
+  });
+
+  it("isolates one unreadable backup without hiding the other versions", async () => {
+    const entries: BackupEntry[] = [
+      {
+        path: "~/backups/SlotData_0/unreadable.dat",
+        slotFileName: "SlotData_0.dat",
+        reason: "manual",
+        size: SAVEFILE_SIZE_BYTES,
+        mtimeMs: 20,
+        sha256: "unreadable",
+        metadataStatus: "ok",
+      },
+      {
+        path: "~/backups/SlotData_0/ready.dat",
+        slotFileName: "SlotData_0.dat",
+        reason: "before-save",
+        size: SAVEFILE_SIZE_BYTES,
+        mtimeMs: 10,
+        sha256: "ready",
+        metadataStatus: "ok",
+      },
+    ];
+
+    const history = await summarizeBackupHistory(entries, async (path) => {
+      if (path.includes("unreadable")) {
+        throw new Error("Read backup: synthetic read failure");
+      }
+      return syntheticSave("9S", 22, 120);
+    });
+
+    expect(history[0].summary).toMatchObject({
+      status: "unreadable",
+      message: "Read backup: synthetic read failure",
+    });
+    expect(history[1].summary).toMatchObject({
+      status: "ready",
+      characterName: "9S",
+    });
   });
 });
 

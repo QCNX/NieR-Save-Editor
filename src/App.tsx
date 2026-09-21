@@ -2,6 +2,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type Dispatch,
   type SetStateAction,
@@ -29,12 +30,15 @@ import {
   reloadSave,
   saveAsSave,
   type PersistHost,
+  type SaveManagementHost,
 } from "./persist";
 import { EditorShell, type EditorTab } from "./ui/EditorShell";
 import { SaveManagerPanel } from "./ui/SaveManagerPanel";
 import {
   summarizeDiscoveredSaves,
+  summarizeBackupHistory,
   summarizeSave,
+  type BackupHistoryItem,
   type ReadySaveSummary,
   type SaveSummary,
 } from "./ui/saveSummary";
@@ -148,6 +152,12 @@ function AppContent({
   const { activeTab, theme, workflow: state } = shellState;
   const setState = onWorkflowChange;
   const [slotSummaries, setSlotSummaries] = useState<SaveSummary[]>([]);
+  const [historyTargetPath, setHistoryTargetPath] = useState<string | null>(null);
+  const [backupHistory, setBackupHistory] = useState<BackupHistoryItem[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
+  const historyRequestId = useRef(0);
+  const manualBackupBusy = useRef(false);
   const [statusMessage, setStatusMessage] = useState<AppMessage | null>(null);
   const [errorMessage, setErrorMessage] = useState<AppMessage | null>(null);
   const [openedFileName, setOpenedFileName] = useState<string | null>(null);
@@ -160,7 +170,7 @@ function AppContent({
   const [rootDraft, setRootDraft] = useState(customSaveRoot);
 
   const tauri = useMemo(() => isTauriRuntime(), []);
-  const persistHost: PersistHost | null = useMemo(
+  const persistHost: (PersistHost & SaveManagementHost) | null = useMemo(
     () => (tauri ? createTauriPersistHost() : null),
     [tauri],
   );
@@ -205,6 +215,18 @@ function AppContent({
           },
         );
         setSlotSummaries(summaries);
+        setHistoryTargetPath((previous) => {
+          if (
+            previous &&
+            summaries.some((summary) => summary.path === previous)
+          ) {
+            return previous;
+          }
+          return (
+            summaries.find((summary) => summary.status === "ready")?.path ??
+            null
+          );
+        });
       }
       setStatusMessage(
         found.length === 0
@@ -233,6 +255,59 @@ function AppContent({
   useEffect(() => {
     void refreshSlots();
   }, [refreshSlots]);
+
+  const refreshBackupHistory = useCallback(
+    async (sourcePath: string | null) => {
+      const requestId = ++historyRequestId.current;
+      setHistoryError(null);
+      if (!persistHost || !sourcePath) {
+        setBackupHistory([]);
+        setHistoryLoading(false);
+        return;
+      }
+      setHistoryLoading(true);
+      try {
+        const listed = await persistHost.listBackups(sourcePath);
+        if (requestId !== historyRequestId.current) return;
+        if (listed.status !== "ok") {
+          setBackupHistory([]);
+          setHistoryError(
+            `${t(`saveManager.phase.${listed.phase}`)}: ${listed.message}`,
+          );
+          return;
+        }
+        const history = await summarizeBackupHistory(
+          listed.backups,
+          async (path) => {
+            const read = await persistHost.readFile(path);
+            if (read.status !== "ok") {
+              throw new Error(
+                `${t("saveManager.phase.read-backup")}: ${read.message}`,
+              );
+            }
+            return read.bytes;
+          },
+        );
+        if (requestId !== historyRequestId.current) return;
+        setBackupHistory(history);
+      } catch (error) {
+        if (requestId !== historyRequestId.current) return;
+        setBackupHistory([]);
+        setHistoryError(
+          error instanceof Error ? error.message : t("errors.scanFailed"),
+        );
+      } finally {
+        if (requestId === historyRequestId.current) {
+          setHistoryLoading(false);
+        }
+      }
+    },
+    [persistHost, t],
+  );
+
+  useEffect(() => {
+    void refreshBackupHistory(historyTargetPath);
+  }, [historyTargetPath, refreshBackupHistory]);
 
   function clearAlerts() {
     setErrorMessage(null);
@@ -279,6 +354,7 @@ function AppContent({
       const slot = load(result.bytes);
       setState((prev) => applyLoadedSlot(prev, path, slot));
       setOpenedFileName(fileNameFromPath(path));
+      setHistoryTargetPath(path);
       setStatusMessage({
         key: "status.loaded",
         values: { name: fileNameFromPath(path) },
@@ -347,6 +423,11 @@ function AppContent({
       );
       if (result.status === "ok") {
         setState((prev) => applyOverwriteSuccess(prev));
+        if (historyTargetPath === state.currentPath) {
+          await refreshBackupHistory(state.currentPath);
+        } else {
+          setHistoryTargetPath(state.currentPath);
+        }
         setStatusMessage({
           key: "status.overwriteSuccess",
           values: { name: fileNameFromPath(result.backupPath) },
@@ -410,6 +491,51 @@ function AppContent({
           : { key: "errors.saveAsFailed" },
       );
     } finally {
+      setIoBusy(false);
+    }
+  }
+
+  async function onCreateBackup() {
+    if (manualBackupBusy.current) {
+      return;
+    }
+    const target = historyTargetPath
+      ? slotSummaries.find((summary) => summary.path === historyTargetPath)
+      : undefined;
+    if (!persistHost || !historyTargetPath || target?.status !== "ready") {
+      setHistoryError(t("errors.manualBackupUnavailable"));
+      return;
+    }
+    manualBackupBusy.current = true;
+    setIoBusy(true);
+    setHistoryError(null);
+    clearAlerts();
+    try {
+      const result = await persistHost.createVersionedBackup(
+        historyTargetPath,
+        "manual",
+      );
+      if (result.status !== "ok") {
+        setHistoryError(
+          `${t(`saveManager.phase.${result.phase}`)}: ${result.message}`,
+        );
+        return;
+      }
+      await refreshBackupHistory(historyTargetPath);
+      setStatusMessage({
+        key: "status.manualBackupSuccess",
+        values: { name: fileNameFromPath(result.backup.path) },
+      });
+    } catch (error) {
+      setHistoryError(
+        `${t("saveManager.phase.backup-target")}: ${
+          error instanceof Error
+            ? error.message
+            : t("errors.manualBackupFailed")
+        }`,
+      );
+    } finally {
+      manualBackupBusy.current = false;
       setIoBusy(false);
     }
   }
@@ -499,6 +625,9 @@ function AppContent({
     });
     return summary.status === "ready" ? summary : null;
   }, [openedFileName, slotSummaries, state.currentPath, state.slotData]);
+  const historyTarget = historyTargetPath
+    ? slotSummaries.find((summary) => summary.path === historyTargetPath)
+    : undefined;
 
   return (
     <main className="app-root">
@@ -522,13 +651,25 @@ function AppContent({
             canSaveAs={canSaveAs}
             canSaveChanges={canPathIo}
             canClose={Boolean(state.slotData)}
+            backupHistory={backupHistory}
+            historyError={historyError}
+            historyLoading={historyLoading}
+            historyTargetPath={historyTargetPath}
+            canCreateBackup={Boolean(
+              persistHost && historyTarget?.status === "ready",
+            )}
             onClose={onClose}
+            onCreateBackup={() => void onCreateBackup()}
             onLoad={(path) => void onSelectSlot(path)}
             onOpenFile={(file) => void onPickFile(file)}
             onReload={() => void onReload()}
-            onRescan={() => void refreshSlots()}
+            onRescan={() => {
+              void refreshSlots();
+              void refreshBackupHistory(historyTargetPath);
+            }}
             onSaveAs={() => void onSaveAs()}
             onSaveChanges={() => void onOverwrite()}
+            onSelectHistoryTarget={setHistoryTargetPath}
           />
         }
         notices={

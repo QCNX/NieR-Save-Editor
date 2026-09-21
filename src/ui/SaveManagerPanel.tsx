@@ -1,7 +1,11 @@
 import { useId, type ChangeEvent } from "react";
 
 import { useI18n } from "../i18n";
-import type { ReadySaveSummary, SaveSummary } from "./saveSummary";
+import type {
+  BackupHistoryItem,
+  ReadySaveSummary,
+  SaveSummary,
+} from "./saveSummary";
 
 export type SaveManagerPanelProps = {
   busy: boolean;
@@ -14,13 +18,20 @@ export type SaveManagerPanelProps = {
   canSaveAs: boolean;
   canSaveChanges: boolean;
   canClose: boolean;
+  backupHistory: readonly BackupHistoryItem[];
+  historyError: string | null;
+  historyLoading: boolean;
+  historyTargetPath: string | null;
+  canCreateBackup: boolean;
   onClose: () => void;
+  onCreateBackup: () => void;
   onLoad: (path: string) => void;
   onOpenFile: (file: File | undefined) => void;
   onReload: () => void;
   onRescan: () => void;
   onSaveAs: () => void;
   onSaveChanges: () => void;
+  onSelectHistoryTarget: (path: string) => void;
 };
 
 function formatPlayTime(seconds: number): string {
@@ -37,6 +48,29 @@ function stateLabel(summary: SaveSummary, t: (key: string) => string): string {
   if (summary.status === "ready") return t("saveManager.stateReady");
   if (summary.status === "invalid") return t("saveManager.stateInvalid");
   return t("saveManager.stateUnreadable");
+}
+
+function reasonLabel(
+  reason: BackupHistoryItem["entry"]["reason"],
+  t: (key: string) => string,
+): string {
+  return t(`saveManager.backupReason.${reason}`);
+}
+
+function metadataLabel(
+  status: BackupHistoryItem["entry"]["metadataStatus"],
+  t: (key: string) => string,
+): string {
+  return t(`saveManager.metadata.${status}`);
+}
+
+function integrityLabel(
+  status: BackupHistoryItem["entry"]["metadataStatus"],
+  t: (key: string) => string,
+): string {
+  if (status === "ok") return t("saveManager.integrity.verified");
+  if (status === "invalid") return t("saveManager.integrity.mismatch");
+  return t("saveManager.integrity.unrecorded");
 }
 
 type SummaryDetailsProps = {
@@ -92,15 +126,22 @@ export function SaveManagerPanel({
   canSaveAs,
   canSaveChanges,
   canClose,
+  backupHistory,
+  historyError,
+  historyLoading,
+  historyTargetPath,
+  canCreateBackup,
   onClose,
+  onCreateBackup,
   onLoad,
   onOpenFile,
   onReload,
   onRescan,
   onSaveAs,
   onSaveChanges,
+  onSelectHistoryTarget,
 }: SaveManagerPanelProps) {
-  const { t } = useI18n();
+  const { language, t } = useI18n();
   const inputId = useId();
 
   function handleOpenFile(event: ChangeEvent<HTMLInputElement>) {
@@ -241,6 +282,14 @@ export function SaveManagerPanel({
                     >
                       {t("toolbar.loadSlot")}
                     </button>
+                    <button
+                      type="button"
+                      aria-pressed={summary.path === historyTargetPath}
+                      disabled={busy}
+                      onClick={() => onSelectHistoryTarget(summary.path)}
+                    >
+                      {t("saveManager.viewBackups")}
+                    </button>
                   </div>
                 </article>
               );
@@ -253,8 +302,103 @@ export function SaveManagerPanel({
         className="save-manager__section"
         aria-labelledby="save-manager-history"
       >
-        <h2 id="save-manager-history">{t("saveManager.historyHeading")}</h2>
-        <p className="save-manager-empty">{t("saveManager.historyEmpty")}</p>
+        <div className="save-history-heading-row">
+          <div>
+            <h2 id="save-manager-history">{t("saveManager.historyHeading")}</h2>
+            {historyTargetPath ? (
+              <p className="save-history-target" title={historyTargetPath}>
+                {historyTargetPath.split(/[/\\]/).pop()}
+              </p>
+            ) : null}
+          </div>
+          <button
+            type="button"
+            className="save-action"
+            disabled={busy || !canCreateBackup}
+            onClick={onCreateBackup}
+          >
+            {t("saveManager.createBackup")}
+          </button>
+        </div>
+        {dirty && currentPath && currentPath === historyTargetPath ? (
+          <p className="save-backup-dirty-note">
+            {t("saveManager.backupExcludesUnsaved")}
+          </p>
+        ) : null}
+        {historyLoading ? (
+          <p className="save-manager-empty" role="status">
+            {t("saveManager.historyLoading")}
+          </p>
+        ) : historyError ? (
+          <p className="save-slot-error" role="alert">
+            {t("saveManager.historyError")}: {historyError}
+          </p>
+        ) : backupHistory.length === 0 ? (
+          <p className="save-manager-empty">{t("saveManager.historyEmpty")}</p>
+        ) : (
+          <div className="save-history-list">
+            {backupHistory.map(({ entry, summary }) => {
+              const createdAt = new Intl.DateTimeFormat(language, {
+                dateStyle: "medium",
+                timeStyle: "short",
+              }).format(entry.mtimeMs);
+              const checksum = entry.sha256
+                ? entry.sha256.slice(0, 12)
+                : t("saveManager.integrityUnavailable");
+              return (
+                <article
+                  className={`save-history-item save-history-item--${summary.status}`}
+                  key={entry.path}
+                  title={entry.path}
+                >
+                  <header className="save-history-item__header">
+                    <div>
+                      <strong>{reasonLabel(entry.reason, t)}</strong>
+                      <span>{createdAt}</span>
+                    </div>
+                    <span className={`save-state save-state--${summary.status}`}>
+                      {stateLabel(summary, t)}
+                    </span>
+                  </header>
+                  <dl className="save-history-meta">
+                    <div>
+                      <dt>{t("saveManager.sourceFile")}</dt>
+                      <dd>{entry.slotFileName}</dd>
+                    </div>
+                    <div>
+                      <dt>{t("saveManager.size")}</dt>
+                      <dd>
+                        {new Intl.NumberFormat(language).format(entry.size)}{" "}
+                        {t("saveManager.bytes")}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>{t("saveManager.checksum")}</dt>
+                      <dd>{checksum}</dd>
+                    </div>
+                    <div>
+                      <dt>{t("saveManager.integrity")}</dt>
+                      <dd>{integrityLabel(entry.metadataStatus, t)}</dd>
+                    </div>
+                    <div>
+                      <dt>{t("saveManager.metadataStatus")}</dt>
+                      <dd>{metadataLabel(entry.metadataStatus, t)}</dd>
+                    </div>
+                  </dl>
+                  {summary.status === "ready" ? (
+                    <SummaryDetails summary={summary} />
+                  ) : (
+                    <p className="save-slot-error">
+                      {summary.status === "unreadable" && summary.message
+                        ? `${stateLabel(summary, t)}: ${summary.message}`
+                        : stateLabel(summary, t)}
+                    </p>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        )}
       </section>
     </div>
   );

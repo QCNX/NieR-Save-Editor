@@ -2,7 +2,11 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
 import { I18nProvider } from "../i18n";
-import type { ReadySaveSummary, SaveSummary } from "./saveSummary";
+import type {
+  BackupHistoryItem,
+  ReadySaveSummary,
+  SaveSummary,
+} from "./saveSummary";
 import { SaveManagerPanel } from "./SaveManagerPanel";
 
 const readySlot: ReadySaveSummary = {
@@ -46,13 +50,20 @@ function renderPanel(
         canSaveAs
         canSaveChanges
         canClose
+        backupHistory={[]}
+        historyError={null}
+        historyLoading={false}
+        historyTargetPath={readySlot.path}
+        canCreateBackup
         onClose={vi.fn()}
+        onCreateBackup={vi.fn()}
         onLoad={vi.fn()}
         onOpenFile={vi.fn()}
         onReload={vi.fn()}
         onRescan={vi.fn()}
         onSaveAs={vi.fn()}
         onSaveChanges={vi.fn()}
+        onSelectHistoryTarget={vi.fn()}
         {...props}
       />
     </I18nProvider>,
@@ -90,7 +101,7 @@ describe("SaveManagerPanel", () => {
   it("locks conflicting actions while I/O is busy", () => {
     const html = renderPanel({ busy: true });
 
-    expect(html.match(/disabled=""/g)).toHaveLength(7);
+    expect(html.match(/disabled=""/g)).toHaveLength(9);
   });
 
   it("renders distinct loading and empty slot states", () => {
@@ -100,5 +111,90 @@ describe("SaveManagerPanel", () => {
     expect(loading).toContain('role="status"');
     expect(loading).toContain("Reading save slots…");
     expect(empty).toContain("No save slots were found.");
+  });
+
+  it("shows newest backup details and clearly marks invalid legacy history", () => {
+    const backupHistory: BackupHistoryItem[] = [
+      {
+        entry: {
+          path: "~/backups/SlotData_0/new.dat",
+          slotFileName: "SlotData_0.dat",
+          reason: "manual",
+          size: 235_980,
+          mtimeMs: 200,
+          sha256: "abcdef0123456789",
+          metadataStatus: "ok",
+        },
+        summary: {
+          ...readySlot,
+          path: "~/backups/SlotData_0/new.dat",
+          fileName: "new.dat",
+          mtimeMs: 200,
+        },
+      },
+      {
+        entry: {
+          path: "~/backups/SlotData_0/invalid-sidecar.dat",
+          slotFileName: "SlotData_0.dat",
+          reason: "manual",
+          size: 235_980,
+          mtimeMs: 150,
+          sha256: "fedcba9876543210",
+          metadataStatus: "invalid",
+        },
+        summary: {
+          ...readySlot,
+          path: "~/backups/SlotData_0/invalid-sidecar.dat",
+          fileName: "invalid-sidecar.dat",
+          mtimeMs: 150,
+        },
+      },
+      {
+        entry: {
+          path: "~/backups/legacy/SlotData_0.dat",
+          slotFileName: "SlotData_0.dat",
+          reason: "legacy",
+          size: 12,
+          mtimeMs: 100,
+          sha256: "",
+          metadataStatus: "legacy",
+        },
+        summary: {
+          ...invalidSlot,
+          path: "~/backups/legacy/SlotData_0.dat",
+          fileName: "SlotData_0.dat",
+          mtimeMs: 100,
+        },
+      },
+    ];
+
+    const html = renderPanel({ backupHistory, dirty: true });
+
+    expect(html).toContain("Manual backup");
+    expect(html).toContain("Legacy backup");
+    expect(html).toContain("235,980 bytes");
+    expect(html).toContain("abcdef012345");
+    expect(html).toContain("Metadata available");
+    expect(html).toContain("Invalid metadata");
+    expect(html).toContain("Legacy metadata");
+    expect(html).toContain("Verified");
+    expect(html).toContain("Mismatch");
+    expect(html).toContain("Not recorded");
+    expect(html).toContain("Validation failed");
+    expect(html).toContain("Unsaved editor changes are not included");
+    expect(html.indexOf("new.dat")).toBeLessThan(
+      html.indexOf("Legacy backup"),
+    );
+  });
+
+  it("renders separate backup loading, error, and empty states", () => {
+    const loading = renderPanel({ historyLoading: true });
+    const failed = renderPanel({ historyError: "synthetic history failure" });
+    const empty = renderPanel();
+
+    expect(loading).toContain("Reading backup history…");
+    expect(failed).toContain('role="alert"');
+    expect(failed).toContain("synthetic history failure");
+    expect(empty).toContain("No backups yet");
   });
 });

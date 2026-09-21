@@ -8,6 +8,7 @@ import {
   type SlotData,
 } from "../save";
 import type { SlotFile } from "../discovery";
+import type { BackupEntry } from "../persist";
 
 export type SaveBytesValidation =
   | { status: "ready"; slot: SlotData }
@@ -134,6 +135,42 @@ export async function summarizeDiscoveredSaves(
           message: error instanceof Error ? error.message : undefined,
         };
       }
+    }),
+  );
+}
+
+export type BackupHistoryItem = {
+  entry: BackupEntry;
+  summary: SaveSummary;
+};
+
+/** Parse backup payloads independently and normalize history newest first. */
+export async function summarizeBackupHistory(
+  entries: readonly BackupEntry[],
+  readBytes: SaveBytesReader,
+): Promise<BackupHistoryItem[]> {
+  const newestFirst = [...entries].sort((left, right) => {
+    const byTime = right.mtimeMs - left.mtimeMs;
+    return byTime || right.path.localeCompare(left.path);
+  });
+  return Promise.all(
+    newestFirst.map(async (entry): Promise<BackupHistoryItem> => {
+      let summary: SaveSummary;
+      try {
+        const bytes = await readBytes(entry.path);
+        summary = summarizeSave({
+          path: entry.path,
+          mtimeMs: entry.mtimeMs,
+          bytes,
+        });
+      } catch (error) {
+        summary = {
+          ...identityFrom(entry.path, entry.mtimeMs),
+          status: "unreadable",
+          message: error instanceof Error ? error.message : undefined,
+        };
+      }
+      return { entry, summary };
     }),
   );
 }

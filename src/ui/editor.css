@@ -674,7 +674,9 @@ input[type="text"],
 
 .save-slot-actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
+  gap: 8px;
   margin-top: 10px;
 }
 
@@ -687,9 +689,94 @@ input[type="text"],
   color: var(--ui-muted);
 }
 
+.save-history-heading-row {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.save-history-heading-row h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.save-history-target {
+  margin: 2px 0 0;
+  color: var(--ui-muted);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.save-backup-dirty-note {
+  margin: 0 0 10px;
+  padding: 6px 8px;
+  border-left: 3px solid var(--ui-dirty);
+  background: var(--ui-panel-soft);
+  color: var(--ui-dirty);
+}
+
+.save-history-list {
+  display: grid;
+  gap: 8px;
+}
+
+.save-history-item {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--ui-border-table);
+  background: var(--ui-surface);
+}
+
+.save-history-item--invalid,
+.save-history-item--unreadable {
+  border-color: var(--ui-alert-border);
+}
+
+.save-history-item__header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.save-history-item__header > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+
+.save-history-item__header span {
+  color: var(--ui-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.save-history-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 8px 14px;
+  margin: 10px 0 0;
+}
+
+.save-history-meta dt {
+  color: var(--ui-muted);
+  font-size: 0.8rem;
+}
+
+.save-history-meta dd {
+  margin: 2px 0 0;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
 @media (max-width: 760px) {
   .save-current-layout {
     grid-template-columns: 1fr;
+  }
+
+  .save-history-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -697,6 +784,15 @@ input[type="text"],
   .save-actions,
   .save-slot-grid,
   .save-summary-details {
+    grid-template-columns: 1fr;
+  }
+
+  .save-history-heading-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .save-history-meta {
     grid-template-columns: 1fr;
   }
 }
