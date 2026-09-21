@@ -21,7 +21,8 @@ Built with **Tauri 2**, **React**, and **TypeScript**. Save parsing/serializatio
 - Edit SteamID, character name, play time, money, EXP/level, Debug Flag, Play Records, cosmetics, inventory and corpse inventory, weapons and equipment sets, plug-in chips, POD programs, and POD configuration.
 - Search and filter slot-based editors, fill empty entries, change IDs, and clear entries.
 - Simplified Chinese and English UI/entity names, persistent light/dark theme, and a dirty marker in the localized window title.
-- Plug-in chip row order: **Level**, then **Weight**.
+- Plug-in chips split into **Chip Library** and **Chip Loadout** tabs: browse/filter owned chips by category; edit loadout sets A/B/C with Cost/占用, purchased capacity (40…128), optional overload, and a Stats Panel summarizing equipped bonuses. In-game active set switching is not supported yet.
+- Chip Library row order: **Level**, then **Cost** (占用).
 
 Out of scope: macOS, WAX mods, Advanced save fields, PS4 saves/conversion, cloud backup, and automatic backup deletion.
 
