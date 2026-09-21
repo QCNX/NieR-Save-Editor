@@ -192,7 +192,7 @@ export const messagesZhCN = {
   "chips.category.hacking": "黑客",
   "chips.category.system": "系统",
   "chips.overload": "过载",
-  "chips.fromLibrary": "从芯片库",
+  "chips.fromLibrary": "芯片库",
   "chips.equipped": "已装备",
   "chips.copyFrom": "复制自",
   "chips.copy": "复制",

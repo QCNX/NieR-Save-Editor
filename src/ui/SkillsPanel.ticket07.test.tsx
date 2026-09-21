@@ -257,7 +257,7 @@ describe("ChipLoadoutPanel wireframe", () => {
     for (const option of PURCHASED_CAPACITY_OPTIONS) {
       expect(html).toContain(`>${option}</option>`);
     }
-    expect(html).toContain("From library");
+    expect(html).toContain("Library");
     expect(html).toContain("Equipped");
     expect(html).toContain("Copy from");
     expect(html).toContain("Stats Panel");
@@ -302,8 +302,8 @@ describe("ChipLoadoutPanel wireframe", () => {
   it("localizes loadout chrome to 占用 / 已购容量 wording", () => {
     expect(translate("zh-CN", "chips.overload")).toBe("过载");
     expect(translate("en", "chips.overload")).toBe("Overload");
-    expect(translate("zh-CN", "chips.fromLibrary")).toBe("从芯片库");
-    expect(translate("en", "chips.fromLibrary")).toBe("From library");
+    expect(translate("zh-CN", "chips.fromLibrary")).toBe("芯片库");
+    expect(translate("en", "chips.fromLibrary")).toBe("Library");
     expect(translate("zh-CN", "chips.equipped")).toBe("已装备");
     expect(translate("en", "chips.equipped")).toBe("Equipped");
     expect(translate("zh-CN", "chips.copyFrom")).toBe("复制自");

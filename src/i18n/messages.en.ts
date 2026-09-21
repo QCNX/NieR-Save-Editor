@@ -194,7 +194,7 @@ export const messagesEn: Record<MessageKey, string> = {
   "chips.category.hacking": "Hacking",
   "chips.category.system": "System",
   "chips.overload": "Overload",
-  "chips.fromLibrary": "From library",
+  "chips.fromLibrary": "Library",
   "chips.equipped": "Equipped",
   "chips.copyFrom": "Copy from",
   "chips.copy": "Copy",

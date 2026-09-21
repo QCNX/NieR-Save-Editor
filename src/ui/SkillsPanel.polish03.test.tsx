@@ -79,7 +79,7 @@ describe("ChipLoadoutPanel three-column layout", () => {
 
     expect(html).toContain("panel-split--chip-loadout");
     expect(html).toMatch(
-      /panel-split--chip-loadout[\s\S]*panel-split__side[\s\S]*From library[\s\S]*panel-split__main[\s\S]*Equipped[\s\S]*data-testid="chip-loadout-stats"[\s\S]*Stats Panel/,
+      /panel-split--chip-loadout[\s\S]*panel-split__side[\s\S]*Library[\s\S]*panel-split__main[\s\S]*Equipped[\s\S]*data-testid="chip-loadout-stats"[\s\S]*Stats Panel/,
     );
 
     const splitIdx = html.indexOf("panel-split--chip-loadout");
