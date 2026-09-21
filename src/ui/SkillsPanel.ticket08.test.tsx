@@ -93,8 +93,8 @@ function dropRateOverflowSlot(): SlotData {
   );
 }
 
-/** EXP Gain with disputed cap — clamps at 100% and marks pending confirm. */
-function expPendingSlot(): SlotData {
+/** EXP Gain overflow at the confirmed 100% hard cap (no pending confirm). */
+function expOverflowSlot(): SlotData {
   let chips = parsePluginChips(emptyPluginChipsRegion());
   chips = replacePluginChipType(chips, 0, chipId(0x10));
   chips = setPluginChip(chips, 0, { weight: 4, level: 8, slotA: 0 });
@@ -141,10 +141,10 @@ describe("ChipLoadoutPanel Stats Panel v1", () => {
     expect(html).toContain("180% → 90% (cap 90%, +90% unused)");
   });
 
-  it("marks disputed EXP Gain cap as pending confirm", () => {
-    const html = renderLoadout(expPendingSlot(), "zh-CN");
-    expect(html).toContain('data-cap-pending="true"');
-    expect(html).toContain(translate("zh-CN", "chips.stats.pendingConfirm"));
+  it("shows EXP Gain overflow at 100% without pending confirm", () => {
+    const html = renderLoadout(expOverflowSlot(), "zh-CN");
+    expect(html).toContain('data-cap-pending="false"');
+    expect(html).not.toContain(translate("zh-CN", "chips.stats.pendingConfirm"));
     expect(html).toContain("200% → 100%（上限 100%，+100% 无效）");
   });
 

@@ -147,14 +147,13 @@ const CHIP_EFFECT_DEFS: ReadonlyMap<number, EffectDef> = new Map([
     },
   ],
   [
-    0x1a, // Charge Attack — Fandom/Steam 400% vs GameWith ×3; use 400 pending confirm
+    0x1a, // Charge Attack — player-confirmed hard cap 400% (「提升至」 ladder; sum→cap)
     {
       kind: "stackable",
       unit: "percent",
       valuesByLevel: CHARGE_PCT,
       cap: 400,
       estimate: true,
-      capPendingConfirm: true,
     },
   ],
   [
@@ -249,7 +248,7 @@ const CHIP_EFFECT_DEFS: ReadonlyMap<number, EffectDef> = new Map([
     },
   ],
   [
-    // EXP Gain Up — Fandom/Steam/GameWith 100% vs Fextralife ~450%; use 100 pending confirm
+    // EXP Gain Up — player-confirmed hard cap 100% (450% claim was a misread)
     0x10,
     {
       kind: "stackable",
@@ -257,7 +256,6 @@ const CHIP_EFFECT_DEFS: ReadonlyMap<number, EffectDef> = new Map([
       valuesByLevel: EXP_PCT,
       cap: 100,
       estimate: true,
-      capPendingConfirm: true,
     },
   ],
   [

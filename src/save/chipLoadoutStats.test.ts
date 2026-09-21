@@ -113,7 +113,7 @@ describe("summarizeEquippedChipStats", () => {
     });
   });
 
-  it("marks EXP Gain cap as pending confirm at 100%", () => {
+  it("clamps EXP Gain at the confirmed 100% hard cap with overflow", () => {
     const line = summarizeEquippedChipStats([
       chip(0x10, 8, 0),
       chip(0x10, 8, 1),
@@ -123,7 +123,8 @@ describe("summarizeEquippedChipStats", () => {
       effective: 100,
       cap: 100,
       overflow: 100,
-      capPendingConfirm: true,
+      capPendingConfirm: false,
+      capKnown: true,
     });
   });
 
