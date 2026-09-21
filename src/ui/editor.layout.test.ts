@@ -275,20 +275,17 @@ describe("chip library dual-column density CSS", () => {
 
   it("defines dual-column pair grid with minmax(0, 1fr) and compact number inputs", () => {
     expect(css).toMatch(
-      /\.chip-library-pair\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+1px\s+minmax\(0,\s*1fr\)/s,
+      /\.dual-column-pair\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+1px\s+minmax\(0,\s*1fr\)/s,
+    );
+    expect(css).toMatch(/\.dual-column-pair__rule\s*\{[^}]*width:\s*1px/s);
+    expect(css).toMatch(
+      /\.dual-column-virtual__head\s*\{[^}]*scrollbar-gutter:\s*stable/s,
     );
     expect(css).toMatch(
-      /\.chip-library-pair\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+1px\s+minmax\(0,\s*1fr\)/s,
-    );
-    expect(css).toMatch(/\.chip-library-pair__rule\s*\{[^}]*width:\s*1px/s);
-    expect(css).toMatch(
-      /\.chip-library-virtual__head\s*\{[^}]*scrollbar-gutter:\s*stable/s,
+      /\.panel--chip-library[\s\S]*?\.dual-column-cell-table[\s\S]*?\.col-level[\s\S]*?width:\s*5\.5ch/s,
     );
     expect(css).toMatch(
-      /\.chip-library-cell-table\s+\.col-level\s*\{[^}]*width:\s*5\.5ch/s,
-    );
-    expect(css).toMatch(
-      /\.chip-library-cell-table\s+\.col-weight\s*\{[^}]*width:\s*6\.5ch/s,
+      /\.panel--chip-library[\s\S]*?\.dual-column-cell-table[\s\S]*?\.col-weight[\s\S]*?width:\s*6\.5ch/s,
     );
     expect(css).toMatch(
       /\.panel--chip-library[\s\S]*?\.col-level input[\s\S]*?width:\s*3\.5ch/s,
@@ -300,14 +297,17 @@ describe("chip library dual-column density CSS", () => {
       /\.panel--chip-library[\s\S]*?\.col-level input[\s\S]*?text-align:\s*center/s,
     );
     expect(css).toMatch(
-      /\.panel--chip-library[\s\S]*?\.slot-id-choice select[\s\S]*?width:\s*100%\s*!important/s,
+      /\.panel--dual-column[\s\S]*?\.slot-id-choice select[\s\S]*?width:\s*100%\s*!important/s,
+    );
+    expect(css).toMatch(
+      /\.panel--inventory[\s\S]*?\.col-qty input[\s\S]*?width:\s*4\.75ch/s,
     );
   });
 
-  it("keeps chip-library virtual overflow-x:hidden after shared .table-wrap", () => {
+  it("keeps dual-column virtual overflow-x:hidden after shared .table-wrap", () => {
     const tableWrapIdx = css.search(/\.table-wrap\s*\{[^}]*overflow:\s*auto/s);
     const dualIdx = css.search(
-      /\.table-wrap\.chip-library-virtual\s*\{[^}]*overflow-x:\s*hidden/s,
+      /\.table-wrap\.dual-column-virtual\s*\{[^}]*overflow-x:\s*hidden/s,
     );
     expect(tableWrapIdx).toBeGreaterThanOrEqual(0);
     expect(dualIdx).toBeGreaterThan(tableWrapIdx);

@@ -61,9 +61,9 @@ describe("ChipsPanel dual-column virtual list", () => {
     );
 
     expect(html).toContain("panel--chip-library");
-    expect(html).toContain("chip-library-virtual");
-    expect(html).toContain("chip-library-pair");
-    expect(html).toContain("chip-library-pair__rule");
+    expect(html).toContain("dual-column-virtual");
+    expect(html).toContain("dual-column-pair");
+    expect(html).toContain("dual-column-pair__rule");
     expect(html).toContain("Category");
     expect(html).toContain(">All</option>");
     expect(html).toContain("Weapon Attack Up");
@@ -82,7 +82,7 @@ describe("ChipsPanel dual-column virtual list", () => {
     expect(zh).toContain(">占用</th>");
 
     // Virtual window: not every library slot as a full dual-col row.
-    const pairCount = (html.match(/chip-library-pair--row/g) ?? []).length;
+    const pairCount = (html.match(/dual-column-pair--row/g) ?? []).length;
     const rowCount = chipLibraryRowPairs(
       parsePluginChips(slot.pluginChips),
     ).length;
@@ -112,7 +112,7 @@ describe("ChipsPanel dual-column virtual list", () => {
       </I18nProvider>,
     );
     // Default filter still shows empty slots; assert structure exists.
-    expect(html).toContain("chip-library-virtual");
+    expect(html).toContain("dual-column-virtual");
     expect(html).not.toContain(`Unknown (0x${(EMPTY_PLUGIN_CHIP_ID.baseId >>> 0).toString(16)})`);
   });
 });

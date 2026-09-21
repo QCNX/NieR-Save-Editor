@@ -98,9 +98,9 @@ describe("SkillsPanel public behavior", () => {
     expect(html.indexOf("Level")).toBeLessThan(html.indexOf("Cost"));
     expect(html).not.toContain(`Unknown (0x${(EMPTY_PLUGIN_CHIP_ID.baseId >>> 0).toString(16)})`);
     // POD collection keeps content-width; Chip Library uses dual-col virtual shell.
-    expect(html.match(/table-wrap--content-width/g)).toHaveLength(1);
+    expect(html).toContain('class="table-wrap dual-column-virtual"');
     expect(html).toContain("panel--chip-library");
-    expect(html).toContain("chip-library-virtual");
+    expect(html).toContain("panel--dual-column");
     expect(html.match(/panel-split--collection/g)).toHaveLength(1);
     expect(html.match(/panel-split__side--ungrouped/g)).toHaveLength(1);
     expect(html).toContain("pod-config-card");

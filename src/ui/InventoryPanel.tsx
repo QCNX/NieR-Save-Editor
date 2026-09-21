@@ -1,4 +1,10 @@
-import { useState } from "react";
+import {
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 import itemsData from "../data/items.json";
 import { useI18n, type Language } from "../i18n";
@@ -11,6 +17,13 @@ import {
   type InventoryItem,
   type SlotData,
 } from "../save";
+import {
+  DUAL_COLUMN_DEFAULT_ROW_HEIGHT,
+  DUAL_COLUMN_DEFAULT_VIEWPORT_HEIGHT,
+  DUAL_COLUMN_OVERSCAN,
+  dualColumnRowPairs,
+  visibleRowWindow,
+} from "./dualColumnVirtual";
 import {
   filterSlots,
   IdChoiceControl,
@@ -95,16 +108,165 @@ export function inventoryItemChoices(
     .sort((left, right) => left.label.localeCompare(right.label, language));
 }
 
+function inventoryColumnHeaders(t: (key: string) => string): ReactNode {
+  return (
+    <table className="slot-table dual-column-cell-table">
+      <thead>
+        <tr>
+          <th className="col-name">{t("fields.name")}</th>
+          <th className="col-clear">{t("actions.clear")}</th>
+          <th className="col-qty">{t("fields.quantity")}</th>
+        </tr>
+      </thead>
+    </table>
+  );
+}
+
 export function InventoryPanel({ slot, onSlotChange }: Props) {
   const { language, t } = useI18n();
   const [kind, setKind] = useState<InventoryKind>("main");
   const [query, setQuery] = useState("");
   const [occupiedOnly, setOccupiedOnly] = useState(true);
+  const [scrollTop, setScrollTop] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState(
+    DUAL_COLUMN_DEFAULT_VIEWPORT_HEIGHT,
+  );
+  const [rowHeight, setRowHeight] = useState(DUAL_COLUMN_DEFAULT_ROW_HEIGHT);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const measureRowRef = useRef<HTMLDivElement>(null);
+
   const items = parseInventory(inventoryRegion(slot, kind));
   const rows = inventoryRows(items, query, occupiedOnly, language);
+  const pairs = useMemo(() => dualColumnRowPairs(rows), [rows]);
+
+  const rowWindow = visibleRowWindow(
+    scrollTop,
+    rowHeight,
+    viewportHeight,
+    DUAL_COLUMN_OVERSCAN,
+    pairs.length,
+  );
+
+  useLayoutEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport || typeof ResizeObserver === "undefined") return;
+    const measure = () => {
+      setViewportHeight(
+        viewport.clientHeight || DUAL_COLUMN_DEFAULT_VIEWPORT_HEIGHT,
+      );
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(viewport);
+    return () => observer.disconnect();
+  }, []);
+
+  useLayoutEffect(() => {
+    const row = measureRowRef.current;
+    if (!row) return;
+    const height = row.getBoundingClientRect().height;
+    if (height > 0 && Math.abs(height - rowHeight) > 0.5) {
+      setRowHeight(height);
+    }
+  }, [rowWindow.start, rowWindow.end, pairs.length, rowHeight]);
+
+  useLayoutEffect(() => {
+    const maxScroll = Math.max(0, pairs.length * rowHeight - viewportHeight);
+    if (scrollTop > maxScroll) {
+      setScrollTop(maxScroll);
+      const viewport = viewportRef.current;
+      if (viewport) viewport.scrollTop = maxScroll;
+    }
+  }, [pairs.length, rowHeight, viewportHeight, scrollTop]);
+
+  // Kind / filter change: jump back to top.
+  useLayoutEffect(() => {
+    setScrollTop(0);
+    const viewport = viewportRef.current;
+    if (viewport) viewport.scrollTop = 0;
+  }, [kind, query, occupiedOnly]);
+
+  function renderItemCell(row: InventoryRow | undefined): ReactNode {
+    if (!row) {
+      return (
+        <div
+          className="dual-column-pair__col dual-column-pair__col--empty"
+          aria-hidden="true"
+        />
+      );
+    }
+    const { item } = row;
+    return (
+      <div className="dual-column-pair__col">
+        <table className="slot-table dual-column-cell-table">
+          <tbody>
+            <tr>
+              <td className="col-name">
+                <IdChoiceControl
+                  value={item.id}
+                  emptyValue={-1}
+                  choices={inventoryItemChoices(items, item.id, language)}
+                  showClear={false}
+                  labels={{
+                    select: `${t("fields.name")} (${item.position})`,
+                    clear: t("actions.clear"),
+                    empty: t("list.empty"),
+                    unknown: (id) => lookupItemName(id, language),
+                  }}
+                  onChange={(id) =>
+                    onSlotChange(
+                      updateInventorySlot(slot, kind, item.position, { id }),
+                    )
+                  }
+                />
+              </td>
+              <td className="col-clear">
+                <button
+                  type="button"
+                  className="slot-clear-button"
+                  aria-label={`${t("actions.clear")} (${item.position})`}
+                  disabled={item.id === -1}
+                  onClick={() =>
+                    onSlotChange(
+                      updateInventorySlot(slot, kind, item.position, {
+                        id: -1,
+                      }),
+                    )
+                  }
+                >
+                  {t("actions.clear")}
+                </button>
+              </td>
+              <td className="col-qty">
+                {item.id === -1 ? null : (
+                  <input
+                    aria-label={`${t("fields.quantity")} (${item.position})`}
+                    type="number"
+                    min={0}
+                    value={item.quantity}
+                    onChange={(event) => {
+                      const quantity = Number(event.currentTarget.value);
+                      if (!Number.isFinite(quantity)) return;
+                      onSlotChange(
+                        updateInventorySlot(slot, kind, item.position, {
+                          quantity,
+                        }),
+                      );
+                    }}
+                  />
+                )}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  const visiblePairs = pairs.slice(rowWindow.start, rowWindow.end);
 
   return (
-    <section className="panel panel--fill">
+    <section className="panel panel--fill panel--dual-column panel--inventory">
       <div className="slot-list-toolbar">
         <button
           type="button"
@@ -137,85 +299,61 @@ export function InventoryPanel({ slot, onSlotChange }: Props) {
           <span>{t("list.occupiedOnly")}</span>
         </label>
       </div>
-      <div className="table-wrap table-wrap--content-width">
-        <table className="slot-table">
-          <thead>
-            <tr>
-              <th className="col-name">{t("fields.name")}</th>
-              <th className="col-clear">{t("actions.clear")}</th>
-              <th className="col-qty">{t("fields.quantity")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={3} className="empty-row">
-                  {t("list.empty")}
-                </td>
-              </tr>
-            ) : (
-              rows.map(({ item }) => (
-                <tr key={item.position}>
-                  <td className="col-name">
-                    <IdChoiceControl
-                      value={item.id}
-                      emptyValue={-1}
-                      choices={inventoryItemChoices(items, item.id, language)}
-                      showClear={false}
-                      labels={{
-                        select: `${t("fields.name")} (${item.position})`,
-                        clear: t("actions.clear"),
-                        empty: t("list.empty"),
-                        unknown: (id) => lookupItemName(id, language),
-                      }}
-                      onChange={(id) =>
-                        onSlotChange(
-                          updateInventorySlot(slot, kind, item.position, { id }),
-                        )
-                      }
-                    />
-                  </td>
-                  <td className="col-clear">
-                    <button
-                      type="button"
-                      className="slot-clear-button"
-                      aria-label={`${t("actions.clear")} (${item.position})`}
-                      disabled={item.id === -1}
-                      onClick={() =>
-                        onSlotChange(
-                          updateInventorySlot(slot, kind, item.position, {
-                            id: -1,
-                          }),
-                        )
-                      }
+      <div className="dual-column-shell">
+        <div className="dual-column-virtual__head">
+          <div className="dual-column-pair dual-column-pair--head">
+            <div className="dual-column-pair__col">
+              {inventoryColumnHeaders(t)}
+            </div>
+            <div className="dual-column-pair__rule" aria-hidden="true" />
+            <div className="dual-column-pair__col" aria-hidden="true">
+              {inventoryColumnHeaders(t)}
+            </div>
+          </div>
+        </div>
+        <div
+          className="table-wrap dual-column-virtual"
+          ref={viewportRef}
+          onScroll={(event) => {
+            setScrollTop(event.currentTarget.scrollTop);
+          }}
+        >
+          {rows.length === 0 ? (
+            <div className="empty-row dual-column-empty">{t("list.empty")}</div>
+          ) : (
+            <div
+              className="dual-column-virtual__spacer"
+              style={{ height: pairs.length * rowHeight }}
+            >
+              <div
+                className="dual-column-virtual__window"
+                style={{
+                  transform: `translateY(${rowWindow.start * rowHeight}px)`,
+                }}
+              >
+                {visiblePairs.map((pair, index) => {
+                  const [left, right] = pair;
+                  const rowIndex = rowWindow.start + index;
+                  return (
+                    <div
+                      key={left.item.position}
+                      className="dual-column-pair dual-column-pair--row"
+                      ref={index === 0 ? measureRowRef : undefined}
+                      data-row-index={rowIndex}
                     >
-                      {t("actions.clear")}
-                    </button>
-                  </td>
-                  <td className="col-qty">
-                    {item.id === -1 ? null : (
-                      <input
-                        aria-label={`${t("fields.quantity")} (${item.position})`}
-                        type="number"
-                        min={0}
-                        value={item.quantity}
-                        onChange={(event) => {
-                          const quantity = Number(event.currentTarget.value);
-                          if (!Number.isFinite(quantity)) return;
-                          onSlotChange(
-                            updateInventorySlot(slot, kind, item.position, {
-                              quantity,
-                            }),
-                          );
-                        }}
+                      {renderItemCell(left)}
+                      <div
+                        className="dual-column-pair__rule"
+                        aria-hidden="true"
                       />
-                    )}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                      {renderItemCell(right)}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );

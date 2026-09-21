@@ -1254,8 +1254,8 @@ input[type="text"],
   min-height: 0;
 }
 
-/* Chip Library: dual-column density + one outer virtual scrollbar. */
-.panel--chip-library > .chip-library-shell {
+/* Dual-column virtual list (Chip Library, Inventory, …). */
+.panel--dual-column > .dual-column-shell {
   flex: 1 1 auto;
   min-height: 0;
   min-width: 0;
@@ -1264,7 +1264,7 @@ input[type="text"],
   overflow: hidden;
 }
 
-.chip-library-virtual__head {
+.dual-column-virtual__head {
   flex: 0 0 auto;
   border: 1px solid var(--ui-border-table);
   border-bottom: none;
@@ -1275,7 +1275,7 @@ input[type="text"],
   scrollbar-gutter: stable;
 }
 
-.chip-library-virtual {
+.dual-column-virtual {
   flex: 1 1 auto;
   min-height: 0;
   min-width: 0;
@@ -1287,12 +1287,12 @@ input[type="text"],
   padding: 0 4px;
 }
 
-.chip-library-virtual__spacer {
+.dual-column-virtual__spacer {
   position: relative;
   width: 100%;
 }
 
-.chip-library-virtual__window {
+.dual-column-virtual__window {
   position: absolute;
   top: 0;
   left: 0;
@@ -1300,7 +1300,7 @@ input[type="text"],
   will-change: transform;
 }
 
-.chip-library-pair {
+.dual-column-pair {
   display: grid;
   /* Explicit mid track so the rule is the geometric center of the two columns. */
   grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
@@ -1310,57 +1310,70 @@ input[type="text"],
   min-width: 0;
 }
 
-.chip-library-pair__rule {
+.dual-column-pair__rule {
   width: 1px;
   background: var(--ui-border);
   justify-self: stretch;
 }
 
-.chip-library-pair__col {
+.dual-column-pair__col {
   min-width: 0;
-  /* Do not clip Level/Cost — name select shrinks instead. */
   overflow: visible;
 }
 
-.chip-library-pair__col--empty {
+.dual-column-pair__col--empty {
   visibility: hidden;
 }
 
-.chip-library-cell-table {
+.dual-column-cell-table {
   width: 100%;
   table-layout: fixed;
 }
 
-/* Reserve Level / Cost / ◆ so dual columns never hide them behind the name select. */
-.chip-library-cell-table .col-name {
+.dual-column-cell-table .col-name {
   width: auto;
 }
 
-.chip-library-cell-table .col-level {
-  width: 5.5ch;
-}
-
-.chip-library-cell-table .col-weight {
-  width: 6.5ch;
-}
-
-.chip-library-cell-table .diamond-cell {
-  width: 1.5rem;
-}
-
-.panel--chip-library .slot-id-choice {
+.panel--dual-column .slot-id-choice {
   display: flex;
   width: 100%;
   max-width: 100%;
   min-width: 0;
 }
 
-.panel--chip-library .slot-id-choice select {
+.panel--dual-column .slot-id-choice select {
   flex: 1 1 auto;
-  /* Override any intrinsic/ch sizing so the name column can yield to Level/Cost. */
   width: 100% !important;
   min-width: 0;
   max-width: 100%;
+}
+
+.dual-column-empty {
+  padding: 8px;
+}
+
+@media (max-width: 760px) {
+  .dual-column-pair {
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: 0;
+  }
+
+  .dual-column-pair__rule {
+    display: none;
+  }
+}
+
+/* Chip Library: reserve Level / Cost / ◆; compact centered number inputs. */
+.panel--chip-library .dual-column-cell-table .col-level {
+  width: 5.5ch;
+}
+
+.panel--chip-library .dual-column-cell-table .col-weight {
+  width: 6.5ch;
+}
+
+.panel--chip-library .dual-column-cell-table .diamond-cell {
+  width: 1.5rem;
 }
 
 .panel--chip-library .slot-table .col-level,
@@ -1374,7 +1387,6 @@ input[type="text"],
 .panel--chip-library .slot-table .col-level input,
 .panel--chip-library .slot-table .col-weight input {
   text-align: center;
-  /* Hide spin buttons so digits read as centered in the compact ch-width box. */
   -moz-appearance: textfield;
   appearance: textfield;
 }
@@ -1401,19 +1413,33 @@ input[type="text"],
   padding: 0 0.15em;
 }
 
-.chip-library-empty {
-  padding: 8px;
+/* Inventory: Clear + Quantity columns; compact centered qty. */
+.panel--inventory .dual-column-cell-table .col-clear {
+  width: 1%;
+  white-space: nowrap;
 }
 
-@media (max-width: 760px) {
-  .chip-library-pair {
-    grid-template-columns: minmax(0, 1fr);
-    column-gap: 0;
-  }
+.panel--inventory .dual-column-cell-table .col-qty {
+  width: 5.5ch;
+  padding-inline: 2px;
+  white-space: nowrap;
+  text-align: center;
+}
 
-  .chip-library-pair__rule {
-    display: none;
-  }
+.panel--inventory .slot-table .col-qty input {
+  width: 4.75ch;
+  min-width: 4.75ch;
+  max-width: none;
+  padding: 0 0.15em;
+  text-align: center;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.panel--inventory .slot-table .col-qty input::-webkit-outer-spin-button,
+.panel--inventory .slot-table .col-qty input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 /* Weapons / POD: content-hugging split without an intermediate workspace frame. */
@@ -1545,7 +1571,7 @@ input[type="text"],
 }
 
 /* Must follow .table-wrap so overflow:auto shorthand does not re-enable x-scroll. */
-.table-wrap.chip-library-virtual {
+.table-wrap.dual-column-virtual {
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-gutter: stable;

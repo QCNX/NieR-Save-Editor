@@ -154,12 +154,14 @@ describe("ticket 05 inventory editor seam", () => {
     expect(html).toContain("Show occupied only");
     expect(html).toContain("Medium Recovery");
     expect(html).toContain("Clear");
-    expect(html).toContain('class="table-wrap table-wrap--content-width"');
-    expect(html).toContain('class="panel panel--fill"');
+    expect(html).toContain('class="table-wrap dual-column-virtual"');
+    expect(html).toContain("panel--dual-column");
+    expect(html).toContain("panel--inventory");
+    expect(html).toContain('class="panel panel--fill panel--dual-column panel--inventory"');
     expect(html).not.toContain("collection-workspace");
-    // Toolbar + table sit directly under the fill panel (no nested workspace chrome).
+    // Toolbar + dual-column list sit directly under the fill panel.
     expect(html).toMatch(
-      /class="panel panel--fill"[^>]*>[\s\S]*?class="slot-list-toolbar"[\s\S]*?class="table-wrap table-wrap--content-width"/,
+      /class="panel panel--fill panel--dual-column panel--inventory"[^>]*>[\s\S]*?class="slot-list-toolbar"[\s\S]*?class="table-wrap dual-column-virtual"/,
     );
   });
 });

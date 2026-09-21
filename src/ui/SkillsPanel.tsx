@@ -1006,7 +1006,7 @@ export function ChipLoadoutPanel({
 
 function chipLibraryColumnHeaders(t: (key: string) => string): ReactNode {
   return (
-    <table className="slot-table chip-library-cell-table">
+    <table className="slot-table dual-column-cell-table">
       <thead>
         <tr>
           <th className="col-name">{t("fields.name")}</th>
@@ -1094,14 +1094,14 @@ export function ChipsPanel({ slot, onSlotChange }: PanelProps) {
     if (!chip) {
       return (
         <div
-          className="chip-library-pair__col chip-library-pair__col--empty"
+          className="dual-column-pair__col dual-column-pair__col--empty"
           aria-hidden="true"
         />
       );
     }
     return (
-      <div className="chip-library-pair__col">
-        <table className="slot-table chip-library-cell-table">
+      <div className="dual-column-pair__col">
+        <table className="slot-table dual-column-cell-table">
           <tbody>
             <tr>
               <td className="col-name">
@@ -1196,7 +1196,7 @@ export function ChipsPanel({ slot, onSlotChange }: PanelProps) {
   const visiblePairs = pairs.slice(rowWindow.start, rowWindow.end);
 
   return (
-    <section className="panel panel--fill panel--chip-library">
+    <section className="panel panel--fill panel--dual-column panel--chip-library">
       <div className="list-toolbar">
         <label>
           <span>{t("list.search")}</span>
@@ -1237,34 +1237,34 @@ export function ChipsPanel({ slot, onSlotChange }: PanelProps) {
         </label>
       </div>
 
-      <div className="chip-library-shell">
-        <div className="chip-library-virtual__head">
-          <div className="chip-library-pair chip-library-pair--head">
-            <div className="chip-library-pair__col">
+      <div className="dual-column-shell">
+        <div className="dual-column-virtual__head">
+          <div className="dual-column-pair dual-column-pair--head">
+            <div className="dual-column-pair__col">
               {chipLibraryColumnHeaders(t)}
             </div>
-            <div className="chip-library-pair__rule" aria-hidden="true" />
-            <div className="chip-library-pair__col" aria-hidden="true">
+            <div className="dual-column-pair__rule" aria-hidden="true" />
+            <div className="dual-column-pair__col" aria-hidden="true">
               {chipLibraryColumnHeaders(t)}
             </div>
           </div>
         </div>
         <div
-          className="table-wrap chip-library-virtual"
+          className="table-wrap dual-column-virtual"
           ref={viewportRef}
           onScroll={(event) => {
             setScrollTop(event.currentTarget.scrollTop);
           }}
         >
           {chips.length === 0 ? (
-            <div className="empty-row chip-library-empty">{t("list.empty")}</div>
+            <div className="empty-row dual-column-empty">{t("list.empty")}</div>
           ) : (
             <div
-              className="chip-library-virtual__spacer"
+              className="dual-column-virtual__spacer"
               style={{ height: pairs.length * rowHeight }}
             >
               <div
-                className="chip-library-virtual__window"
+                className="dual-column-virtual__window"
                 style={{
                   transform: `translateY(${rowWindow.start * rowHeight}px)`,
                 }}
@@ -1275,12 +1275,12 @@ export function ChipsPanel({ slot, onSlotChange }: PanelProps) {
                   return (
                     <div
                       key={left.position}
-                      className="chip-library-pair chip-library-pair--row"
+                      className="dual-column-pair dual-column-pair--row"
                       ref={index === 0 ? measureRowRef : undefined}
                       data-row-index={rowIndex}
                     >
                       {renderChipCell(left)}
-                      <div className="chip-library-pair__rule" aria-hidden="true" />
+                      <div className="dual-column-pair__rule" aria-hidden="true" />
                       {renderChipCell(right)}
                     </div>
                   );
