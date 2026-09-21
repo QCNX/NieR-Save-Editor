@@ -283,6 +283,16 @@ export function PodsPanel({ slot, onSlotChange }: PanelProps) {
   );
 }
 
+/** Placeholder until chip loadout UI (later ticket) fills the panel. */
+export function ChipLoadoutPanel() {
+  return (
+    <section
+      className="panel panel--fill"
+      data-testid="chip-loadout-placeholder"
+    />
+  );
+}
+
 export function ChipsPanel({ slot, onSlotChange }: PanelProps) {
   const { language, t } = useI18n();
   const [query, setQuery] = useState("");

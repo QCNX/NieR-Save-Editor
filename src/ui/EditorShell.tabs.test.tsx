@@ -66,19 +66,48 @@ describe("EditorShell tabs", () => {
   it("puts Save beside the editing tabs and keeps I/O inside the Save panel", () => {
     const html = renderShell("en", "save");
 
-    expect(html.match(/role="tab"/g)).toHaveLength(7);
+    expect(html.match(/role="tab"/g)).toHaveLength(8);
     expect(html).toContain('aria-selected="true">Save</button>');
     expect(html).toContain(">General</button>");
     expect(html).toContain(">Items</button>");
     expect(html).toContain(">Weapons</button>");
     expect(html).toContain(">POD</button>");
-    expect(html).toContain(">Chips</button>");
+    expect(html).toContain(">Chip Library</button>");
+    expect(html).toContain(">Chip Loadout</button>");
     expect(html).toContain(">Settings</button>");
+    expect(html).not.toContain(">Chips</button>");
     expect(html).not.toContain(">Skills</button>");
     expect(html).toContain('aria-label="save manager"');
     expect(html.indexOf('role="tablist"')).toBeLessThan(
       html.indexOf('aria-label="save manager"'),
     );
+  });
+
+  it("renders Chip Library and Chip Loadout as zh top-level tabs", () => {
+    const html = renderShell("zh-CN", "save");
+
+    expect(html).toContain(">芯片库</button>");
+    expect(html).toContain(">芯片配装</button>");
+    expect(html).not.toContain(">芯片</button>");
+  });
+
+  it("keeps library editing under Chip Library and shows a selectable loadout placeholder", () => {
+    const library = renderShell("en", "chipLibrary");
+    const loadout = renderShell("en", "chipLoadout");
+
+    expect(library).toContain('id="editor-tab-chipLibrary"');
+    expect(library).toContain(
+      'role="tabpanel" id="editor-panel-chipLibrary" aria-labelledby="editor-tab-chipLibrary"',
+    );
+    expect(library).toContain("Show occupied only");
+    expect(library).toContain("Cost");
+    expect(library.indexOf("Level")).toBeLessThan(library.indexOf("Cost"));
+
+    expect(loadout).toContain('id="editor-tab-chipLoadout"');
+    expect(loadout).toContain(
+      'role="tabpanel" id="editor-panel-chipLoadout" aria-labelledby="editor-tab-chipLoadout"',
+    );
+    expect(loadout).toContain('data-testid="chip-loadout-placeholder"');
   });
 
   it("places the dark-mode toggle left of the language switch on the tab row", () => {
@@ -118,7 +147,8 @@ describe("EditorShell tabs", () => {
       ["items", "Items"],
       ["weapons", "Weapons"],
       ["pods", "POD"],
-      ["chips", "Chips"],
+      ["chipLibrary", "Chip Library"],
+      ["chipLoadout", "Chip Loadout"],
       ["settings", "Settings"],
     ] as const) {
       const html = renderShell("en", tab);
@@ -146,8 +176,8 @@ describe("EditorShell tabs", () => {
     const light = renderShell("en", "save", slot, { theme: "light" });
     const dark = renderShell("en", "save", slot, { theme: "dark" });
 
-    expect(light.match(/role="tab"/g)).toHaveLength(7);
-    expect(dark.match(/role="tab"/g)).toHaveLength(7);
+    expect(light.match(/role="tab"/g)).toHaveLength(8);
+    expect(dark.match(/role="tab"/g)).toHaveLength(8);
     expect(light).toContain('aria-pressed="false"');
     expect(dark).toContain('aria-pressed="true"');
   });

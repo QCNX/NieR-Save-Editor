@@ -81,7 +81,7 @@ describe("SkillsPanel public behavior", () => {
     expect(chinese.find((choice) => choice.id === 2002)?.label).toContain("幻象");
   });
 
-  it("renders editable bilingual controls with Level before Weight and the diamond marker", () => {
+  it("renders editable bilingual controls with Level before Cost and the diamond marker", () => {
     const slot = editableSlot();
     const html = renderToStaticMarkup(
       <I18nProvider language="en">
@@ -95,7 +95,19 @@ describe("SkillsPanel public behavior", () => {
     expect(html).toContain("Weapon Attack Up");
     expect(html).toContain("Show occupied only");
     expect(html).toContain("◆");
-    expect(html.indexOf("Level")).toBeLessThan(html.indexOf("Weight"));
+    expect(html.indexOf("Level")).toBeLessThan(html.indexOf("Cost"));
     expect(html).not.toContain(`Unknown (0x${(EMPTY_PLUGIN_CHIP_ID.baseId >>> 0).toString(16)})`);
+  });
+
+  it("renders chip cost as 占用 in zh-CN", () => {
+    const slot = editableSlot();
+    const html = renderToStaticMarkup(
+      <I18nProvider language="zh-CN">
+        <SkillsPanel slot={slot} onSlotChange={vi.fn()} />
+      </I18nProvider>,
+    );
+
+    expect(html).toContain("占用");
+    expect(html).not.toContain(">重量<");
   });
 });

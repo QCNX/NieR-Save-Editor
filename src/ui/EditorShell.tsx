@@ -4,7 +4,7 @@ import { useI18n, type Language } from "../i18n";
 import type { SlotData } from "../save";
 import { InventoryPanel } from "./InventoryPanel";
 import type { UiTheme } from "./localSettings";
-import { ChipsPanel, PodsPanel } from "./SkillsPanel";
+import { ChipLoadoutPanel, ChipsPanel, PodsPanel } from "./SkillsPanel";
 import { SummaryPanel } from "./SummaryPanel";
 import { WeaponsPanel } from "./WeaponsPanel";
 
@@ -14,7 +14,8 @@ export type EditorTab =
   | "items"
   | "weapons"
   | "pods"
-  | "chips"
+  | "chipLibrary"
+  | "chipLoadout"
   | "settings";
 
 const EDITOR_TABS: readonly EditorTab[] = [
@@ -23,7 +24,8 @@ const EDITOR_TABS: readonly EditorTab[] = [
   "items",
   "weapons",
   "pods",
-  "chips",
+  "chipLibrary",
+  "chipLoadout",
   "settings",
 ];
 
@@ -77,8 +79,10 @@ export function EditorShell({
         <WeaponsPanel slot={slot} onSlotChange={onSlotChange} />
       ) : activeTab === "pods" ? (
         <PodsPanel slot={slot} onSlotChange={onSlotChange} />
-      ) : (
+      ) : activeTab === "chipLibrary" ? (
         <ChipsPanel slot={slot} onSlotChange={onSlotChange} />
+      ) : (
+        <ChipLoadoutPanel />
       );
   }
 

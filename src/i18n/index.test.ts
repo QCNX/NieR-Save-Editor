@@ -63,6 +63,21 @@ describe("i18n public API", () => {
     expect(translate("en", "entity.unknown")).toBe("Unknown");
   });
 
+  it("labels chip cost, capacity, and Stats Panel keys for both catalogs", () => {
+    expect(translate("zh-CN", "tabs.chipLibrary")).toBe("芯片库");
+    expect(translate("zh-CN", "tabs.chipLoadout")).toBe("芯片配装");
+    expect(translate("en", "tabs.chipLibrary")).toBe("Chip Library");
+    expect(translate("en", "tabs.chipLoadout")).toBe("Chip Loadout");
+    expect(translate("zh-CN", "fields.weight")).toBe("占用");
+    expect(translate("en", "fields.weight")).toBe("Cost");
+    expect(translate("zh-CN", "chips.storageCapacity")).toBe("储存容量");
+    expect(translate("zh-CN", "chips.purchasedCapacity")).toBe("已购容量");
+    expect(translate("en", "chips.storageCapacity")).toBe("Storage");
+    expect(translate("en", "chips.purchasedCapacity")).toBe("Purchased");
+    expect(translate("zh-CN", "chips.statsPanel")).toBe("数值面板");
+    expect(translate("en", "chips.statsPanel")).toBe("Stats Panel");
+  });
+
   it("provides English text for every save-workflow and empty-state message", () => {
     const workflowKeys = [
       "status.preview",
