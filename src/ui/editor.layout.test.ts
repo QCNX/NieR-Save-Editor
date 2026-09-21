@@ -275,11 +275,12 @@ describe("chip library dual-column density CSS", () => {
 
   it("defines dual-column pair grid with minmax(0, 1fr) and compact number inputs", () => {
     expect(css).toMatch(
-      /\.chip-library-pair\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+minmax\(0,\s*1fr\)/s,
+      /\.chip-library-pair\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+1px\s+minmax\(0,\s*1fr\)/s,
     );
     expect(css).toMatch(
-      /\.chip-library-pair::after\s*\{[^}]*left:\s*calc\(50%\s*-\s*0\.75rem\)/s,
+      /\.chip-library-pair\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+1px\s+minmax\(0,\s*1fr\)/s,
     );
+    expect(css).toMatch(/\.chip-library-pair__rule\s*\{[^}]*width:\s*1px/s);
     expect(css).toMatch(
       /\.chip-library-virtual__head\s*\{[^}]*scrollbar-gutter:\s*stable/s,
     );

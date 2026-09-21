@@ -63,6 +63,7 @@ describe("ChipsPanel dual-column virtual list", () => {
     expect(html).toContain("panel--chip-library");
     expect(html).toContain("chip-library-virtual");
     expect(html).toContain("chip-library-pair");
+    expect(html).toContain("chip-library-pair__rule");
     expect(html).toContain("Category");
     expect(html).toContain(">All</option>");
     expect(html).toContain("Weapon Attack Up");

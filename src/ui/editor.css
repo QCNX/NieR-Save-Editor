@@ -1302,28 +1302,18 @@ input[type="text"],
 
 .chip-library-pair {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  column-gap: 16px;
+  /* Explicit mid track so the rule is the geometric center of the two columns. */
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+  column-gap: 8px;
   row-gap: 0;
   align-items: stretch;
   min-width: 0;
-  position: relative;
 }
 
-/*
- * Divider centered on the optical gutter between 占用 and 名称.
- * Left track still reserves ◆ (1.5rem), so bias left from geometric 50%.
- */
-.chip-library-pair::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: calc(50% - 0.75rem);
+.chip-library-pair__rule {
   width: 1px;
-  transform: translateX(-50%);
   background: var(--ui-border);
-  pointer-events: none;
+  justify-self: stretch;
 }
 
 .chip-library-pair__col {
@@ -1421,8 +1411,8 @@ input[type="text"],
     column-gap: 0;
   }
 
-  .chip-library-pair::after {
-    content: none;
+  .chip-library-pair__rule {
+    display: none;
   }
 }
 

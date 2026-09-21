@@ -1243,6 +1243,7 @@ export function ChipsPanel({ slot, onSlotChange }: PanelProps) {
             <div className="chip-library-pair__col">
               {chipLibraryColumnHeaders(t)}
             </div>
+            <div className="chip-library-pair__rule" aria-hidden="true" />
             <div className="chip-library-pair__col" aria-hidden="true">
               {chipLibraryColumnHeaders(t)}
             </div>
@@ -1279,6 +1280,7 @@ export function ChipsPanel({ slot, onSlotChange }: PanelProps) {
                       data-row-index={rowIndex}
                     >
                       {renderChipCell(left)}
+                      <div className="chip-library-pair__rule" aria-hidden="true" />
                       {renderChipCell(right)}
                     </div>
                   );
