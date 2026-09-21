@@ -113,21 +113,20 @@ body {
 .editor-tabs-row {
   flex: 0 0 auto;
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
   gap: 8px;
   padding: 6px 10px 0;
   background: var(--ui-chrome);
   border-bottom: 1px solid var(--ui-border);
-  overflow: hidden;
 }
 
 .editor-tabs {
   display: flex;
-  flex: 0 1 auto;
-  flex-wrap: nowrap;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
   gap: 4px;
   min-width: 0;
-  overflow: hidden;
 }
 
 .editor-tabs button {
@@ -140,6 +139,7 @@ body {
   padding: 6px 14px;
   font: inherit;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .editor-tabs button[aria-selected="true"] {
@@ -1143,13 +1143,14 @@ input[type="number"] {
   margin-bottom: 6px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1280px) {
   .editor-tabs-row {
     flex-wrap: wrap;
     align-items: stretch;
   }
 
   .editor-tabs-meta {
+    flex: 1 0 100%;
     width: 100%;
     justify-content: flex-end;
     margin-left: 0;

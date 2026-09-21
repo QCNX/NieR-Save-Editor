@@ -122,6 +122,47 @@ describe("EditorShell tabs", () => {
     );
   });
 
+  it("keeps dirty and clean status chips inside the tab-row meta, after the tablist", () => {
+    const dirty = renderShell("en", "general");
+    const clean = renderToStaticMarkup(
+      <I18nProvider language="en">
+        <EditorShell
+          activeTab="general"
+          dirty={false}
+          notices={<p role="status">notice</p>}
+          onSlotChange={vi.fn()}
+          onTabChange={vi.fn()}
+          onThemeChange={vi.fn()}
+          settings={
+            <SettingsPanel
+              busy={false}
+              rootDraft=""
+              onRootDraftChange={vi.fn()}
+              onSaveCustomRoot={vi.fn()}
+            />
+          }
+          slot={slot}
+          theme="dark"
+          saveManager={
+            <section aria-label="save manager">save controls</section>
+          }
+        />
+      </I18nProvider>,
+    );
+
+    expect(dirty).toContain('class="editor-tabs-meta"');
+    expect(dirty).toContain('class="dirty-chip"');
+    expect(dirty).toContain(">Modified</span>");
+    expect(clean).toContain('class="path-chip"');
+    expect(clean).toContain(">Unmodified</span>");
+    expect(dirty.indexOf('role="tablist"')).toBeLessThan(
+      dirty.indexOf('class="dirty-chip"'),
+    );
+    expect(dirty.indexOf('class="editor-tabs-meta"')).toBeLessThan(
+      dirty.indexOf('class="dirty-chip"'),
+    );
+  });
+
   it("renders the custom save root only inside the Settings tab", () => {
     const general = renderShell("en", "general");
     const settings = renderShell("en", "settings");
