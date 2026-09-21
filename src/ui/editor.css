@@ -1270,8 +1270,8 @@ input[type="text"],
   border-bottom: none;
   background: var(--ui-th);
   padding: 0 4px;
-  /* Match body scrollbar-gutter so the mid divider aligns with header gap. */
-  overflow-y: hidden;
+  /* Reserve the same scrollbar gutter as the list so divider x matches. */
+  overflow-y: auto;
   scrollbar-gutter: stable;
 }
 
@@ -1303,17 +1303,27 @@ input[type="text"],
 .chip-library-pair {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  column-gap: 0;
+  column-gap: 16px;
   row-gap: 0;
   align-items: stretch;
   min-width: 0;
+  position: relative;
 }
 
-/* Divider between the two tracks — same on header + body rows. */
-.chip-library-pair > .chip-library-pair__col:last-child {
-  border-left: 1px solid var(--ui-border);
-  margin-left: 8px;
-  padding-left: 8px;
+/*
+ * Divider centered on the optical gutter between 占用 and 名称.
+ * Left track still reserves ◆ (1.5rem), so bias left from geometric 50%.
+ */
+.chip-library-pair::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(50% - 0.75rem);
+  width: 1px;
+  transform: translateX(-50%);
+  background: var(--ui-border);
+  pointer-events: none;
 }
 
 .chip-library-pair__col {
@@ -1408,12 +1418,11 @@ input[type="text"],
 @media (max-width: 760px) {
   .chip-library-pair {
     grid-template-columns: minmax(0, 1fr);
+    column-gap: 0;
   }
 
-  .chip-library-pair > .chip-library-pair__col:last-child {
-    border-left: none;
-    margin-left: 0;
-    padding-left: 0;
+  .chip-library-pair::after {
+    content: none;
   }
 }
 

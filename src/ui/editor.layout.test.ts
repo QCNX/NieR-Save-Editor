@@ -278,7 +278,7 @@ describe("chip library dual-column density CSS", () => {
       /\.chip-library-pair\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+minmax\(0,\s*1fr\)/s,
     );
     expect(css).toMatch(
-      /\.chip-library-pair\s*>\s*\.chip-library-pair__col:last-child\s*\{[^}]*border-left:\s*1px\s+solid/s,
+      /\.chip-library-pair::after\s*\{[^}]*left:\s*calc\(50%\s*-\s*0\.75rem\)/s,
     );
     expect(css).toMatch(
       /\.chip-library-virtual__head\s*\{[^}]*scrollbar-gutter:\s*stable/s,
