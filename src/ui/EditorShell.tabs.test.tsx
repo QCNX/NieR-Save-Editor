@@ -176,6 +176,9 @@ describe("EditorShell tabs", () => {
     expect(general).not.toContain("Custom save folder");
     expect(settings).toContain("Custom save folder");
     expect(settings).toContain("Save folder and scan");
+    expect(settings).toContain("Backup folder");
+    expect(settings).toContain("nier-save-editor-backup");
+    expect(settings).toContain('class="settings-help"');
   });
 
   it("translates shell labels without changing the controlled active tab", () => {

@@ -416,6 +416,7 @@ export function SaveManagerPanel({
             {replacementError}
           </p>
         ) : null}
+        <p className="save-backup-help">{t("saveManager.backupHelp")}</p>
         {dirty ? (
           <p className="save-backup-dirty-note">
             {t("saveManager.backupExcludesUnsaved")}
@@ -540,6 +541,11 @@ export function SaveManagerPanel({
             <p className="replacement-safety-note">
               {t("replacement.backupFirst")}
             </p>
+            {replacementPreview.kind === "restore" ? (
+              <p className="replacement-safety-note">
+                {t("replacement.restoreCaution")}
+              </p>
+            ) : null}
             {replacementPreview.targetDirty ? (
               <p className="replacement-dirty-warning" role="alert">
                 {t("replacement.discardDirty")}

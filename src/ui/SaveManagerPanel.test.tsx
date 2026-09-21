@@ -232,6 +232,16 @@ describe("SaveManagerPanel", () => {
     expect(html).toContain("Unsaved editor changes are not included");
   });
 
+  it("shows brief backup help near history and manual-backup actions", () => {
+    const html = renderPanel({ dirty: false });
+
+    expect(html).toContain('class="save-backup-help"');
+    expect(html).toContain("snapshots the save on disk");
+    expect(html).toContain("before save, import, and restore");
+    expect(html).toContain("beside the save folder");
+    expect(html).toContain("Settings");
+  });
+
   it("renders restore/import entry points and a structured directional preview", () => {
     const backupHistory: BackupHistoryItem[] = [
       {
@@ -276,6 +286,8 @@ describe("SaveManagerPanel", () => {
     expect(html).toContain("9S");
     expect(html).toContain("A2");
     expect(html).toContain("A backup of the target will be created first");
+    expect(html).toContain("Close the game before restoring");
+    expect(html).toContain("Steam Cloud");
     expect(html).toContain("Unsaved editor changes will be discarded");
     expect(html).toContain("Restore to target slot");
     expect(html).toContain("save-action--danger");

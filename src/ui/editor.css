@@ -864,6 +864,14 @@ input[type="text"],
   margin-top: 10px;
 }
 
+.save-backup-help {
+  margin: 0 0 10px;
+  color: var(--ui-muted, var(--ui-ink));
+  font-size: 0.9rem;
+  line-height: 1.35;
+  max-width: 52rem;
+}
+
 .save-backup-dirty-note {
   margin: 0 0 10px;
   padding: 6px 8px;

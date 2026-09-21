@@ -134,6 +134,7 @@ describe("i18n public API", () => {
       "saveManager.viewBackups",
       "saveManager.createBackup",
       "saveManager.backupExcludesUnsaved",
+      "saveManager.backupHelp",
       "saveManager.historyLoading",
       "saveManager.historyError",
       "saveManager.sourceFile",
@@ -171,6 +172,7 @@ describe("i18n public API", () => {
       "replacement.source",
       "replacement.target",
       "replacement.backupFirst",
+      "replacement.restoreCaution",
       "replacement.discardDirty",
       "replacement.cancel",
       "replacement.confirm.restore",
@@ -194,6 +196,33 @@ describe("i18n public API", () => {
       expect(message, key).not.toBe(key);
       expect(message, key).not.toMatch(/[\u3400-\u9fff]/u);
     }
+  });
+
+  it("covers backup and restore help copy in both catalogs", () => {
+    expect(translate("en", "saveManager.backupHelp")).toContain(
+      "snapshots the save on disk",
+    );
+    expect(translate("en", "saveManager.backupHelp")).toContain(
+      "before save, import, and restore",
+    );
+    expect(translate("zh-CN", "saveManager.backupHelp")).toContain("磁盘");
+    expect(translate("zh-CN", "saveManager.backupHelp")).toContain("保存");
+    expect(translate("en", "replacement.restoreCaution")).toContain(
+      "Close the game",
+    );
+    expect(translate("en", "replacement.restoreCaution")).toContain(
+      "Steam Cloud",
+    );
+    expect(translate("zh-CN", "replacement.restoreCaution")).toContain("退出游戏");
+    expect(translate("zh-CN", "replacement.restoreCaution")).toContain(
+      "Steam Cloud",
+    );
+    expect(translate("en", "settings.customBackupRootHelp")).toContain(
+      "nier-save-editor-backup",
+    );
+    expect(translate("zh-CN", "settings.customBackupRootHelp")).toContain(
+      "nier-save-editor-backup",
+    );
   });
 
   it("covers all General field and Debug status labels in both languages", () => {
