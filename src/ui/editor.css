@@ -431,11 +431,14 @@ input[type="text"],
 .panel-split--chip-loadout .table-wrap {
   overflow-x: hidden;
   overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 .panel-split--chip-loadout .chip-loadout-stats {
   overflow-x: hidden;
   overflow-y: auto;
+  width: max-content;
+  max-width: 100%;
 }
 
 .panel-split--chip-loadout .slot-table .col-level,
@@ -519,6 +522,8 @@ input[type="text"],
 }
 
 .chip-loadout-stats {
+  width: max-content;
+  max-width: 100%;
   min-width: 0;
   min-height: 0;
   overflow: auto;
@@ -539,19 +544,17 @@ input[type="text"],
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  display: inline-grid;
+  grid-template-columns: auto max-content;
+  gap: 4px 12px;
+  align-items: baseline;
+  width: max-content;
+  max-width: 100%;
+  font-size: 0.95rem;
 }
 
 .chip-stats-row {
-  display: grid;
-  grid-template-columns: max-content max-content;
-  gap: 2px 12px;
-  align-items: baseline;
-  font-size: 0.95rem;
-  width: max-content;
-  max-width: 100%;
+  display: contents;
 }
 
 .chip-stats-row--overflow .chip-stats-value {
@@ -560,10 +563,12 @@ input[type="text"],
 }
 
 .chip-stats-name {
+  justify-self: start;
   min-width: 0;
 }
 
 .chip-stats-value {
+  justify-self: end;
   text-align: right;
   max-width: 100%;
   min-width: 0;

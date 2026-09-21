@@ -47,10 +47,10 @@ describe("content-width collection tables", () => {
 
 describe("chip loadout three-column layout CSS", () => {
   it("opens wide enough that the default window keeps three columns", () => {
-    // After cascade fix, hug content-driven columns (~960–1000), still above collapse.
+    // After stats/gutter hug, default sits just above collapse without right-side chrome.
     expect(defaultWindow.width).toBeGreaterThan(900);
-    expect(defaultWindow.width).toBeGreaterThanOrEqual(960);
-    expect(defaultWindow.width).toBeLessThanOrEqual(1000);
+    expect(defaultWindow.width).toBeGreaterThanOrEqual(920);
+    expect(defaultWindow.width).toBeLessThanOrEqual(960);
     expect(defaultWindow.height).toBe(720);
     expect(chipLoadoutCollapsePx).toBeLessThan(defaultWindow.width);
     // Prefer ~900 (align with other splits); must stay clearly below default.
@@ -98,6 +98,12 @@ describe("chip loadout three-column layout CSS", () => {
     );
   });
 
+  it("reserves a stable scrollbar gutter so Equip/Unequip stay clear", () => {
+    expect(css).toMatch(
+      /\.panel-split--chip-loadout\s+\.table-wrap\s*\{[^}]*scrollbar-gutter:\s*stable/s,
+    );
+  });
+
   it("stacks loadout library filters and scopes search to the column", () => {
     expect(css).toMatch(
       /\.list-toolbar\.chip-loadout-library-filters\s*\{[^}]*flex-direction:\s*column/s,
@@ -111,14 +117,27 @@ describe("chip loadout three-column layout CSS", () => {
     );
   });
 
-  it("keeps chip stats name↔value scannable without a greedy 1fr name track", () => {
-    const rowDecl = css.match(
-      /\.chip-stats-row\s*\{[^}]*grid-template-columns:\s*([^;]+);/s,
+  it("aligns chip stats names left and values right via a shared two-column grid", () => {
+    const listBlock = css.match(/\.chip-stats-list\s*\{[^}]+\}/s)?.[0];
+    expect(listBlock).toBeTruthy();
+    expect(listBlock).toMatch(/display:\s*(?:inline-)?grid/);
+    expect(listBlock).not.toMatch(/1fr/);
+    const listTracks = listBlock!.match(/grid-template-columns:\s*([^;]+);/)?.[1]?.trim();
+    expect(listTracks).toBeTruthy();
+    expect(listTracks).toMatch(/auto|max-content/);
+    expect(listTracks).not.toMatch(/1fr/);
+
+    expect(css).toMatch(/\.chip-stats-row\s*\{[^}]*display:\s*contents/s);
+    expect(css).toMatch(/\.chip-stats-name\s*\{[^}]*justify-self:\s*start/s);
+    expect(css).toMatch(
+      /\.chip-stats-value\s*\{[^}]*justify-self:\s*end[^}]*text-align:\s*right|\.chip-stats-value\s*\{[^}]*text-align:\s*right[^}]*justify-self:\s*end/s,
     );
-    expect(rowDecl?.[1]).toBeTruthy();
-    const tracks = rowDecl![1].trim();
-    expect(tracks).not.toMatch(/1fr/);
-    expect(tracks).toMatch(/max-content/);
+    expect(css).toMatch(
+      /\.chip-loadout-stats\s*\{[^}]*width:\s*max-content[^}]*max-width:\s*100%|\.chip-loadout-stats\s*\{[^}]*max-width:\s*100%[^}]*width:\s*max-content/s,
+    );
+    expect(css).toMatch(
+      /\.chip-stats-list\s*\{[^}]*width:\s*max-content[^}]*max-width:\s*100%|\.chip-stats-list\s*\{[^}]*max-width:\s*100%[^}]*width:\s*max-content/s,
+    );
   });
   it("keeps equipped and library tables content-sized so name↔level void stays gone", () => {
     expect(css).toMatch(/\.slot-table\s*\{[^}]*width:\s*max-content/s);
