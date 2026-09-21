@@ -868,6 +868,15 @@ input[type="text"],
   min-width: 0;
 }
 
+.save-summary-details__full {
+  grid-column: 1 / -1;
+}
+
+.save-summary-details__full dd {
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+
 .save-summary-details dt {
   flex: 0 0 auto;
   color: var(--ui-muted);

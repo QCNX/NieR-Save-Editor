@@ -133,7 +133,7 @@ function SummaryDetails({
         <dd>{formatPlayTime(summary.playTimeSeconds)}</dd>
       </div>
       {includeModifiedTime ? (
-        <div>
+        <div className="save-summary-details__full">
           <dt>{t("saveManager.modifiedTime")}</dt>
           <dd>{modified}</dd>
         </div>

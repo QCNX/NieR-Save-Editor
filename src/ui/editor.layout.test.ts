@@ -49,6 +49,15 @@ describe("save summary density", () => {
       /\.save-summary-details\s*dd\s*\{[^}]*margin:\s*0/s,
     );
   });
+
+  it("gives modified time a full-width row so the date does not wrap", () => {
+    expect(css).toMatch(
+      /\.save-summary-details__full\s*\{[^}]*grid-column:\s*1\s*\/\s*-1/s,
+    );
+    expect(css).toMatch(
+      /\.save-summary-details__full\s+dd\s*\{[^}]*white-space:\s*nowrap/s,
+    );
+  });
 });
 
 describe("content-width collection tables", () => {
