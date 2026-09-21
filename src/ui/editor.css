@@ -646,16 +646,6 @@ input[type="text"],
   margin-top: 4px;
 }
 
-@media (max-width: 1100px) {
-  .panel-split--chip-loadout {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-  }
-
-  .panel-split--chip-loadout .panel-split__stats {
-    grid-column: 1 / -1;
-  }
-}
-
 @media (max-width: 900px) {
   .panel-split {
     grid-template-columns: 1fr;

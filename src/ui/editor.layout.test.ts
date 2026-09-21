@@ -47,12 +47,13 @@ describe("content-width collection tables", () => {
 
 describe("chip loadout three-column layout CSS", () => {
   it("opens wide enough that the default window keeps three columns", () => {
-    // Library is content-sized; equipped takes a flexible share — keep 3-col at default.
-    expect(defaultWindow.width).toBeGreaterThanOrEqual(1120);
-    expect(defaultWindow.width).toBeLessThanOrEqual(1240);
+    // Content-driven three columns fit in the 1000–1080 default band.
+    expect(defaultWindow.width).toBeGreaterThanOrEqual(1000);
+    expect(defaultWindow.width).toBeLessThanOrEqual(1080);
     expect(defaultWindow.height).toBe(720);
     expect(chipLoadoutCollapsePx).toBeLessThan(defaultWindow.width);
-    expect(chipLoadoutCollapsePx).toBeLessThanOrEqual(1100);
+    // Prefer ~900 (align with other splits); must stay clearly below default.
+    expect(chipLoadoutCollapsePx).toBeLessThanOrEqual(900);
   });
 
   it("sizes all three chip-loadout columns to content (no fr void-feeding)", () => {
@@ -114,7 +115,7 @@ describe("chip loadout three-column layout CSS", () => {
 
   it("collapses the chip loadout grid only when clearly narrow, without page overflow", () => {
     expect(css).toMatch(
-      /@media \(max-width: 1[01]\d{2}px\)[\s\S]*\.panel-split--chip-loadout\s*\{[^}]*grid-template-columns:\s*[^}]*1fr/s,
+      /@media \(max-width: 900px\)[\s\S]*\.panel-split--chip-loadout\s*\{[^}]*grid-template-columns:\s*[^}]*1fr/s,
     );
     expect(css).toMatch(
       /\.panel-split--chip-loadout\s*\{[^}]*min-width:\s*0/s,
