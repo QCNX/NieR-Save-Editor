@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import {
   changeAppLanguage,
+  messageForDiscoveryFailure,
   renderAppMessage,
   type AppMessage,
   type AppShellState,
 } from "./App";
+import { PermissionDeniedError } from "./discovery";
 import { translate } from "./i18n";
 import { SAVEFILE_SIZE_BYTES, load } from "./save";
 import {
@@ -46,18 +48,37 @@ describe("changeAppLanguage", () => {
 });
 
 describe("external workflow messages", () => {
-  it("re-renders localized shell copy while retaining diagnostic detail", () => {
+  it("re-renders external failures using localized shell copy only", () => {
     const message: AppMessage = {
       key: "errors.loadFailed",
-      detail: "synthetic host failure",
     };
 
     expect(renderAppMessage(message, (key) => translate("zh-CN", key))).toBe(
-      "加载存档失败：synthetic host failure",
+      "加载存档失败",
     );
     expect(renderAppMessage(message, (key) => translate("en", key))).toBe(
-      "Failed to load save: synthetic host failure",
+      "Failed to load save",
     );
+  });
+
+  it("localizes discovery failures without exposing host paths or messages", () => {
+    const privatePath = String.raw`X:\private\SlotData_0.dat`;
+    const denied = messageForDiscoveryFailure(
+      new PermissionDeniedError(privatePath),
+    );
+    const unknown = messageForDiscoveryFailure(
+      new Error(`native scan failed at ${privatePath}`),
+    );
+
+    for (const language of ["zh-CN", "en"] as const) {
+      const t = (key: string) => translate(language, key);
+      const deniedText = renderAppMessage(denied, t);
+      const unknownText = renderAppMessage(unknown, t);
+      expect(deniedText).toBe(translate(language, "errors.permissionDenied"));
+      expect(unknownText).toBe(translate(language, "errors.scanFailed"));
+      expect(deniedText).not.toContain(privatePath);
+      expect(unknownText).not.toContain("native scan failed");
+    }
   });
 });
 

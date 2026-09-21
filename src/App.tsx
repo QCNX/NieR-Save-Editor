@@ -33,7 +33,10 @@ import {
   type SaveManagementHost,
 } from "./persist";
 import { EditorShell, type EditorTab } from "./ui/EditorShell";
-import { SaveManagerPanel } from "./ui/SaveManagerPanel";
+import {
+  SaveManagerPanel,
+  type SaveManagerHistoryError,
+} from "./ui/SaveManagerPanel";
 import {
   summarizeDiscoveredSaves,
   summarizeBackupHistory,
@@ -124,23 +127,25 @@ function formatMessage(
 export type AppMessage = {
   key: MessageKey;
   values?: Record<string, string | number>;
-  detail?: string;
 };
 
 export function renderAppMessage(
   message: AppMessage,
   t: (key: string) => string,
 ): string {
-  const localizedMessage = formatMessage(
+  return formatMessage(
     t(message.key),
     message.values ?? {},
   );
-  return message.detail
-    ? formatMessage(t("message.withDetail"), {
-        message: localizedMessage,
-        detail: message.detail,
-      })
-    : localizedMessage;
+}
+
+export function messageForDiscoveryFailure(error: unknown): AppMessage {
+  return {
+    key:
+      error instanceof PermissionDeniedError
+        ? "errors.permissionDenied"
+        : "errors.scanFailed",
+  };
 }
 
 type AppContentProps = {
@@ -163,7 +168,8 @@ function AppContent({
   const [historyTargetPath, setHistoryTargetPath] = useState<string | null>(null);
   const [backupHistory, setBackupHistory] = useState<BackupHistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
-  const [historyError, setHistoryError] = useState<string | null>(null);
+  const [historyError, setHistoryError] =
+    useState<SaveManagerHistoryError | null>(null);
   const historyRequestId = useRef(0);
   const manualBackupBusy = useRef(false);
   const replacementBusy = useRef(false);
@@ -254,18 +260,7 @@ function AppContent({
           : { key: "status.slotsFound", values: { count: found.length } },
       );
     } catch (err) {
-      if (err instanceof PermissionDeniedError) {
-        setErrorMessage({
-          key: "errors.permissionDenied",
-          values: { path: err.path },
-        });
-      } else {
-        setErrorMessage(
-          err instanceof Error
-            ? { key: "errors.scanFailed", detail: err.message }
-            : { key: "errors.scanFailed" },
-        );
-      }
+      setErrorMessage(messageForDiscoveryFailure(err));
       setSlotSummaries([]);
     } finally {
       setDiscoverBusy(false);
@@ -291,7 +286,7 @@ function AppContent({
         if (requestId !== historyRequestId.current) return;
         if (listed.status !== "ok") {
           setBackupHistory([]);
-          setHistoryError(formatManagedError(listed, t));
+          setHistoryError("history-read");
           return;
         }
         const history = await summarizeBackupHistory(
@@ -309,17 +304,10 @@ function AppContent({
         );
         if (requestId !== historyRequestId.current) return;
         setBackupHistory(history);
-      } catch (error) {
+      } catch {
         if (requestId !== historyRequestId.current) return;
         setBackupHistory([]);
-        setHistoryError(
-          error instanceof Error
-            ? error.message
-            : formatManagedError(
-                { phase: "list-backups", status: "error" },
-                t,
-              ),
-        );
+        setHistoryError("history-read");
       } finally {
         if (requestId === historyRequestId.current) {
           setHistoryLoading(false);
@@ -470,7 +458,6 @@ function AppContent({
       if ("phase" in result) {
         setErrorMessage({
           key: "errors.overwriteFailed",
-          detail: formatManagedError(result, t),
         });
         return;
       }
@@ -539,7 +526,7 @@ function AppContent({
       ? slotSummaries.find((summary) => summary.path === historyTargetPath)
       : undefined;
     if (!persistHost || !historyTargetPath || target?.status !== "ready") {
-      setHistoryError(t("errors.manualBackupUnavailable"));
+      setHistoryError("manual-backup-unavailable");
       return;
     }
     manualBackupBusy.current = true;
@@ -552,7 +539,7 @@ function AppContent({
         "manual",
       );
       if (result.status !== "ok") {
-        setHistoryError(formatManagedError(result, t));
+        setHistoryError("manual-backup-failed");
         return;
       }
       await refreshBackupHistory(historyTargetPath);
@@ -561,10 +548,7 @@ function AppContent({
         values: { name: fileNameFromPath(result.backup.path) },
       });
     } catch {
-      setHistoryError(formatManagedError({
-        phase: "backup-target",
-        status: "error",
-      }, t));
+      setHistoryError("manual-backup-failed");
     } finally {
       manualBackupBusy.current = false;
       setIoBusy(false);
@@ -750,12 +734,8 @@ function AppContent({
         key: "status.openedFileNoPath",
         values: { name: file.name },
       });
-    } catch (err) {
-      setErrorMessage(
-        err instanceof Error
-          ? { key: "errors.loadFailed", detail: err.message }
-          : { key: "errors.loadFailed" },
-      );
+    } catch {
+      setErrorMessage({ key: "errors.loadFailed" });
     }
   }
 

@@ -112,17 +112,22 @@ describe("EditorShell tabs", () => {
     expect(html).toContain(">亮色</button>");
   });
 
-  it("does not repeat a non-save tab label as a page-level content heading", () => {
-    for (const [tab, headingId] of [
-      ["general", "summary-heading"],
-      ["items", "inventory-heading"],
-      ["weapons", "weapons-heading"],
-      ["pods", "pods-heading"],
-      ["chips", "chips-heading"],
+  it("does not repeat any non-save tab label at any content heading level", () => {
+    for (const [tab, label] of [
+      ["general", "General"],
+      ["items", "Items"],
+      ["weapons", "Weapons"],
+      ["pods", "POD"],
+      ["chips", "Chips"],
+      ["settings", "Settings"],
     ] as const) {
-      expect(renderShell("en", tab)).not.toContain(`id="${headingId}"`);
+      const html = renderShell("en", tab);
+      const headings = Array.from(
+        html.matchAll(/<h[1-6][^>]*>([^<]*)<\/h[1-6]>/g),
+        (match) => match[1],
+      );
+      expect(headings, tab).not.toContain(label);
     }
-    expect(renderShell("en", "settings")).not.toContain("<h2>Settings</h2>");
 
     const inventory = renderShell("en", "items");
     expect(inventory).toContain('id="editor-tab-items"');

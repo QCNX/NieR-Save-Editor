@@ -131,7 +131,6 @@ export function WeaponsPanel({ slot, onSlotChange }: Props) {
           className="panel-split__side"
           aria-label={t("weapons.set1")}
         >
-          <h3>{t("tabs.weapons")}</h3>
           <div className="pod-config-stack">
             {equipmentSets.map((set) => (
               <fieldset key={set.key} className="pod-config-card">

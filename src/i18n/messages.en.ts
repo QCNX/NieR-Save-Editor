@@ -119,7 +119,7 @@ export const messagesEn: Record<MessageKey, string> = {
   "status.customRootSaved": "Custom save folder saved. Rescanning…",
   "status.customRootCleared": "Custom save folder cleared. Rescanning…",
   "message.withDetail": "{message}: {detail}",
-  "errors.permissionDenied": "Cannot read save folder (permission denied): {path}",
+  "errors.permissionDenied": "Cannot read save folder because permission was denied",
   "errors.scanFailed": "Failed to scan save folders",
   "errors.pathReadUnavailable": "This environment cannot read a save by path (Tauri required).",
   "errors.invalidSize": "Invalid save size: expected {expected} bytes, got {actual} bytes.",

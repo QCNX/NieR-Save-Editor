@@ -105,6 +105,23 @@ describe("SaveManagerPanel", () => {
     expect(html.match(/disabled=""/g)).toHaveLength(1);
   });
 
+  it("renders localized unreadable status without exposing a host error", () => {
+    const unreadable = {
+      status: "unreadable" as const,
+      path: String.raw`X:\private\SlotData_2.dat`,
+      fileName: "SlotData_2.dat",
+      slotNumber: 2,
+      mtimeMs: 0,
+      reason: "read-failed" as const,
+      message: "permission denied at X:\\private\\SlotData_2.dat",
+    };
+
+    const html = renderPanel({ slots: [unreadable] });
+
+    expect(html).toContain("Unreadable");
+    expect(html).not.toContain("permission denied");
+  });
+
   it("locks conflicting actions while I/O is busy", () => {
     const html = renderPanel({ busy: true });
 
@@ -196,12 +213,12 @@ describe("SaveManagerPanel", () => {
 
   it("renders separate backup loading, error, and empty states", () => {
     const loading = renderPanel({ historyLoading: true });
-    const failed = renderPanel({ historyError: "synthetic history failure" });
+    const failed = renderPanel({ historyError: "history-read" });
     const empty = renderPanel();
 
     expect(loading).toContain("Reading backup history…");
     expect(failed).toContain('role="alert"');
-    expect(failed).toContain("synthetic history failure");
+    expect(failed).toContain("Failed to read backup history");
     expect(empty).toContain("No backups yet");
   });
 

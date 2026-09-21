@@ -6,7 +6,7 @@ import {
   type KeyboardEvent,
 } from "react";
 
-import { useI18n } from "../i18n";
+import { useI18n, type MessageKey } from "../i18n";
 import type {
   BackupHistoryItem,
   ReadySaveSummary,
@@ -27,7 +27,7 @@ export type SaveManagerPanelProps = {
   canSaveChanges: boolean;
   canClose: boolean;
   backupHistory: readonly BackupHistoryItem[];
-  historyError: string | null;
+  historyError: SaveManagerHistoryError | null;
   historyLoading: boolean;
   historyTargetPath: string | null;
   canCreateBackup: boolean;
@@ -46,6 +46,17 @@ export type SaveManagerPanelProps = {
   onSaveAs: () => void;
   onSaveChanges: () => void;
   onSelectHistoryTarget: (path: string) => void;
+};
+
+export type SaveManagerHistoryError =
+  | "history-read"
+  | "manual-backup-unavailable"
+  | "manual-backup-failed";
+
+const HISTORY_ERROR_KEYS: Record<SaveManagerHistoryError, MessageKey> = {
+  "history-read": "saveManager.historyError",
+  "manual-backup-unavailable": "errors.manualBackupUnavailable",
+  "manual-backup-failed": "errors.manualBackupFailed",
 };
 
 function formatPlayTime(seconds: number): string {
@@ -339,9 +350,7 @@ export function SaveManagerPanel({
                     <SummaryDetails summary={summary} includeModifiedTime />
                   ) : (
                     <p className="save-slot-error">
-                      {summary.status === "unreadable" && summary.message
-                        ? `${stateLabel(summary, t)}: ${summary.message}`
-                        : stateLabel(summary, t)}
+                      {stateLabel(summary, t)}
                     </p>
                   )}
                   <div className="save-slot-actions">
@@ -418,7 +427,7 @@ export function SaveManagerPanel({
           </p>
         ) : historyError ? (
           <p className="save-slot-error" role="alert">
-            {t("saveManager.historyError")}: {historyError}
+            {t(HISTORY_ERROR_KEYS[historyError])}
           </p>
         ) : backupHistory.length === 0 ? (
           <p className="save-manager-empty">{t("saveManager.historyEmpty")}</p>
@@ -489,9 +498,7 @@ export function SaveManagerPanel({
                     </>
                   ) : (
                     <p className="save-slot-error">
-                      {summary.status === "unreadable" && summary.message
-                        ? `${stateLabel(summary, t)}: ${summary.message}`
-                        : stateLabel(summary, t)}
+                      {stateLabel(summary, t)}
                     </p>
                   )}
                 </article>

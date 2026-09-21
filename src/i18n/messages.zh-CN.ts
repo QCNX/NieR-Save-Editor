@@ -117,7 +117,7 @@ export const messagesZhCN = {
   "status.customRootSaved": "已保存自定义存档目录，正在重新扫描…",
   "status.customRootCleared": "已清除自定义存档目录，正在重新扫描…",
   "message.withDetail": "{message}：{detail}",
-  "errors.permissionDenied": "无法读取存档目录（权限不足）：{path}",
+  "errors.permissionDenied": "无法读取存档目录（权限不足）",
   "errors.scanFailed": "扫描存档目录失败",
   "errors.pathReadUnavailable": "当前环境无法按路径读取存档（需要 Tauri）。",
   "errors.invalidSize": "存档大小无效：需要 {expected} 字节，实际 {actual} 字节。",

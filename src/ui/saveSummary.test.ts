@@ -51,6 +51,18 @@ describe("validateSaveBytes", () => {
       expect(result.slot).toEqual(load(bytes));
     }
   });
+
+  it("turns a parser exception into a structured failure without its message", () => {
+    const result = validateSaveBytes(
+      new Uint8Array(SAVEFILE_SIZE_BYTES),
+      () => {
+        throw new Error("native parser leaked a private path");
+      },
+    );
+
+    expect(result).toEqual({ status: "invalid", reason: "parse-failed" });
+    expect(result).not.toHaveProperty("message");
+  });
 });
 
 describe("summarizeBackupHistory", () => {
@@ -124,8 +136,9 @@ describe("summarizeBackupHistory", () => {
 
     expect(history[0].summary).toMatchObject({
       status: "unreadable",
-      message: "Read backup: synthetic read failure",
+      reason: "read-failed",
     });
+    expect(history[0].summary).not.toHaveProperty("message");
     expect(history[1].summary).toMatchObject({
       status: "ready",
       characterName: "9S",
@@ -158,7 +171,7 @@ describe("summarizeDiscoveredSaves", () => {
       fileName: "SlotData_1.dat",
       slotNumber: 1,
       mtimeMs: 20,
-      message: "synthetic read failure",
+      reason: "read-failed",
     });
   });
 });

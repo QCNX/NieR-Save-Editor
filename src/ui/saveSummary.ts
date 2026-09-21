@@ -25,7 +25,10 @@ export type SaveBytesValidation =
  * This guarantees the known binary layout parses; opaque bytes are not claimed
  * to have game-level semantic validation.
  */
-export function validateSaveBytes(bytes: Uint8Array): SaveBytesValidation {
+export function validateSaveBytes(
+  bytes: Uint8Array,
+  parse: (input: Uint8Array) => SlotData = load,
+): SaveBytesValidation {
   if (bytes.length !== SAVEFILE_SIZE_BYTES) {
     return {
       status: "invalid",
@@ -36,7 +39,7 @@ export function validateSaveBytes(bytes: Uint8Array): SaveBytesValidation {
   }
 
   try {
-    return { status: "ready", slot: load(bytes) };
+    return { status: "ready", slot: parse(bytes) };
   } catch {
     return { status: "invalid", reason: "parse-failed" };
   }
@@ -63,7 +66,7 @@ export type InvalidSaveSummary = SaveIdentity & {
 
 export type UnreadableSaveSummary = SaveIdentity & {
   status: "unreadable";
-  message?: string;
+  reason: "read-failed";
 };
 
 export type SaveSummary =
@@ -128,11 +131,11 @@ export async function summarizeDiscoveredSaves(
       try {
         const bytes = await readBytes(file.path);
         return summarizeSave({ ...file, bytes });
-      } catch (error) {
+      } catch {
         return {
           ...identityFrom(file.path, file.mtimeMs),
           status: "unreadable",
-          message: error instanceof Error ? error.message : undefined,
+          reason: "read-failed",
         };
       }
     }),
@@ -163,11 +166,11 @@ export async function summarizeBackupHistory(
           mtimeMs: entry.mtimeMs,
           bytes,
         });
-      } catch (error) {
+      } catch {
         summary = {
           ...identityFrom(entry.path, entry.mtimeMs),
           status: "unreadable",
-          message: error instanceof Error ? error.message : undefined,
+          reason: "read-failed",
         };
       }
       return { entry, summary };
