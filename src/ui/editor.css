@@ -1190,6 +1190,63 @@ input[type="text"],
   flex-direction: column;
 }
 
+/* Keep collection editors visually anchored to their active controls on wide
+ * desktop windows. Tables retain their own horizontal/vertical scroll area. */
+.collection-workspace {
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-width: 100%;
+  padding: 10px;
+  border: 1px solid var(--ui-border-soft);
+  background: var(--ui-panel-soft);
+}
+
+.collection-workspace--table {
+  width: max-content;
+}
+
+.collection-workspace--table > .table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.collection-workspace--split {
+  width: max-content;
+}
+
+.collection-workspace--split > .panel-split {
+  width: max-content;
+  max-width: 100%;
+  min-height: 0;
+  grid-template-columns: max-content max-content;
+}
+
+.collection-workspace--split .panel-split__main {
+  width: max-content;
+}
+
+.collection-workspace--split .panel-split__main > .table-wrap {
+  flex: 1 1 auto;
+}
+
+@media (max-width: 900px) {
+  .collection-workspace--split {
+    width: 100%;
+  }
+
+  .collection-workspace--split > .panel-split {
+    width: 100%;
+    grid-template-columns: 1fr;
+  }
+
+  .collection-workspace--split .panel-split__main {
+    width: auto;
+  }
+}
+
 .panel h2 {
   margin: 0 0 8px;
   font-size: 1.05rem;
