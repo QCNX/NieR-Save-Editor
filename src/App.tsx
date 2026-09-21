@@ -211,12 +211,10 @@ function AppContent({
 
   useEffect(() => {
     document.title = formatWindowTitle({
-      appTitle: t("app.title"),
       dirty: state.dirty,
       fileName: currentFileName,
-      unsavedLabel: t("window.unsavedChanges"),
     });
-  }, [currentFileName, state.dirty, t]);
+  }, [currentFileName, state.dirty]);
 
   const refreshSlots = useCallback(async () => {
     setErrorMessage(null);
@@ -379,10 +377,7 @@ function AppContent({
       );
       setOpenedFileName(fileNameFromPath(path));
       setHistoryTargetPath(path);
-      setStatusMessage({
-        key: "status.loaded",
-        values: { name: fileNameFromPath(path) },
-      });
+      setStatusMessage(null);
       return true;
     } catch {
       setErrorMessage({ key: "errors.loadFailed" });
@@ -860,6 +855,7 @@ function AppContent({
     <main className="app-root">
       <EditorShell
         activeTab={activeTab}
+        currentFileName={currentFileName}
         dirty={state.dirty}
         modalOpen={replacementPreview !== null}
         onSlotChange={applySlotEdit}

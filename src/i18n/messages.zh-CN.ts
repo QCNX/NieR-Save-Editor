@@ -113,6 +113,7 @@ export const messagesZhCN = {
   "status.inMemory": "内存中（无路径）",
   "status.dirty": "已修改",
   "status.clean": "未修改",
+  "status.noFile": "无文件",
   "status.preview": "当前为浏览器预览：请用「打开存档…」加载文件；槽位发现需 Tauri 桌面端。",
   "status.noSlotsFound": "未找到 SlotData_*.dat（可在设置中指定自定义存档目录后重新扫描）。",
   "status.slotsFound": "已发现 {count} 个槽位存档。",

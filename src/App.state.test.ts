@@ -83,17 +83,12 @@ describe("external workflow messages", () => {
 });
 
 describe("window title workflow", () => {
-  const appTitle = "NieR:Automata Save Editor";
-  const unsavedLabel = "Unsaved changes";
-
   function titleFor(workflow: AppShellState["workflow"]): string {
     const pathParts = workflow.currentPath?.split(/[/\\]/) ?? [];
     const fileName = pathParts[pathParts.length - 1] ?? null;
     return formatWindowTitle({
-      appTitle,
       dirty: workflow.dirty,
       fileName,
-      unsavedLabel,
     });
   }
 
@@ -106,23 +101,23 @@ describe("window title workflow", () => {
     );
     const dirty = applyEditedSlot(loaded, slot);
 
-    expect(titleFor(loaded)).toBe("SlotData_0.dat — NieR:Automata Save Editor");
-    expect(titleFor(dirty)).toContain("● Unsaved changes");
+    expect(titleFor(loaded)).toBe("SlotData_0.dat — NieR Save Editor");
+    expect(titleFor(dirty)).toBe("SlotData_0.dat — NieR Save Editor*");
     const failedOrCancelled = dirty; // no successful transition is applied
     expect(titleFor(failedOrCancelled)).toBe(
-      "● Unsaved changes · SlotData_0.dat — NieR:Automata Save Editor",
+      "SlotData_0.dat — NieR Save Editor*",
     );
 
-    expect(titleFor(applyOverwriteSuccess(dirty))).not.toContain("●");
-    expect(titleFor(applyLoadedSlot(dirty, loaded.currentPath, slot))).not.toContain(
-      "●",
-    );
+    expect(titleFor(applyOverwriteSuccess(dirty))).not.toContain("*");
+    expect(
+      titleFor(applyLoadedSlot(dirty, loaded.currentPath, slot)),
+    ).not.toContain("*");
     expect(
       titleFor(applyLoadedSlot(dirty, "synthetic/SlotData_1.dat", slot)),
-    ).toBe("SlotData_1.dat — NieR:Automata Save Editor");
+    ).toBe("SlotData_1.dat — NieR Save Editor");
     expect(titleFor(applySaveAsSuccess(dirty, "synthetic/copy.dat"))).toBe(
-      "copy.dat — NieR:Automata Save Editor",
+      "copy.dat — NieR Save Editor",
     );
-    expect(titleFor(applyClosed(dirty))).toBe(appTitle);
+    expect(titleFor(applyClosed(dirty))).toBe("NieR Save Editor");
   });
 });

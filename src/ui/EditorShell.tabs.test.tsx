@@ -32,13 +32,23 @@ function renderShell(
   language: "zh-CN" | "en",
   activeTab: React.ComponentProps<typeof EditorShell>["activeTab"],
   loadedSlot = slot,
-  options: { modalOpen?: boolean; theme?: "light" | "dark" } = {},
+  options: {
+    currentFileName?: string | null;
+    dirty?: boolean;
+    modalOpen?: boolean;
+    theme?: "light" | "dark";
+  } = {},
 ) {
   return renderToStaticMarkup(
     <I18nProvider language={language}>
       <EditorShell
         activeTab={activeTab}
-        dirty
+        currentFileName={
+          options.currentFileName === undefined
+            ? "SlotData_0.dat"
+            : options.currentFileName
+        }
+        dirty={options.dirty ?? true}
         modalOpen={options.modalOpen}
         notices={<p role="status">notice</p>}
         onSlotChange={vi.fn()}
@@ -116,61 +126,46 @@ describe("EditorShell tabs", () => {
     expect(loadout).not.toContain('data-testid="chip-loadout-placeholder"');
   });
 
-  it("places the dark-mode toggle left of the language switch on the tab row", () => {
+  it("keeps the tab row as tabs only without theme, language, or dirty meta", () => {
     const html = renderShell("en", "general");
+    const tabsRowEnd = html.indexOf('class="editor-tab-panel"');
+    const tabsRow = html.slice(0, tabsRowEnd);
 
-    expect(html).toContain('aria-label="Toggle color theme"');
-    expect(html).toContain(">Light</button>");
-    expect(html).toContain('aria-label="Language"');
-    expect(html.indexOf('aria-label="Toggle color theme"')).toBeLessThan(
-      html.indexOf('aria-label="Language"'),
-    );
+    expect(tabsRow).toContain('role="tablist"');
+    expect(tabsRow).not.toContain('class="editor-tabs-meta"');
+    expect(tabsRow).not.toContain('aria-label="Toggle color theme"');
+    expect(tabsRow).not.toContain('aria-label="Language"');
+    expect(tabsRow).not.toContain('class="dirty-chip"');
+    expect(tabsRow).not.toContain(">Modified</span>");
   });
 
-  it("keeps dirty and clean status chips inside the tab-row meta, after the tablist", () => {
-    const dirty = renderShell("en", "general");
-    const clean = renderToStaticMarkup(
-      <I18nProvider language="en">
-        <EditorShell
-          activeTab="general"
-          dirty={false}
-          notices={<p role="status">notice</p>}
-          onSlotChange={vi.fn()}
-          onTabChange={vi.fn()}
-          onThemeChange={vi.fn()}
-          settings={
-            <SettingsPanel
-              busy={false}
-              rootDraft=""
-              onRootDraftChange={vi.fn()}
-              onSaveCustomRoot={vi.fn()}
-              backupDraft=""
-              onBackupDraftChange={vi.fn()}
-              onSaveCustomBackupRoot={vi.fn()}
-              canRevealBackupFolder={false}
-              onRevealBackupFolder={vi.fn()}
-            />
-          }
-          slot={slot}
-          theme="dark"
-          saveManager={
-            <section aria-label="save manager">save controls</section>
-          }
-        />
-      </I18nProvider>,
-    );
+  it("puts file name, dirty chip, theme, and unlabeled language select in a footer status bar", () => {
+    const dirty = renderShell("en", "general", slot, {
+      currentFileName: "SlotData_0.dat",
+      dirty: true,
+    });
+    const clean = renderShell("en", "general", slot, {
+      currentFileName: null,
+      dirty: false,
+    });
 
-    expect(dirty).toContain('class="editor-tabs-meta"');
+    expect(dirty).toContain('class="editor-status-bar"');
+    expect(dirty).toContain(">SlotData_0.dat</span>");
     expect(dirty).toContain('class="dirty-chip"');
     expect(dirty).toContain(">Modified</span>");
+    expect(dirty).toContain('aria-label="Toggle color theme"');
+    expect(dirty).toContain('aria-label="Language"');
+    expect(dirty).not.toContain(">Language</span>");
+    expect(dirty.indexOf('class="editor-tab-panel"')).toBeLessThan(
+      dirty.indexOf('class="editor-status-bar"'),
+    );
+    expect(dirty.indexOf('aria-label="Toggle color theme"')).toBeLessThan(
+      dirty.indexOf('aria-label="Language"'),
+    );
+
+    expect(clean).toContain(">No file</span>");
     expect(clean).toContain('class="path-chip"');
     expect(clean).toContain(">Unmodified</span>");
-    expect(dirty.indexOf('role="tablist"')).toBeLessThan(
-      dirty.indexOf('class="dirty-chip"'),
-    );
-    expect(dirty.indexOf('class="editor-tabs-meta"')).toBeLessThan(
-      dirty.indexOf('class="dirty-chip"'),
-    );
   });
 
   it("renders the custom save root only inside the Settings tab", () => {
@@ -186,14 +181,18 @@ describe("EditorShell tabs", () => {
   });
 
   it("translates shell labels without changing the controlled active tab", () => {
-    const html = renderShell("zh-CN", "settings");
+    const html = renderShell("zh-CN", "settings", slot, {
+      currentFileName: null,
+    });
 
     expect(html).toContain('aria-selected="true">设置</button>');
     expect(html).toContain(">存档</button>");
     expect(html).toContain("自定义存档目录");
     expect(html).toContain("已修改");
     expect(html).toContain('aria-label="语言"');
+    expect(html).not.toContain(">语言</span>");
     expect(html).toContain(">亮色</button>");
+    expect(html).toContain(">无文件</span>");
   });
 
   it("does not repeat any non-save tab label at any content heading level", () => {

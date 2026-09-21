@@ -33,6 +33,7 @@ const TABS_WITHOUT_SLOT: ReadonlySet<EditorTab> = new Set(["save", "settings"]);
 
 type Props = {
   activeTab: EditorTab;
+  currentFileName: string | null;
   dirty: boolean;
   modalOpen?: boolean;
   empty?: ReactNode;
@@ -48,6 +49,7 @@ type Props = {
 
 export function EditorShell({
   activeTab,
+  currentFileName,
   dirty,
   modalOpen = false,
   empty,
@@ -113,38 +115,6 @@ export function EditorShell({
             );
           })}
         </nav>
-
-        <div className="editor-tabs-meta">
-          <span
-            className={dirty ? "dirty-chip" : "path-chip"}
-            aria-live="polite"
-          >
-            {dirty ? t("status.dirty") : t("status.clean")}
-          </span>
-          <button
-            type="button"
-            className="theme-toggle"
-            aria-pressed={dark}
-            aria-label={t("theme.toggle")}
-            title={t("theme.toggle")}
-            onClick={() => onThemeChange(dark ? "light" : "dark")}
-          >
-            {dark ? t("theme.light") : t("theme.dark")}
-          </button>
-          <label className="toolbar-field language-switch">
-            <span>{t("language.label")}</span>
-            <select
-              value={language}
-              aria-label={t("language.label")}
-              onChange={(event) =>
-                setLanguage(event.currentTarget.value as Language)
-              }
-            >
-              <option value="zh-CN">{t("language.zh-CN")}</option>
-              <option value="en">{t("language.en")}</option>
-            </select>
-          </label>
-        </div>
       </div>
 
       {notices}
@@ -157,6 +127,44 @@ export function EditorShell({
       >
         {content}
       </section>
+
+      <footer
+        className="editor-status-bar"
+        inert={modalOpen ? true : undefined}
+        aria-hidden={modalOpen ? "true" : undefined}
+      >
+        <span className="editor-status-file" aria-live="polite">
+          {currentFileName ?? t("status.noFile")}
+        </span>
+        <span
+          className={dirty ? "dirty-chip" : "path-chip"}
+          aria-live="polite"
+        >
+          {dirty ? t("status.dirty") : t("status.clean")}
+        </span>
+        <button
+          type="button"
+          className="theme-toggle"
+          aria-pressed={dark}
+          aria-label={t("theme.toggle")}
+          title={t("theme.toggle")}
+          onClick={() => onThemeChange(dark ? "light" : "dark")}
+        >
+          {dark ? t("theme.light") : t("theme.dark")}
+        </button>
+        <label className="toolbar-field language-switch">
+          <select
+            value={language}
+            aria-label={t("language.label")}
+            onChange={(event) =>
+              setLanguage(event.currentTarget.value as Language)
+            }
+          >
+            <option value="zh-CN">{t("language.zh-CN")}</option>
+            <option value="en">{t("language.en")}</option>
+          </select>
+        </label>
+      </footer>
     </div>
   );
 }

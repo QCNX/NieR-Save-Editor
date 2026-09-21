@@ -115,6 +115,7 @@ export const messagesEn: Record<MessageKey, string> = {
   "status.inMemory": "In memory (no path)",
   "status.dirty": "Modified",
   "status.clean": "Unmodified",
+  "status.noFile": "No file",
   "status.preview": "Browser preview: use Open save… to load a file. Slot discovery requires the Tauri desktop app.",
   "status.noSlotsFound": "No SlotData_*.dat files found. Set a custom save folder in Settings, then rescan.",
   "status.slotsFound": "Found {count} slot save(s).",

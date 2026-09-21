@@ -155,13 +155,25 @@ body {
   cursor: not-allowed;
 }
 
-.editor-tabs-meta {
+.editor-status-bar {
   flex: 0 0 auto;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  padding-bottom: 6px;
-  margin-left: auto;
+  padding: 6px 10px;
+  background: var(--ui-chrome);
+  border-top: 1px solid var(--ui-border);
+  min-width: 0;
+}
+
+.editor-status-file {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ui-muted);
 }
 
 .theme-toggle {
@@ -1214,11 +1226,7 @@ input[type="number"] {
     align-items: stretch;
   }
 
-  .editor-tabs-meta {
-    flex: 1 0 100%;
-    width: 100%;
-    justify-content: flex-end;
-    margin-left: 0;
-    padding-bottom: 6px;
+  .editor-status-bar {
+    justify-content: flex-start;
   }
 }

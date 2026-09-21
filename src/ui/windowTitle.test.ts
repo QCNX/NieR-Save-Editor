@@ -1,58 +1,50 @@
 import { describe, expect, it } from "vitest";
 
-import { formatWindowTitle } from "./windowTitle";
+import { WINDOW_TITLE_BRAND, formatWindowTitle } from "./windowTitle";
 
 describe("formatWindowTitle", () => {
-  it("uses only the localized app title when no save is open", () => {
+  it("uses the fixed English brand when no save is open", () => {
+    expect(WINDOW_TITLE_BRAND).toBe("NieR Save Editor");
     expect(
       formatWindowTitle({
-        appTitle: "尼尔：自动人形 存档编辑器",
         dirty: false,
         fileName: null,
-        unsavedLabel: "有未保存修改",
       }),
-    ).toBe("尼尔：自动人形 存档编辑器");
+    ).toBe("NieR Save Editor");
   });
 
-  it("prefixes a clean open file name to the localized app title", () => {
+  it("prefixes a clean open file name to the brand", () => {
     expect(
       formatWindowTitle({
-        appTitle: "NieR:Automata Save Editor",
         dirty: false,
-        fileName: "SlotData_1.dat",
-        unsavedLabel: "Unsaved changes",
+        fileName: "SlotData_0.dat",
       }),
-    ).toBe("SlotData_1.dat — NieR:Automata Save Editor");
+    ).toBe("SlotData_0.dat — NieR Save Editor");
   });
 
-  it("makes an unsaved save unmistakable in either language", () => {
+  it("marks dirty with a trailing asterisk only", () => {
     expect(
       formatWindowTitle({
-        appTitle: "尼尔：自动人形 存档编辑器",
         dirty: true,
-        fileName: "SlotData_2.dat",
-        unsavedLabel: "有未保存修改",
+        fileName: "SlotData_0.dat",
       }),
-    ).toBe("● 有未保存修改 · SlotData_2.dat — 尼尔：自动人形 存档编辑器");
+    ).toBe("SlotData_0.dat — NieR Save Editor*");
 
     expect(
       formatWindowTitle({
-        appTitle: "NieR:Automata Save Editor",
-        dirty: true,
-        fileName: "SlotData_2.dat",
-        unsavedLabel: "Unsaved changes",
-      }),
-    ).toBe("● Unsaved changes · SlotData_2.dat — NieR:Automata Save Editor");
-  });
-
-  it("can mark a pathless in-memory save dirty without inventing a file name", () => {
-    expect(
-      formatWindowTitle({
-        appTitle: "NieR:Automata Save Editor",
         dirty: true,
         fileName: null,
-        unsavedLabel: "Unsaved changes",
       }),
-    ).toBe("● Unsaved changes — NieR:Automata Save Editor");
+    ).toBe("NieR Save Editor*");
+  });
+
+  it("never puts localized unsaved prose or a bullet into the OS title", () => {
+    const dirty = formatWindowTitle({
+      dirty: true,
+      fileName: "SlotData_2.dat",
+    });
+    expect(dirty).not.toContain("●");
+    expect(dirty).not.toContain("Unsaved");
+    expect(dirty).not.toContain("未保存");
   });
 });

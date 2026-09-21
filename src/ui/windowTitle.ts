@@ -1,21 +1,16 @@
+export const WINDOW_TITLE_BRAND = "NieR Save Editor";
+
 export type WindowTitleParts = {
-  appTitle: string;
   dirty: boolean;
   fileName: string | null;
-  unsavedLabel: string;
 };
 
 export function formatWindowTitle({
-  appTitle,
   dirty,
   fileName,
-  unsavedLabel,
 }: WindowTitleParts): string {
-  const cleanTitle = fileName ? `${fileName} — ${appTitle}` : appTitle;
-  if (!dirty) {
-    return cleanTitle;
-  }
-  return fileName
-    ? `● ${unsavedLabel} · ${cleanTitle}`
-    : `● ${unsavedLabel} — ${appTitle}`;
+  const cleanTitle = fileName
+    ? `${fileName} — ${WINDOW_TITLE_BRAND}`
+    : WINDOW_TITLE_BRAND;
+  return dirty ? `${cleanTitle}*` : cleanTitle;
 }
