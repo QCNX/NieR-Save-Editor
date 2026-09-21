@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import {
   ACTIVE_CHIP_LOADOUT_SET_SUPPORTED,
-  ActiveChipLoadoutSetUnsupportedError,
   getActiveChipLoadoutSet,
   getCharacterName,
   getDebugFlag,
@@ -109,10 +108,9 @@ describe("public save edit API", () => {
     expect(CAPACITY_EXPANSION_ITEM_IDS).toEqual([]);
   });
 
-  it("exports active chip loadout set as an unsupported stub", () => {
-    expect(ACTIVE_CHIP_LOADOUT_SET_SUPPORTED).toBe(false);
+  it("exports active chip loadout set get/set", () => {
+    expect(ACTIVE_CHIP_LOADOUT_SET_SUPPORTED).toBe(true);
     expect(getActiveChipLoadoutSet).toBeTypeOf("function");
     expect(setActiveChipLoadoutSet).toBeTypeOf("function");
-    expect(ActiveChipLoadoutSetUnsupportedError).toBeTypeOf("function");
   });
 });

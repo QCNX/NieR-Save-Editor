@@ -183,7 +183,7 @@ export const messagesEn: Record<MessageKey, string> = {
   "chips.equipped": "Equipped",
   "chips.copyFrom": "Copy from",
   "chips.copy": "Copy",
-  "chips.activeUnavailable": "Active set unavailable",
+  "chips.activeSet": "Active set",
   "chips.equip": "Equip",
   "chips.unequip": "Unequip",
   "chips.usage": "Usage",

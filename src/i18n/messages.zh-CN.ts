@@ -181,7 +181,7 @@ export const messagesZhCN = {
   "chips.equipped": "已装备",
   "chips.copyFrom": "复制自",
   "chips.copy": "复制",
-  "chips.activeUnavailable": "当前套装不可用",
+  "chips.activeSet": "当前套装",
   "chips.equip": "装备",
   "chips.unequip": "卸下",
   "chips.usage": "用量",

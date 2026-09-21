@@ -10,6 +10,7 @@ import {
   equipPluginChipToLoadout,
   formatBestOfStatLine,
   formatStackableStatLine,
+  getActiveChipLoadoutSet,
   getPurchasedChipCapacity,
   OS_PLUGIN_CHIP_TYPE,
   parsePluginChips,
@@ -22,6 +23,7 @@ import {
   serializePluginChips,
   serializePodConfig,
   serializePodPrograms,
+  setActiveChipLoadoutSet,
   setEquippedPluginChipWeight,
   setPodConfigPod,
   setPluginChip,
@@ -439,6 +441,14 @@ export function applyChipLoadoutCapacity(
   return setPurchasedChipCapacityWithInventorySync(slot, capacity);
 }
 
+/** Switch the in-game active loadout set without changing the edit subpage. */
+export function applyChipLoadoutActiveSet(
+  slot: SlotData,
+  set: PluginChipLoadoutSet,
+): SlotData {
+  return setActiveChipLoadoutSet(slot, set);
+}
+
 export function applyChipLoadoutLevel(
   slot: SlotData,
   index: number,
@@ -498,6 +508,7 @@ export function ChipLoadoutPanel({
   const [category, setCategory] = useState<ChipLibraryCategory>("all");
 
   const allChips = parsePluginChips(slot.pluginChips);
+  const activeSet = getActiveChipLoadoutSet(slot);
   const purchased = getPurchasedChipCapacity(slot);
   const used = pluginChipLoadoutUsedCost(allChips, editSet);
   const overCapacity = used > purchased;
@@ -539,19 +550,36 @@ export function ChipLoadoutPanel({
               onClick={() => setEditSet(set)}
             >
               {set}
+              {ACTIVE_CHIP_LOADOUT_SET_SUPPORTED && activeSet === set
+                ? "★"
+                : ""}
             </button>
           ))}
         </div>
 
-        <button
-          type="button"
-          data-testid="chip-loadout-active"
-          disabled={!ACTIVE_CHIP_LOADOUT_SET_SUPPORTED}
-          title={t("chips.activeUnavailable")}
-          aria-label={t("chips.activeUnavailable")}
-        >
-          {t("chips.activeUnavailable")}
-        </button>
+        <label>
+          <span>{t("chips.activeSet")}</span>
+          <select
+            data-testid="chip-loadout-active"
+            aria-label={t("chips.activeSet")}
+            value={activeSet}
+            disabled={!ACTIVE_CHIP_LOADOUT_SET_SUPPORTED}
+            onChange={(event) =>
+              onSlotChange(
+                applyChipLoadoutActiveSet(
+                  slot,
+                  event.currentTarget.value as PluginChipLoadoutSet,
+                ),
+              )
+            }
+          >
+            {LOADOUT_SETS.map((set) => (
+              <option key={set} value={set}>
+                {set}
+              </option>
+            ))}
+          </select>
+        </label>
 
         <label>
           <span>{t("chips.copyFrom")}</span>

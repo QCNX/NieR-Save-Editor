@@ -16,6 +16,7 @@ import {
   serializePluginChips,
   setPluginChip,
   setPurchasedChipCapacity,
+  setActiveChipLoadoutSet,
   VANILLA_PLUGIN_CHIP_IDS,
   type PluginChipId,
   type SlotData,
@@ -247,9 +248,10 @@ describe("ChipLoadoutPanel wireframe", () => {
 
     expect(html).toContain('data-testid="chip-loadout-panel"');
     expect(html).not.toContain('data-testid="chip-loadout-placeholder"');
-    expect(html).toContain('aria-pressed="true">A</button>');
+    expect(html).toContain('aria-pressed="true">A★</button>');
     expect(html).toContain(">B</button>");
     expect(html).toContain(">C</button>");
+    expect(html).toContain('data-testid="chip-loadout-active"');
     expect(html).toContain("Overload");
     expect(html).toContain('data-testid="chip-loadout-capacity"');
     for (const option of PURCHASED_CAPACITY_OPTIONS) {
@@ -263,12 +265,30 @@ describe("ChipLoadoutPanel wireframe", () => {
     expect(html).toContain("Purchased");
   });
 
-  it("marks active-set control unavailable without faking a star", () => {
-    const html = renderLoadout("en");
+  it("marks the in-game active set with a star and exposes a switch", () => {
+    const slot = setActiveChipLoadoutSet(loadoutSampleSlot(), "B");
+    const html = renderLoadout("en", slot);
+
     expect(html).toContain('data-testid="chip-loadout-active"');
-    expect(html).toContain("disabled");
-    expect(html).not.toContain("★");
-    expect(html.toLowerCase()).toContain("unavailable");
+    expect(html).toContain("★");
+    expect(html).not.toContain("unavailable");
+    expect(html).toContain('data-testid="chip-loadout-active"');
+    expect(html).toMatch(
+      /data-testid="chip-loadout-active"[^>]*>[\s\S]*?<option[^>]*value="B"[^>]*selected/,
+    );
+    // Active B is starred on the edit-set buttons; switch is enabled.
+    expect(html).toContain(">B★</button>");
+    expect(html).not.toMatch(
+      /data-testid="chip-loadout-active"[^>]*disabled/,
+    );
+  });
+
+  it("keeps the edit subpage independent of the active set", () => {
+    const slot = setActiveChipLoadoutSet(loadoutSampleSlot(), "C");
+    const html = renderLoadout("en", slot);
+    // Default edit set remains A while in-game active is C.
+    expect(html).toContain('aria-pressed="true">A</button>');
+    expect(html).toContain(">C★</button>");
   });
 
   it("reuses category filter labels on the from-library pane", () => {
@@ -288,10 +308,8 @@ describe("ChipLoadoutPanel wireframe", () => {
     expect(translate("en", "chips.equipped")).toBe("Equipped");
     expect(translate("zh-CN", "chips.copyFrom")).toBe("复制自");
     expect(translate("en", "chips.copyFrom")).toBe("Copy from");
-    expect(translate("zh-CN", "chips.activeUnavailable")).toBe("当前套装不可用");
-    expect(translate("en", "chips.activeUnavailable")).toBe(
-      "Active set unavailable",
-    );
+    expect(translate("zh-CN", "chips.activeSet")).toBe("当前套装");
+    expect(translate("en", "chips.activeSet")).toBe("Active set");
     expect(translate("zh-CN", "chips.equip")).toBe("装备");
     expect(translate("en", "chips.equip")).toBe("Equip");
     expect(translate("zh-CN", "chips.unequip")).toBe("卸下");

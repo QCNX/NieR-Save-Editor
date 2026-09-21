@@ -142,7 +142,8 @@ describe("SlotData load/serialize", () => {
     expect(slot.money.length).toBe(4);
     expect(slot.xp.length).toBe(4);
     expect(slot.purchasedChipCapacity.length).toBe(4);
-    expect(slot.betweenPodAndChips.length).toBe(8);
+    expect(slot.activeChipLoadoutSet.length).toBe(4);
+    expect(slot.betweenPodAndChips.length).toBe(4);
     expect(slot.inventory.length).toBe(256 * 12);
     expect(slot.weapons.length).toBe(80 * 20);
     expect(slot.podPrograms.length).toBe(32 * 8);
