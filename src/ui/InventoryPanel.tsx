@@ -105,41 +105,40 @@ export function InventoryPanel({ slot, onSlotChange }: Props) {
 
   return (
     <section className="panel panel--fill">
-      <div className="collection-workspace collection-workspace--table">
-        <div className="slot-list-toolbar">
-          <button
-            type="button"
-            aria-pressed={kind === "main"}
-            onClick={() => setKind("main")}
-          >
-            {t("inventory.main")}
-          </button>
-          <button
-            type="button"
-            aria-pressed={kind === "corpse"}
-            onClick={() => setKind("corpse")}
-          >
-            {t("inventory.corpse")}
-          </button>
-          <label>
-            <span>{t("list.search")}</span>
-            <input
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.currentTarget.value)}
-            />
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={occupiedOnly}
-              onChange={(event) => setOccupiedOnly(event.currentTarget.checked)}
-            />
-            <span>{t("list.occupiedOnly")}</span>
-          </label>
-        </div>
-        <div className="table-wrap table-wrap--content-width">
-          <table className="slot-table">
+      <div className="slot-list-toolbar">
+        <button
+          type="button"
+          aria-pressed={kind === "main"}
+          onClick={() => setKind("main")}
+        >
+          {t("inventory.main")}
+        </button>
+        <button
+          type="button"
+          aria-pressed={kind === "corpse"}
+          onClick={() => setKind("corpse")}
+        >
+          {t("inventory.corpse")}
+        </button>
+        <label>
+          <span>{t("list.search")}</span>
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.currentTarget.value)}
+          />
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={occupiedOnly}
+            onChange={(event) => setOccupiedOnly(event.currentTarget.checked)}
+          />
+          <span>{t("list.occupiedOnly")}</span>
+        </label>
+      </div>
+      <div className="table-wrap table-wrap--content-width">
+        <table className="slot-table">
           <thead>
             <tr>
               <th className="col-name">{t("fields.name")}</th>
@@ -216,8 +215,7 @@ export function InventoryPanel({ slot, onSlotChange }: Props) {
               ))
             )}
           </tbody>
-          </table>
-        </div>
+        </table>
       </div>
     </section>
   );

@@ -107,9 +107,13 @@ describe("ticket 09 weapon equipment editor seam", () => {
     expect(english).toContain("Cruel Oath");
     expect(english).toContain("(Empty)");
     expect(english).toContain('class="table-wrap table-wrap--content-width"');
+    expect(english).toContain('class="panel panel--fill"');
     expect(english).toContain(
-      'class="collection-workspace collection-workspace--split"',
+      'class="panel-split panel-split--collection"',
     );
+    expect(english).toContain("panel-split__side--ungrouped");
+    expect(english).toContain("pod-config-card");
+    expect(english).not.toContain("collection-workspace");
     expect(chinese).toContain("装备组 1");
     expect(chinese).toContain('aria-label="装备组 2 重攻击"');
     expect(chinese).toContain("纯白契约");

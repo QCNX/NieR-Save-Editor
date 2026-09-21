@@ -93,8 +93,29 @@ describe("chip loadout three-column layout CSS", () => {
     expect(css).toMatch(
       /\.panel-split--chip-loadout\s+\.panel-split__side\s*\{[^}]*overflow-x:\s*hidden/s,
     );
+    // Collection tabs: clip on the fill panel (workspace chrome removed).
     expect(css).toMatch(
-      /\.collection-workspace\s*\{[^}]*overflow-x:\s*hidden/s,
+      /\.editor-tab-panel\s*>\s*\.panel--fill\s*\{[^}]*overflow-x:\s*hidden/s,
+    );
+    expect(css).not.toMatch(/\.collection-workspace\s*\{/);
+  });
+
+  it("flattens collection chrome so table-wrap is the primary frame", () => {
+    // Tab soft surface replaces nested panel + workspace borders.
+    expect(css).toMatch(
+      /\.editor-tab-panel\s*>\s*\.panel--fill\s*\{[^}]*border:\s*none/s,
+    );
+    expect(css).toMatch(
+      /\.editor-tab-panel\s*>\s*\.panel--fill\s*\{[^}]*padding:\s*0/s,
+    );
+    expect(css).toMatch(
+      /\.panel-split--collection\s*\{[^}]*grid-template-columns:\s*max-content\s+max-content/s,
+    );
+    expect(css).toMatch(
+      /\.panel-split__side--ungrouped\s*\{[^}]*border:\s*none/s,
+    );
+    expect(css).toMatch(
+      /@media \(max-width: 900px\)[\s\S]*\.panel-split--collection\s*\{[^}]*grid-template-columns:\s*1fr/s,
     );
   });
 

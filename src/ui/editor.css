@@ -210,6 +210,12 @@ body {
 .editor-tab-panel > .panel--fill {
   flex: 1 1 auto;
   min-height: 0;
+  /* Tab panel already supplies soft surface + pad; avoid stacked frames. */
+  border: none;
+  background: transparent;
+  padding: 0;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 .app-toolbar {
@@ -1221,60 +1227,44 @@ input[type="text"],
   flex-direction: column;
 }
 
-/* Keep collection editors visually anchored to their active controls on wide
- * desktop windows. Tables retain their own horizontal/vertical scroll area. */
-.collection-workspace {
+/* Collection tables: toolbar + table-wrap sit directly in the fill panel. */
+.panel--fill > .table-wrap--content-width {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Weapons / POD: content-hugging split without an intermediate workspace frame. */
+.panel-split--collection {
   align-self: flex-start;
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 0;
-  max-width: 100%;
-  overflow-x: hidden;
-  padding: 10px;
-  border: 1px solid var(--ui-border-soft);
-  background: var(--ui-panel-soft);
-}
-
-.collection-workspace--table {
-  width: max-content;
-}
-
-.collection-workspace--table > .table-wrap {
-  flex: 1 1 auto;
-  min-height: 0;
-}
-
-.collection-workspace--split {
-  width: max-content;
-}
-
-.collection-workspace--split > .panel-split {
   width: max-content;
   max-width: 100%;
   min-height: 0;
   grid-template-columns: max-content max-content;
 }
 
-.collection-workspace--split .panel-split__main {
+.panel-split--collection .panel-split__main {
   width: max-content;
 }
 
-.collection-workspace--split .panel-split__main > .table-wrap {
+.panel-split--collection .panel-split__main > .table-wrap {
   flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Fieldset equipment cards are the group chrome; drop the side panel frame. */
+.panel-split__side--ungrouped {
+  border: none;
+  background: transparent;
+  padding: 0;
 }
 
 @media (max-width: 900px) {
-  .collection-workspace--split {
-    width: 100%;
-  }
-
-  .collection-workspace--split > .panel-split {
+  .panel-split--collection {
     width: 100%;
     grid-template-columns: 1fr;
   }
 
-  .collection-workspace--split .panel-split__main {
+  .panel-split--collection .panel-split__main {
     width: auto;
   }
 }

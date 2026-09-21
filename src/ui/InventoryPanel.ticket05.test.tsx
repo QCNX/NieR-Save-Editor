@@ -155,8 +155,11 @@ describe("ticket 05 inventory editor seam", () => {
     expect(html).toContain("Medium Recovery");
     expect(html).toContain("Clear");
     expect(html).toContain('class="table-wrap table-wrap--content-width"');
-    expect(html).toContain(
-      'class="collection-workspace collection-workspace--table"',
+    expect(html).toContain('class="panel panel--fill"');
+    expect(html).not.toContain("collection-workspace");
+    // Toolbar + table sit directly under the fill panel (no nested workspace chrome).
+    expect(html).toMatch(
+      /class="panel panel--fill"[^>]*>[\s\S]*?class="slot-list-toolbar"[\s\S]*?class="table-wrap table-wrap--content-width"/,
     );
   });
 });

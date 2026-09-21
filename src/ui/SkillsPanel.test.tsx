@@ -98,8 +98,10 @@ describe("SkillsPanel public behavior", () => {
     expect(html.indexOf("Level")).toBeLessThan(html.indexOf("Cost"));
     expect(html).not.toContain(`Unknown (0x${(EMPTY_PLUGIN_CHIP_ID.baseId >>> 0).toString(16)})`);
     expect(html.match(/table-wrap--content-width/g)).toHaveLength(2);
-    expect(html.match(/collection-workspace--split/g)).toHaveLength(1);
-    expect(html.match(/collection-workspace--table/g)).toHaveLength(1);
+    expect(html.match(/panel-split--collection/g)).toHaveLength(1);
+    expect(html.match(/panel-split__side--ungrouped/g)).toHaveLength(1);
+    expect(html).toContain("pod-config-card");
+    expect(html).not.toContain("collection-workspace");
   });
 
   it("renders chip cost as 占用 in zh-CN", () => {

@@ -169,9 +169,11 @@ export function PodsPanel({ slot, onSlotChange }: PanelProps) {
 
   return (
     <section className="panel panel--fill">
-      <div className="collection-workspace collection-workspace--split">
-        <div className="panel-split">
-        <aside className="panel-split__side" aria-label={t("skills.podConfig")}>
+      <div className="panel-split panel-split--collection">
+        <aside
+          className="panel-split__side panel-split__side--ungrouped"
+          aria-label={t("skills.podConfig")}
+        >
           <h3>{t("skills.podConfig")}</h3>
           <div className="pod-config-stack">
             {(["A", "B", "C"] as const).map((podName) => {
@@ -311,7 +313,6 @@ export function PodsPanel({ slot, onSlotChange }: PanelProps) {
               </tbody>
             </table>
           </div>
-        </div>
         </div>
       </div>
     </section>
@@ -999,8 +1000,7 @@ export function ChipsPanel({ slot, onSlotChange }: PanelProps) {
 
   return (
     <section className="panel panel--fill">
-      <div className="collection-workspace collection-workspace--table">
-        <div className="list-toolbar">
+      <div className="list-toolbar">
         <label>
           <span>{t("list.search")}</span>
           <input
@@ -1038,10 +1038,10 @@ export function ChipsPanel({ slot, onSlotChange }: PanelProps) {
           />
           {t("list.occupiedOnly")}
         </label>
-        </div>
+      </div>
 
-        <div className="table-wrap table-wrap--content-width">
-          <table className="slot-table">
+      <div className="table-wrap table-wrap--content-width">
+        <table className="slot-table">
           <thead>
             <tr>
               <th className="col-name">{t("fields.name")}</th>
@@ -1146,8 +1146,7 @@ export function ChipsPanel({ slot, onSlotChange }: PanelProps) {
               ))
             )}
           </tbody>
-          </table>
-        </div>
+        </table>
       </div>
     </section>
   );

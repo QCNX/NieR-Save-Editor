@@ -126,10 +126,9 @@ export function WeaponsPanel({ slot, onSlotChange }: Props) {
 
   return (
     <section className="panel panel--fill">
-      <div className="collection-workspace collection-workspace--split">
-        <div className="panel-split">
+      <div className="panel-split panel-split--collection">
         <aside
-          className="panel-split__side"
+          className="panel-split__side panel-split__side--ungrouped"
           aria-label={t("weapons.set1")}
         >
           <div className="pod-config-stack">
@@ -273,7 +272,6 @@ export function WeaponsPanel({ slot, onSlotChange }: Props) {
               </tbody>
             </table>
           </div>
-        </div>
         </div>
       </div>
     </section>
