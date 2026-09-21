@@ -1086,6 +1086,16 @@ export function ChipsPanel({ slot, onSlotChange }: PanelProps) {
     }
   }, [rowWindow.start, rowWindow.end, pairs.length, rowHeight]);
 
+  // Filter/category shrinks the list: keep scrollTop inside the new range.
+  useLayoutEffect(() => {
+    const maxScroll = Math.max(0, pairs.length * rowHeight - viewportHeight);
+    if (scrollTop > maxScroll) {
+      setScrollTop(maxScroll);
+      const viewport = viewportRef.current;
+      if (viewport) viewport.scrollTop = maxScroll;
+    }
+  }, [pairs.length, rowHeight, viewportHeight, scrollTop]);
+
   function renderChipCell(chip: PluginChip | undefined): ReactNode {
     if (!chip) {
       return (

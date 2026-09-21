@@ -287,4 +287,13 @@ describe("chip library dual-column density CSS", () => {
       /\.panel--chip-library[\s\S]*?\.slot-id-choice select[\s\S]*?max-width:\s*100%/s,
     );
   });
+
+  it("keeps chip-library virtual overflow-x:hidden after shared .table-wrap", () => {
+    const tableWrapIdx = css.search(/\.table-wrap\s*\{[^}]*overflow:\s*auto/s);
+    const dualIdx = css.search(
+      /\.table-wrap\.chip-library-virtual\s*\{[^}]*overflow-x:\s*hidden/s,
+    );
+    expect(tableWrapIdx).toBeGreaterThanOrEqual(0);
+    expect(dualIdx).toBeGreaterThan(tableWrapIdx);
+  });
 });

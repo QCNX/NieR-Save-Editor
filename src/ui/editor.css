@@ -1496,6 +1496,13 @@ input[type="text"],
   background: var(--ui-surface);
 }
 
+/* Must follow .table-wrap so overflow:auto shorthand does not re-enable x-scroll. */
+.table-wrap.chip-library-virtual {
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
 .table-wrap .slot-table {
   margin: 0;
 }
