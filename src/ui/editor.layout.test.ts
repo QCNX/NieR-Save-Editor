@@ -39,7 +39,7 @@ describe("responsive editor layout", () => {
 
 describe("chip loadout three-column layout CSS", () => {
   it("opens wide enough that the default window keeps three columns", () => {
-    // Middle track is content-sized, so default can sit just above collapse.
+    // Library is content-sized; equipped takes a flexible share — keep 3-col at default.
     expect(defaultWindow.width).toBeGreaterThanOrEqual(1120);
     expect(defaultWindow.width).toBeLessThanOrEqual(1240);
     expect(defaultWindow.height).toBe(720);
@@ -47,20 +47,21 @@ describe("chip loadout three-column layout CSS", () => {
     expect(chipLoadoutCollapsePx).toBeLessThanOrEqual(1100);
   });
 
-  it("sizes the equipped middle track to content, not a fat fr share", () => {
+  it("sizes library to content and gives equipped a flexible minmax track", () => {
     const gridDecl = css.match(
       /\.panel-split--chip-loadout\s*\{[^}]*grid-template-columns:\s*([^;]+);/s,
     );
     expect(gridDecl?.[1]).toBeTruthy();
     const tracks = gridDecl![1].trim();
-    // Three tracks: library + stats take fr; equipped is auto/max-content.
+    // Three tracks: library content-sized; equipped minmax(..., fr); stats minmax(..., 1fr).
     expect(tracks).toMatch(
-      /minmax\([^)]+\)\s+(?:max-content|auto|fit-content)\s+minmax\([^)]+\)/,
+      /^(?:max-content|auto|fit-content)\s+minmax\(\s*\d+(?:\.\d+)?rem\s*,\s*1\.2fr\s*\)\s+minmax\(\s*\d+(?:\.\d+)?rem\s*,\s*1fr\s*\)$/,
     );
-    expect(tracks).not.toMatch(/1\.4fr/);
+    // Library must not soak a fat 1fr share.
+    expect(tracks).not.toMatch(/^minmax\([^)]*1fr/);
   });
 
-  it("keeps loadout tables content-sized inside the equipped track", () => {
+  it("keeps equipped and library tables content-sized so name↔level void stays gone", () => {
     expect(css).toMatch(/\.slot-table\s*\{[^}]*width:\s*max-content/s);
     expect(css).toMatch(
       /\.panel-split--chip-loadout\s+\.panel-split__main\s*\{[^}]*width:\s*max-content/s,
@@ -70,6 +71,16 @@ describe("chip loadout three-column layout CSS", () => {
     );
     expect(css).toMatch(
       /\.panel-split--chip-loadout\s+\.panel-split__main\s*>\s*\.table-wrap\s*\{[^}]*width:\s*max-content/s,
+    );
+    // Mirror content-sizing on the library side so the left track can shrink.
+    expect(css).toMatch(
+      /\.panel-split--chip-loadout\s+\.panel-split__side\s*\{[^}]*width:\s*max-content/s,
+    );
+    expect(css).toMatch(
+      /\.panel-split--chip-loadout\s+\.panel-split__side\s*\{[^}]*max-width:\s*100%/s,
+    );
+    expect(css).toMatch(
+      /\.panel-split--chip-loadout\s+\.panel-split__side\s*>\s*\.table-wrap\s*\{[^}]*width:\s*max-content/s,
     );
   });
 
