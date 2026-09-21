@@ -13,8 +13,9 @@ import type {
 } from "./types";
 
 /**
- * Thin host bridge for save I/O (implemented by Tauri commands).
- * TypeScript owns serialize; Rust only reads/writes/copies/dialogs.
+ * Host bridge for save I/O (implemented by Tauri commands).
+ * TypeScript owns serialization and workflow orchestration; Rust owns the
+ * filesystem boundary, including backups, conflict checks, and atomic replace.
  */
 export interface PersistHost {
   readFile(path: string): Promise<ReadFileResult>;

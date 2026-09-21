@@ -500,14 +500,42 @@ fn platform_replace(staged: &Path, target: &Path) -> std::io::Result<()> {
     Ok(())
 }
 
+#[derive(Clone, Copy, Eq, PartialEq)]
+enum SafeWriteCheckpoint {
+    BeforeBackupRead,
+    BeforeReplace,
+}
+
 fn safe_write_with<F>(
     target: &Path,
     bytes: &[u8],
     reason: BackupReason,
     expected_target_sha256: Option<&str>,
+    commit: F,
+) -> SafeWriteResult
+where
+    F: FnMut(&Path, &Path) -> std::io::Result<()>,
+{
+    safe_write_with_checkpoint(
+        target,
+        bytes,
+        reason,
+        expected_target_sha256,
+        |_checkpoint, _target| {},
+        commit,
+    )
+}
+
+fn safe_write_with_checkpoint<H, F>(
+    target: &Path,
+    bytes: &[u8],
+    reason: BackupReason,
+    expected_target_sha256: Option<&str>,
+    mut checkpoint: H,
     mut commit: F,
 ) -> SafeWriteResult
 where
+    H: FnMut(SafeWriteCheckpoint, &Path),
     F: FnMut(&Path, &Path) -> std::io::Result<()>,
 {
     const SAVE_SIZE: usize = 235_980;
@@ -562,12 +590,31 @@ where
         }
     }
 
+    checkpoint(SafeWriteCheckpoint::BeforeBackupRead, target);
     let backup = match create_versioned_backup_at(target, reason, now_ms()) {
         Ok(value) => value,
         Err(message) => {
             return safe_failure("backup", "backup-target", target, message);
         }
     };
+    if let Some(expected) = expected_target_sha256 {
+        if expected != backup.sha256 {
+            let actual_sha = backup.sha256.clone();
+            let mut result = safe_failure(
+                "conflict",
+                "check-target",
+                target,
+                format!(
+                    "Save file changed while its backup was being created: {}",
+                    target.display()
+                ),
+            );
+            result.expected_sha256 = Some(expected.to_string());
+            result.actual_sha256 = Some(actual_sha);
+            result.backup = Some(backup);
+            return result;
+        }
+    }
     let staged = match stage_bytes(target, bytes, "write") {
         Ok(value) => value,
         Err(message) => {
@@ -576,6 +623,42 @@ where
             return result;
         }
     };
+    checkpoint(SafeWriteCheckpoint::BeforeReplace, target);
+    // This narrows the optimistic-concurrency window before the atomic replace.
+    // It is deliberately not presented as an OS-level lock or conditional move.
+    if let Some(expected) = expected_target_sha256 {
+        let current = match fs::read(target) {
+            Ok(value) => value,
+            Err(error) => {
+                let _ = fs::remove_file(&staged);
+                let mut result = safe_failure(
+                    map_io_kind(error.kind()),
+                    "check-target",
+                    target,
+                    format!("Failed to recheck target {}: {error}", target.display()),
+                );
+                result.backup = Some(backup);
+                return result;
+            }
+        };
+        let current_sha = sha256_hex(&current);
+        if expected != current_sha {
+            let _ = fs::remove_file(&staged);
+            let mut result = safe_failure(
+                "conflict",
+                "check-target",
+                target,
+                format!(
+                    "Save file changed before it could be replaced: {}",
+                    target.display()
+                ),
+            );
+            result.expected_sha256 = Some(expected.to_string());
+            result.actual_sha256 = Some(current_sha);
+            result.backup = Some(backup);
+            return result;
+        }
+    }
     if let Err(error) = commit(&staged, target) {
         let _ = fs::remove_file(&staged);
         let mut result = safe_failure(
@@ -1147,6 +1230,69 @@ mod tests {
     }
 
     #[test]
+    fn safe_write_does_not_replace_a_target_changed_after_backup() {
+        let temp = tempdir().unwrap();
+        let target = temp.path().join("SlotData_0.dat");
+        let original = synthetic(5);
+        let external = synthetic(7);
+        fs::write(&target, &original).unwrap();
+
+        let result = safe_write_with_checkpoint(
+            &target,
+            &synthetic(6),
+            BackupReason::BeforeSave,
+            Some(&sha256_hex(&original)),
+            |checkpoint, target| {
+                if checkpoint == SafeWriteCheckpoint::BeforeReplace {
+                    fs::write(target, &external).unwrap();
+                }
+            },
+            platform_replace,
+        );
+
+        assert_eq!(result.status, "conflict");
+        assert_eq!(result.phase.as_deref(), Some("check-target"));
+        assert_eq!(fs::read(&target).unwrap(), external);
+        let backup = result.backup.expect("original recovery backup");
+        assert_eq!(fs::read(backup.path).unwrap(), original);
+        assert!(!temp.path().read_dir().unwrap().any(|entry| {
+            entry
+                .unwrap()
+                .file_name()
+                .to_string_lossy()
+                .ends_with(".tmp")
+        }));
+    }
+
+    #[test]
+    fn safe_write_rejects_a_backup_of_bytes_changed_after_the_backup_check() {
+        let temp = tempdir().unwrap();
+        let target = temp.path().join("SlotData_0.dat");
+        let original = synthetic(11);
+        let external = synthetic(12);
+        fs::write(&target, &original).unwrap();
+
+        let result = safe_write_with_checkpoint(
+            &target,
+            &synthetic(13),
+            BackupReason::BeforeSave,
+            Some(&sha256_hex(&original)),
+            |checkpoint, target| {
+                if checkpoint == SafeWriteCheckpoint::BeforeBackupRead {
+                    fs::write(target, &external).unwrap();
+                }
+            },
+            platform_replace,
+        );
+
+        assert_eq!(result.status, "conflict");
+        assert_eq!(result.phase.as_deref(), Some("check-target"));
+        assert_eq!(fs::read(&target).unwrap(), external);
+        let backup = result.backup.expect("external recovery backup");
+        assert_eq!(fs::read(backup.path).unwrap(), external);
+    }
+
+    #[test]
     fn backup_failure_prevents_all_target_mutation() {
         let temp = tempdir().unwrap();
         let target = temp.path().join("SlotData_0.dat");
@@ -1191,6 +1337,28 @@ mod tests {
         assert_eq!(fs::read(&target).unwrap(), intended);
         let backup = result.backup.expect("before-save backup");
         assert_eq!(backup.reason, BackupReason::BeforeSave);
+        assert_eq!(fs::read(backup.path).unwrap(), original);
+    }
+
+    #[test]
+    fn safe_write_without_an_expected_hash_remains_compatible() {
+        let temp = tempdir().unwrap();
+        let target = temp.path().join("SlotData_0.dat");
+        let original = synthetic(14);
+        let intended = synthetic(15);
+        fs::write(&target, &original).unwrap();
+
+        let result = safe_write_with(
+            &target,
+            &intended,
+            BackupReason::BeforeSave,
+            None,
+            platform_replace,
+        );
+
+        assert_eq!(result.status, "ok");
+        assert_eq!(fs::read(&target).unwrap(), intended);
+        let backup = result.backup.expect("before-save backup");
         assert_eq!(fs::read(backup.path).unwrap(), original);
     }
 
