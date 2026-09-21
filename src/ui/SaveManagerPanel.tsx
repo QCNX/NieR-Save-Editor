@@ -6,6 +6,7 @@ import type {
   ReadySaveSummary,
   SaveSummary,
 } from "./saveSummary";
+import type { SaveReplacementPreview } from "./saveReplacement";
 
 export type SaveManagerPanelProps = {
   busy: boolean;
@@ -23,8 +24,14 @@ export type SaveManagerPanelProps = {
   historyLoading: boolean;
   historyTargetPath: string | null;
   canCreateBackup: boolean;
+  replacementPreview: SaveReplacementPreview | null;
+  replacementError: string | null;
   onClose: () => void;
   onCreateBackup: () => void;
+  onRequestRestore: (item: BackupHistoryItem) => void;
+  onImportReplacement: (file: File | undefined) => void;
+  onCancelReplacement: () => void;
+  onConfirmReplacement: () => void;
   onLoad: (path: string) => void;
   onOpenFile: (file: File | undefined) => void;
   onReload: () => void;
@@ -131,8 +138,14 @@ export function SaveManagerPanel({
   historyLoading,
   historyTargetPath,
   canCreateBackup,
+  replacementPreview,
+  replacementError,
   onClose,
   onCreateBackup,
+  onRequestRestore,
+  onImportReplacement,
+  onCancelReplacement,
+  onConfirmReplacement,
   onLoad,
   onOpenFile,
   onReload,
@@ -143,9 +156,16 @@ export function SaveManagerPanel({
 }: SaveManagerPanelProps) {
   const { language, t } = useI18n();
   const inputId = useId();
+  const importInputId = useId();
+  const pageBusy = busy || replacementPreview !== null;
 
   function handleOpenFile(event: ChangeEvent<HTMLInputElement>) {
     onOpenFile(event.currentTarget.files?.[0]);
+    event.currentTarget.value = "";
+  }
+
+  function handleImportFile(event: ChangeEvent<HTMLInputElement>) {
+    onImportReplacement(event.currentTarget.files?.[0]);
     event.currentTarget.value = "";
   }
 
@@ -177,7 +197,7 @@ export function SaveManagerPanel({
             <button
               type="button"
               className="save-action save-action--primary"
-              disabled={busy || !canSaveChanges}
+              disabled={pageBusy || !canSaveChanges}
               onClick={onSaveChanges}
             >
               {t("saveManager.saveChanges")}
@@ -185,7 +205,7 @@ export function SaveManagerPanel({
             <button
               type="button"
               className="save-action"
-              disabled={busy || !canReload}
+              disabled={pageBusy || !canReload}
               onClick={onReload}
             >
               {t("toolbar.reload")}
@@ -193,7 +213,7 @@ export function SaveManagerPanel({
             <button
               type="button"
               className="save-action"
-              disabled={busy || !canSaveAs}
+              disabled={pageBusy || !canSaveAs}
               onClick={onSaveAs}
             >
               {t("toolbar.saveAs")}
@@ -204,14 +224,14 @@ export function SaveManagerPanel({
                 id={inputId}
                 type="file"
                 accept=".dat,application/octet-stream"
-                disabled={busy}
+                disabled={pageBusy}
                 onChange={handleOpenFile}
               />
             </label>
             <button
               type="button"
               className="save-action"
-              disabled={busy || !canClose}
+              disabled={pageBusy || !canClose}
               onClick={onClose}
             >
               {t("toolbar.close")}
@@ -219,7 +239,7 @@ export function SaveManagerPanel({
             <button
               type="button"
               className="save-action"
-              disabled={busy}
+              disabled={pageBusy}
               onClick={onRescan}
             >
               {t("toolbar.rescan")}
@@ -277,7 +297,7 @@ export function SaveManagerPanel({
                   <div className="save-slot-actions">
                     <button
                       type="button"
-                      disabled={busy || summary.status !== "ready"}
+                      disabled={pageBusy || summary.status !== "ready"}
                       onClick={() => onLoad(summary.path)}
                     >
                       {t("toolbar.loadSlot")}
@@ -285,7 +305,7 @@ export function SaveManagerPanel({
                     <button
                       type="button"
                       aria-pressed={summary.path === historyTargetPath}
-                      disabled={busy}
+                      disabled={pageBusy}
                       onClick={() => onSelectHistoryTarget(summary.path)}
                     >
                       {t("saveManager.viewBackups")}
@@ -311,15 +331,32 @@ export function SaveManagerPanel({
               </p>
             ) : null}
           </div>
-          <button
-            type="button"
-            className="save-action"
-            disabled={busy || !canCreateBackup}
-            onClick={onCreateBackup}
-          >
-            {t("saveManager.createBackup")}
-          </button>
+          <div className="save-history-actions">
+            <button
+              type="button"
+              className="save-action"
+              disabled={pageBusy || !canCreateBackup}
+              onClick={onCreateBackup}
+            >
+              {t("saveManager.createBackup")}
+            </button>
+            <label className="save-action file-button" htmlFor={importInputId}>
+              {t("replacement.import")}
+              <input
+                id={importInputId}
+                type="file"
+                accept=".dat,application/octet-stream"
+                disabled={pageBusy || !canCreateBackup}
+                onChange={handleImportFile}
+              />
+            </label>
+          </div>
         </div>
+        {replacementError && !replacementPreview ? (
+          <p className="save-slot-error" role="alert">
+            {replacementError}
+          </p>
+        ) : null}
         {dirty && currentPath && currentPath === historyTargetPath ? (
           <p className="save-backup-dirty-note">
             {t("saveManager.backupExcludesUnsaved")}
@@ -337,7 +374,8 @@ export function SaveManagerPanel({
           <p className="save-manager-empty">{t("saveManager.historyEmpty")}</p>
         ) : (
           <div className="save-history-list">
-            {backupHistory.map(({ entry, summary }) => {
+            {backupHistory.map((item) => {
+              const { entry, summary } = item;
               const createdAt = new Intl.DateTimeFormat(language, {
                 dateStyle: "medium",
                 timeStyle: "short",
@@ -386,7 +424,19 @@ export function SaveManagerPanel({
                     </div>
                   </dl>
                   {summary.status === "ready" ? (
-                    <SummaryDetails summary={summary} />
+                    <>
+                      <SummaryDetails summary={summary} />
+                      <div className="save-history-item__actions">
+                        <button
+                          type="button"
+                          className="save-action"
+                          disabled={pageBusy || !canCreateBackup}
+                          onClick={() => onRequestRestore(item)}
+                        >
+                          {t("replacement.restore")}
+                        </button>
+                      </div>
+                    </>
                   ) : (
                     <p className="save-slot-error">
                       {summary.status === "unreadable" && summary.message
@@ -400,6 +450,67 @@ export function SaveManagerPanel({
           </div>
         )}
       </section>
+      {replacementPreview ? (
+        <div className="replacement-dialog-backdrop">
+          <section
+            className="replacement-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="replacement-dialog-title"
+          >
+            <h2 id="replacement-dialog-title">
+              {t(`replacement.heading.${replacementPreview.kind}`)}
+            </h2>
+            <div className="replacement-preview-grid">
+              <article>
+                <h3>{t("replacement.source")}</h3>
+                <strong>{replacementPreview.source.fileName}</strong>
+                <SummaryDetails summary={replacementPreview.source} />
+              </article>
+              <span className="replacement-preview-arrow" aria-hidden="true">
+                →
+              </span>
+              <article>
+                <h3>{t("replacement.target")}</h3>
+                <strong>{replacementPreview.target.fileName}</strong>
+                <SummaryDetails summary={replacementPreview.target} />
+              </article>
+            </div>
+            <p className="replacement-safety-note">
+              {t("replacement.backupFirst")}
+            </p>
+            {replacementPreview.targetDirty ? (
+              <p className="replacement-dirty-warning" role="alert">
+                {t("replacement.discardDirty")}
+              </p>
+            ) : null}
+            {replacementError ? (
+              <p className="save-slot-error" role="alert">
+                {replacementError}
+              </p>
+            ) : null}
+            <div className="replacement-dialog-actions">
+              <button
+                type="button"
+                className="save-action"
+                disabled={busy}
+                autoFocus
+                onClick={onCancelReplacement}
+              >
+                {t("replacement.cancel")}
+              </button>
+              <button
+                type="button"
+                className="save-action save-action--danger"
+                disabled={busy}
+                onClick={onConfirmReplacement}
+              >
+                {t(`replacement.confirm.${replacementPreview.kind}`)}
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
 }

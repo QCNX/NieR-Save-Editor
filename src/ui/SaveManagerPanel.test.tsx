@@ -7,6 +7,7 @@ import type {
   ReadySaveSummary,
   SaveSummary,
 } from "./saveSummary";
+import type { SaveReplacementPreview } from "./saveReplacement";
 import { SaveManagerPanel } from "./SaveManagerPanel";
 
 const readySlot: ReadySaveSummary = {
@@ -55,8 +56,14 @@ function renderPanel(
         historyLoading={false}
         historyTargetPath={readySlot.path}
         canCreateBackup
+        replacementPreview={null}
+        replacementError={null}
         onClose={vi.fn()}
         onCreateBackup={vi.fn()}
+        onRequestRestore={vi.fn()}
+        onImportReplacement={vi.fn()}
+        onCancelReplacement={vi.fn()}
+        onConfirmReplacement={vi.fn()}
         onLoad={vi.fn()}
         onOpenFile={vi.fn()}
         onReload={vi.fn()}
@@ -101,7 +108,7 @@ describe("SaveManagerPanel", () => {
   it("locks conflicting actions while I/O is busy", () => {
     const html = renderPanel({ busy: true });
 
-    expect(html.match(/disabled=""/g)).toHaveLength(9);
+    expect(html.match(/disabled=""/g)).toHaveLength(10);
   });
 
   it("renders distinct loading and empty slot states", () => {
@@ -196,5 +203,51 @@ describe("SaveManagerPanel", () => {
     expect(failed).toContain('role="alert"');
     expect(failed).toContain("synthetic history failure");
     expect(empty).toContain("No backups yet");
+  });
+
+  it("renders restore/import entry points and a structured directional preview", () => {
+    const backupHistory: BackupHistoryItem[] = [
+      {
+        entry: {
+          path: "~/backups/SlotData_0/restore.dat",
+          slotFileName: "SlotData_0.dat",
+          reason: "manual",
+          size: 235_980,
+          mtimeMs: 200,
+          sha256: "backup-sha",
+          metadataStatus: "ok",
+        },
+        summary: {
+          ...readySlot,
+          path: "~/backups/SlotData_0/restore.dat",
+          fileName: "restore.dat",
+          characterName: "9S",
+          level: 42,
+          playTimeSeconds: 7_200,
+        },
+      },
+    ];
+    const replacementPreview: SaveReplacementPreview = {
+      kind: "restore",
+      source: backupHistory[0].summary as ReadySaveSummary,
+      target: { ...readySlot, characterName: "A2", level: 18 },
+      targetDirty: true,
+    };
+
+    const html = renderPanel({ backupHistory, replacementPreview });
+
+    expect(html).toContain("Restore…");
+    expect(html).toContain("Import and replace…");
+    expect(html).toContain('role="dialog"');
+    expect(html).toContain("Source");
+    expect(html).toContain("Target");
+    expect(html).toContain("restore.dat");
+    expect(html).toContain("SlotData_0.dat");
+    expect(html).toContain("9S");
+    expect(html).toContain("A2");
+    expect(html).toContain("A backup of the target will be created first");
+    expect(html).toContain("Unsaved editor changes will be discarded");
+    expect(html).toContain("Restore to target slot");
+    expect(html).toContain("save-action--danger");
   });
 });

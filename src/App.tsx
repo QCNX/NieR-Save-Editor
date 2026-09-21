@@ -42,6 +42,12 @@ import {
   type ReadySaveSummary,
   type SaveSummary,
 } from "./ui/saveSummary";
+import {
+  executeSaveReplacement,
+  prepareSaveReplacement,
+  type PreparedSaveReplacement,
+  type SaveReplacementPreview,
+} from "./ui/saveReplacement";
 import { SettingsPanel } from "./ui/SettingsPanel";
 import {
   loadLocalSettings,
@@ -158,6 +164,10 @@ function AppContent({
   const [historyError, setHistoryError] = useState<string | null>(null);
   const historyRequestId = useRef(0);
   const manualBackupBusy = useRef(false);
+  const replacementBusy = useRef(false);
+  const [preparedReplacement, setPreparedReplacement] =
+    useState<PreparedSaveReplacement | null>(null);
+  const [replacementError, setReplacementError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<AppMessage | null>(null);
   const [errorMessage, setErrorMessage] = useState<AppMessage | null>(null);
   const [openedFileName, setOpenedFileName] = useState<string | null>(null);
@@ -540,6 +550,166 @@ function AppContent({
     }
   }
 
+  function replacementFailure(phase: string, message: string) {
+    const detail = message.startsWith("replacement.error.")
+      ? t(message)
+      : message;
+    setReplacementError(`${t(`saveManager.phase.${phase}`)}: ${detail}`);
+  }
+
+  async function prepareRestore(item: BackupHistoryItem) {
+    if (
+      preparedReplacement ||
+      replacementBusy.current ||
+      !persistHost ||
+      !historyTargetPath
+    ) {
+      return;
+    }
+    const target = slotSummaries.find(
+      (summary) => summary.path === historyTargetPath,
+    );
+    if (target?.status !== "ready" || item.summary.status !== "ready") {
+      setReplacementError(t("replacement.error.invalidSourceOrTarget"));
+      return;
+    }
+    replacementBusy.current = true;
+    setIoBusy(true);
+    setReplacementError(null);
+    try {
+      const result = await prepareSaveReplacement(persistHost, {
+        kind: "restore",
+        sourcePath: item.entry.path,
+        sourceMtimeMs: item.entry.mtimeMs,
+        expectedSourceSha256: item.entry.sha256,
+        targetPath: target.path,
+        targetMtimeMs: target.mtimeMs,
+      });
+      if (result.status === "error") {
+        replacementFailure(result.phase, result.message);
+        return;
+      }
+      setPreparedReplacement(result);
+    } catch (error) {
+      replacementFailure(
+        "validate-source",
+        error instanceof Error
+          ? error.message
+          : t("replacement.error.prepareFailed"),
+      );
+    } finally {
+      replacementBusy.current = false;
+      setIoBusy(false);
+    }
+  }
+
+  async function prepareImport(file: File | undefined) {
+    if (
+      !file ||
+      preparedReplacement ||
+      replacementBusy.current ||
+      !persistHost ||
+      !historyTargetPath
+    ) {
+      return;
+    }
+    const target = slotSummaries.find(
+      (summary) => summary.path === historyTargetPath,
+    );
+    if (target?.status !== "ready") {
+      setReplacementError(t("replacement.error.invalidSourceOrTarget"));
+      return;
+    }
+    replacementBusy.current = true;
+    setIoBusy(true);
+    setReplacementError(null);
+    try {
+      const sourceBytes = new Uint8Array(await file.arrayBuffer());
+      const result = await prepareSaveReplacement(persistHost, {
+        kind: "import",
+        sourcePath: file.name,
+        sourceMtimeMs: file.lastModified,
+        sourceBytes,
+        targetPath: target.path,
+        targetMtimeMs: target.mtimeMs,
+      });
+      if (result.status === "error") {
+        replacementFailure(result.phase, result.message);
+        return;
+      }
+      setPreparedReplacement(result);
+    } catch (error) {
+      replacementFailure(
+        "validate-source",
+        error instanceof Error
+          ? error.message
+          : t("replacement.error.prepareFailed"),
+      );
+    } finally {
+      replacementBusy.current = false;
+      setIoBusy(false);
+    }
+  }
+
+  function cancelReplacement() {
+    if (replacementBusy.current) return;
+    setPreparedReplacement(null);
+    setReplacementError(null);
+  }
+
+  async function confirmReplacement() {
+    if (!preparedReplacement || !persistHost || replacementBusy.current) {
+      return;
+    }
+    replacementBusy.current = true;
+    setIoBusy(true);
+    setReplacementError(null);
+    clearAlerts();
+    const targetPath = preparedReplacement.preview.target.path;
+    try {
+      const result = await executeSaveReplacement(persistHost, {
+        kind: preparedReplacement.kind,
+        targetPath,
+        sourceBytes: preparedReplacement.sourceBytes,
+        expectedSourceSha256: preparedReplacement.expectedSourceSha256,
+        expectedTargetSha256: preparedReplacement.expectedTargetSha256,
+      });
+      if (result.status === "error") {
+        replacementFailure(result.phase, result.message);
+        return;
+      }
+
+      if (state.currentPath === targetPath) {
+        const replacedSlot = load(result.bytes);
+        setState((previous) =>
+          applyLoadedSlot(previous, targetPath, replacedSlot),
+        );
+        setOpenedFileName(fileNameFromPath(targetPath));
+      }
+      setPreparedReplacement(null);
+      setHistoryTargetPath(targetPath);
+      await refreshSlots();
+      await refreshBackupHistory(targetPath);
+      setStatusMessage({
+        key:
+          preparedReplacement.kind === "restore"
+            ? "status.restoreSuccess"
+            : "status.importSuccess",
+        values: { name: fileNameFromPath(targetPath) },
+      });
+    } catch (error) {
+      replacementFailure(
+        "verify-target",
+        error instanceof Error
+          ? error.message
+          : t("replacement.error.writeFailed"),
+      );
+    } finally {
+      replacementBusy.current = false;
+      setIoBusy(false);
+    }
+  }
+
   async function onPickFile(file: File | undefined) {
     if (!file) {
       return;
@@ -628,6 +798,16 @@ function AppContent({
   const historyTarget = historyTargetPath
     ? slotSummaries.find((summary) => summary.path === historyTargetPath)
     : undefined;
+  const replacementPreview: SaveReplacementPreview | null = preparedReplacement
+    ? {
+        kind: preparedReplacement.kind,
+        source: preparedReplacement.preview.source,
+        target: preparedReplacement.preview.target,
+        targetDirty:
+          state.dirty &&
+          state.currentPath === preparedReplacement.preview.target.path,
+      }
+    : null;
 
   return (
     <main className="app-root">
@@ -658,8 +838,14 @@ function AppContent({
             canCreateBackup={Boolean(
               persistHost && historyTarget?.status === "ready",
             )}
+            replacementPreview={replacementPreview}
+            replacementError={replacementError}
             onClose={onClose}
             onCreateBackup={() => void onCreateBackup()}
+            onRequestRestore={(item) => void prepareRestore(item)}
+            onImportReplacement={(file) => void prepareImport(file)}
+            onCancelReplacement={cancelReplacement}
+            onConfirmReplacement={() => void confirmReplacement()}
             onLoad={(path) => void onSelectSlot(path)}
             onOpenFile={(file) => void onPickFile(file)}
             onReload={() => void onReload()}

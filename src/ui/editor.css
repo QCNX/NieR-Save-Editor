@@ -587,6 +587,13 @@ input[type="text"],
   font-weight: 650;
 }
 
+.save-action--danger {
+  border-color: var(--ui-alert-border);
+  background: var(--ui-alert-bg);
+  color: var(--ui-alert-ink);
+  font-weight: 650;
+}
+
 .save-action:disabled,
 .save-slot-actions button:disabled,
 .save-action.file-button:has(input:disabled) {
@@ -709,6 +716,19 @@ input[type="text"],
   overflow-wrap: anywhere;
 }
 
+.save-history-actions,
+.save-history-item__actions,
+.replacement-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.save-history-item__actions {
+  margin-top: 10px;
+}
+
 .save-backup-dirty-note {
   margin: 0 0 10px;
   padding: 6px 8px;
@@ -770,6 +790,78 @@ input[type="text"],
   font-variant-numeric: tabular-nums;
 }
 
+.replacement-dialog-backdrop {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: 20px;
+  background: rgb(0 0 0 / 55%);
+}
+
+.replacement-dialog {
+  width: min(48rem, 100%);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  border: 1px solid var(--ui-border);
+  background: var(--ui-panel);
+  color: var(--ui-ink);
+  padding: 16px;
+  box-shadow: 0 12px 40px rgb(0 0 0 / 35%);
+}
+
+.replacement-dialog > h2 {
+  margin: 0 0 12px;
+}
+
+.replacement-preview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+}
+
+.replacement-preview-grid article {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--ui-border-table);
+  background: var(--ui-surface);
+}
+
+.replacement-preview-grid h3 {
+  margin: 0 0 6px;
+}
+
+.replacement-preview-grid strong {
+  overflow-wrap: anywhere;
+}
+
+.replacement-preview-arrow {
+  align-self: center;
+  font-size: 1.4rem;
+  color: var(--ui-muted);
+}
+
+.replacement-safety-note,
+.replacement-dirty-warning {
+  margin: 12px 0 0;
+  padding: 8px 10px;
+  border-left: 3px solid var(--ui-status-border);
+  background: var(--ui-status-bg);
+}
+
+.replacement-dirty-warning {
+  border-color: var(--ui-alert-border);
+  background: var(--ui-alert-bg);
+  color: var(--ui-alert-ink);
+}
+
+.replacement-dialog-actions {
+  margin-top: 16px;
+}
+
 @media (max-width: 760px) {
   .save-current-layout {
     grid-template-columns: 1fr;
@@ -777,6 +869,15 @@ input[type="text"],
 
   .save-history-meta {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .replacement-preview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .replacement-preview-arrow {
+    justify-self: center;
+    transform: rotate(90deg);
   }
 }
 
