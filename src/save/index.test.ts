@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  ACTIVE_CHIP_LOADOUT_SET_SUPPORTED,
+  ActiveChipLoadoutSetUnsupportedError,
+  getActiveChipLoadoutSet,
   getCharacterName,
   getDebugFlag,
   getPlayTime,
@@ -18,6 +21,7 @@ import {
   VANILLA_PLUGIN_CHIP_IDS,
   replacePluginChipType,
   replaceWeaponId,
+  setActiveChipLoadoutSet,
   setInventoryItemId,
   setCharacterName,
   setDebugFlag,
@@ -96,5 +100,12 @@ describe("public save edit API", () => {
     expect(purchasedCapacityTiers).toBeTypeOf("function");
     // Verified absence: purchases are mask-only (no backpack item ids).
     expect(CAPACITY_EXPANSION_ITEM_IDS).toEqual([]);
+  });
+
+  it("exports active chip loadout set as an unsupported stub", () => {
+    expect(ACTIVE_CHIP_LOADOUT_SET_SUPPORTED).toBe(false);
+    expect(getActiveChipLoadoutSet).toBeTypeOf("function");
+    expect(setActiveChipLoadoutSet).toBeTypeOf("function");
+    expect(ActiveChipLoadoutSetUnsupportedError).toBeTypeOf("function");
   });
 });

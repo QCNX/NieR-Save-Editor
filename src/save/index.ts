@@ -128,6 +128,13 @@ export {
 } from "./pluginChips";
 
 export {
+  ACTIVE_CHIP_LOADOUT_SET_SUPPORTED,
+  ActiveChipLoadoutSetUnsupportedError,
+  getActiveChipLoadoutSet,
+  setActiveChipLoadoutSet,
+} from "./activeChipLoadoutSet";
+
+export {
   EMPTY_POD_PROGRAM_ID,
   parsePodPrograms,
   POD_PROGRAM_IDS,
