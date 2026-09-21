@@ -11,12 +11,14 @@ use tauri_plugin_dialog::DialogExt;
 
 const BACKUP_DIR_NAME: &str = "nier-save-editor-backup";
 
-#[derive(Clone, Copy)]
-enum BackupReason {
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum BackupReason {
     Manual,
     BeforeSave,
     BeforeImport,
     BeforeRestore,
+    Legacy,
 }
 
 impl BackupReason {
@@ -26,6 +28,7 @@ impl BackupReason {
             Self::BeforeSave => "before-save",
             Self::BeforeImport => "before-import",
             Self::BeforeRestore => "before-restore",
+            Self::Legacy => "legacy",
         }
     }
 }
@@ -49,11 +52,41 @@ impl TryFrom<&str> for BackupReason {
 pub struct BackupEntry {
     pub path: String,
     pub slot_file_name: String,
-    pub reason: String,
+    pub reason: BackupReason,
     pub size: u64,
     pub mtime_ms: u64,
     pub sha256: String,
-    pub metadata_status: String,
+    pub metadata_status: BackupMetadataStatus,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error_status: Option<PersistErrorStatus>,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum BackupMetadataStatus {
+    Ok,
+    Missing,
+    Invalid,
+    Legacy,
+    Unreadable,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum PersistErrorStatus {
+    Missing,
+    Permission,
+    Error,
+}
+
+impl PersistErrorStatus {
+    fn from_kind(kind: ErrorKind) -> Self {
+        match kind {
+            ErrorKind::NotFound => Self::Missing,
+            ErrorKind::PermissionDenied => Self::Permission,
+            _ => Self::Error,
+        }
+    }
 }
 
 #[derive(Deserialize, Serialize)]
@@ -61,7 +94,7 @@ pub struct BackupEntry {
 struct BackupSidecar {
     schema_version: u8,
     slot_file_name: String,
-    reason: String,
+    reason: BackupReason,
     size: u64,
     created_at_ms: u64,
     sha256: String,
@@ -159,7 +192,7 @@ fn create_versioned_backup_at(
                 let sidecar = BackupSidecar {
                     schema_version: 1,
                     slot_file_name: slot_file_name.clone(),
-                    reason: reason.as_str().to_string(),
+                    reason,
                     size: bytes.len() as u64,
                     created_at_ms,
                     sha256: digest.clone(),
@@ -183,11 +216,12 @@ fn create_versioned_backup_at(
                 return Ok(BackupEntry {
                     path: final_path.to_string_lossy().into_owned(),
                     slot_file_name,
-                    reason: reason.as_str().to_string(),
+                    reason,
                     size: bytes.len() as u64,
                     mtime_ms: created_at_ms,
                     sha256: digest,
-                    metadata_status: "ok".to_string(),
+                    metadata_status: BackupMetadataStatus::Ok,
+                    error_status: None,
                 });
             }
             Err(_) => {
@@ -202,10 +236,38 @@ fn create_versioned_backup_at(
 }
 
 fn entry_from_version(path: &Path, slot_file_name: &str) -> Option<BackupEntry> {
-    if !path.is_file() || path.extension().and_then(|ext| ext.to_str()) != Some("dat") {
+    if path.extension().and_then(|ext| ext.to_str()) != Some("dat") || path.is_dir() {
         return None;
     }
-    let bytes = fs::read(path).ok()?;
+    let bytes = match fs::read(path) {
+        Ok(bytes) => bytes,
+        Err(error) => {
+            let reason = path
+                .file_stem()
+                .and_then(|value| value.to_str())
+                .and_then(|stem| {
+                    [
+                        BackupReason::BeforeSave,
+                        BackupReason::BeforeImport,
+                        BackupReason::BeforeRestore,
+                        BackupReason::Manual,
+                    ]
+                    .into_iter()
+                    .find(|reason| stem.contains(reason.as_str()))
+                })
+                .unwrap_or(BackupReason::Manual);
+            return Some(BackupEntry {
+                path: path.to_string_lossy().into_owned(),
+                slot_file_name: slot_file_name.to_string(),
+                reason,
+                size: path.metadata().map(|metadata| metadata.len()).unwrap_or(0),
+                mtime_ms: file_mtime_ms(path),
+                sha256: String::new(),
+                metadata_status: BackupMetadataStatus::Unreadable,
+                error_status: Some(PersistErrorStatus::from_kind(error.kind())),
+            });
+        }
+    };
     let digest = sha256_hex(&bytes);
     let sidecar_path = path.with_extension("json");
     let parsed = fs::read(&sidecar_path)
@@ -214,16 +276,32 @@ fn entry_from_version(path: &Path, slot_file_name: &str) -> Option<BackupEntry> 
     let (reason, mtime_ms, metadata_status) = match parsed {
         Some(sidecar)
             if sidecar.schema_version == 1
-                && BackupReason::try_from(sidecar.reason.as_str()).is_ok()
+                && sidecar.reason != BackupReason::Legacy
                 && sidecar.slot_file_name == slot_file_name
                 && sidecar.size == bytes.len() as u64
                 && sidecar.sha256 == digest =>
         {
-            (sidecar.reason, sidecar.created_at_ms, "ok")
+            (
+                sidecar.reason,
+                sidecar.created_at_ms,
+                BackupMetadataStatus::Ok,
+            )
         }
-        Some(_) => ("manual".to_string(), file_mtime_ms(path), "invalid"),
-        None if sidecar_path.exists() => ("manual".to_string(), file_mtime_ms(path), "invalid"),
-        None => ("manual".to_string(), file_mtime_ms(path), "missing"),
+        Some(_) => (
+            BackupReason::Manual,
+            file_mtime_ms(path),
+            BackupMetadataStatus::Invalid,
+        ),
+        None if sidecar_path.exists() => (
+            BackupReason::Manual,
+            file_mtime_ms(path),
+            BackupMetadataStatus::Invalid,
+        ),
+        None => (
+            BackupReason::Manual,
+            file_mtime_ms(path),
+            BackupMetadataStatus::Missing,
+        ),
     };
     Some(BackupEntry {
         path: path.to_string_lossy().into_owned(),
@@ -232,7 +310,8 @@ fn entry_from_version(path: &Path, slot_file_name: &str) -> Option<BackupEntry> 
         size: bytes.len() as u64,
         mtime_ms,
         sha256: digest,
-        metadata_status: metadata_status.to_string(),
+        metadata_status,
+        error_status: None,
     })
 }
 
@@ -240,33 +319,47 @@ fn list_backups_impl(source: &Path) -> Result<Vec<BackupEntry>, String> {
     let (slot_file_name, safe_stem, backup_root) = source_identity(source)?;
     let mut entries = Vec::new();
     let version_dir = backup_root.join(safe_stem);
-    if version_dir.is_dir() {
-        let read_dir = fs::read_dir(&version_dir).map_err(|error| {
-            format!(
+    match fs::read_dir(&version_dir) {
+        Ok(read_dir) => {
+            for item in read_dir {
+                let item = item.map_err(|error| {
+                    format!(
+                        "Failed to inspect backup directory {}: {error}",
+                        version_dir.display()
+                    )
+                })?;
+                if let Some(entry) = entry_from_version(&item.path(), &slot_file_name) {
+                    entries.push(entry);
+                }
+            }
+        }
+        Err(error) if error.kind() == ErrorKind::NotFound => {}
+        Err(error) => {
+            return Err(format!(
                 "Failed to list backup directory {}: {error}",
                 version_dir.display()
-            )
-        })?;
-        for item in read_dir.flatten() {
-            if let Some(entry) = entry_from_version(&item.path(), &slot_file_name) {
-                entries.push(entry);
-            }
+            ));
         }
     }
     let legacy = backup_root.join(&slot_file_name);
-    if legacy.is_file() {
-        let bytes = fs::read(&legacy).map_err(|error| {
-            format!("Failed to read legacy backup {}: {error}", legacy.display())
-        })?;
-        entries.push(BackupEntry {
+    match fs::read(&legacy) {
+        Ok(bytes) => entries.push(BackupEntry {
             path: legacy.to_string_lossy().into_owned(),
             slot_file_name,
-            reason: "legacy".to_string(),
+            reason: BackupReason::Legacy,
             size: bytes.len() as u64,
             mtime_ms: file_mtime_ms(&legacy),
             sha256: sha256_hex(&bytes),
-            metadata_status: "legacy".to_string(),
-        });
+            metadata_status: BackupMetadataStatus::Legacy,
+            error_status: None,
+        }),
+        Err(error) if error.kind() == ErrorKind::NotFound => {}
+        Err(error) => {
+            return Err(format!(
+                "Failed to read legacy backup {}: {error}",
+                legacy.display()
+            ));
+        }
     }
     entries.sort_by(|left, right| {
         right
@@ -939,7 +1032,7 @@ mod tests {
         assert_eq!(history.len(), 3);
         assert_eq!(history[0].path, newer.path);
         assert_eq!(history[1].path, older.path);
-        assert_eq!(history[2].reason, "legacy");
+        assert_eq!(history[2].reason, BackupReason::Legacy);
         assert_eq!(history[2].path, legacy.to_string_lossy());
     }
 
@@ -958,8 +1051,35 @@ mod tests {
 
         let listed = list_backups_impl(&source).unwrap();
 
-        assert_eq!(listed[0].metadata_status, "invalid");
-        assert_eq!(listed[0].reason, "manual");
+        assert_eq!(listed[0].metadata_status, BackupMetadataStatus::Invalid);
+        assert_eq!(listed[0].reason, BackupReason::Manual);
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn history_keeps_an_unreadable_version_visible() {
+        use std::os::windows::fs::OpenOptionsExt;
+
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("SlotData_0.dat");
+        fs::write(&source, synthetic(1)).unwrap();
+        let version_dir = temp.path().join(BACKUP_DIR_NAME).join("SlotData_0");
+        fs::create_dir_all(&version_dir).unwrap();
+        let candidate = version_dir.join("1700000000400Z_before-save_000.dat");
+        fs::write(&candidate, synthetic(2)).unwrap();
+        let _exclusive = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .share_mode(0)
+            .open(&candidate)
+            .unwrap();
+
+        let listed = list_backups_impl(&source).unwrap();
+
+        assert_eq!(listed.len(), 1);
+        assert_eq!(listed[0].path, candidate.to_string_lossy());
+        assert_eq!(listed[0].metadata_status, BackupMetadataStatus::Unreadable);
+        assert_eq!(listed[0].error_status, Some(PersistErrorStatus::Error));
     }
 
     #[test]
@@ -1070,7 +1190,7 @@ mod tests {
         assert_eq!(result.status, "ok");
         assert_eq!(fs::read(&target).unwrap(), intended);
         let backup = result.backup.expect("before-save backup");
-        assert_eq!(backup.reason, "before-save");
+        assert_eq!(backup.reason, BackupReason::BeforeSave);
         assert_eq!(fs::read(backup.path).unwrap(), original);
     }
 

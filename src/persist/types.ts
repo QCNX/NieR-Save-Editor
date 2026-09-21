@@ -42,6 +42,13 @@ export type BackupReason =
   | "before-import"
   | "before-restore";
 
+export type BackupMetadataStatus =
+  | "ok"
+  | "missing"
+  | "invalid"
+  | "legacy"
+  | "unreadable";
+
 export type BackupEntry = {
   path: string;
   slotFileName: string;
@@ -49,7 +56,8 @@ export type BackupEntry = {
   size: number;
   mtimeMs: number;
   sha256: string;
-  metadataStatus: "ok" | "missing" | "invalid" | "legacy";
+  metadataStatus: BackupMetadataStatus;
+  errorStatus?: PersistIoFailure["status"];
 };
 
 export type ManagedPhase =

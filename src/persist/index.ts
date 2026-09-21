@@ -18,6 +18,7 @@ export type {
   ReloadResult,
   SaveAsResult,
   BackupEntry,
+  BackupMetadataStatus,
   BackupReason,
   CreateBackupResult,
   ListBackupsResult,

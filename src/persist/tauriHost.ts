@@ -39,13 +39,64 @@ interface RustManagedResult {
   path?: string;
   message?: string;
   phase?: string;
-  backup?: BackupEntry;
-  backups?: BackupEntry[];
+  backup?: unknown;
+  backups?: unknown[];
   sha256?: string;
   expected?: number;
   actual?: number;
   expectedSha256?: string;
   actualSha256?: string;
+}
+
+const managedPhases: readonly ManagedPhase[] = [
+  "validate-source",
+  "check-target",
+  "backup-target",
+  "stage-write",
+  "replace-target",
+  "verify-target",
+  "list-backups",
+];
+
+function isManagedPhase(value: unknown): value is ManagedPhase {
+  return managedPhases.includes(value as ManagedPhase);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function parseBackupEntry(value: unknown): BackupEntry | null {
+  if (!isRecord(value)) return null;
+  const reasons = [
+    "manual",
+    "before-save",
+    "before-import",
+    "before-restore",
+    "legacy",
+  ];
+  const metadataStatuses = [
+    "ok",
+    "missing",
+    "invalid",
+    "legacy",
+    "unreadable",
+  ];
+  const errorStatuses = ["missing", "permission", "error"];
+  if (
+    typeof value.path !== "string" ||
+    typeof value.slotFileName !== "string" ||
+    !reasons.includes(String(value.reason)) ||
+    typeof value.size !== "number" ||
+    typeof value.mtimeMs !== "number" ||
+    typeof value.sha256 !== "string" ||
+    !metadataStatuses.includes(String(value.metadataStatus)) ||
+    (value.errorStatus !== undefined &&
+      !errorStatuses.includes(String(value.errorStatus)))
+  ) {
+    return null;
+  }
+  return value as BackupEntry;
 }
 
 function failureFrom(
@@ -81,7 +132,15 @@ function managedFailureFrom(
   fallbackPhase: ManagedPhase,
 ): ManagedFailure {
   const path = result.path ?? fallbackPath;
-  const phase = (result.phase ?? fallbackPhase) as ManagedPhase;
+  if (result.phase !== undefined && !isManagedPhase(result.phase)) {
+    return {
+      status: "error",
+      phase: fallbackPhase,
+      path,
+      message: result.message ?? `Managed save operation failed: ${path}`,
+    };
+  }
+  const phase = result.phase ?? fallbackPhase;
   if (result.status === "invalid-size") {
     return {
       status: "invalid-size",
@@ -178,8 +237,12 @@ export function createTauriPersistHost(): PersistHost & SaveManagementHost {
         "persist_create_versioned_backup",
         { sourcePath, reason },
       );
-      if (result.status === "ok" && result.backup) {
-        return { status: "ok", backup: result.backup };
+      if (result.phase !== undefined && !isManagedPhase(result.phase)) {
+        return managedFailureFrom(result, sourcePath, "backup-target");
+      }
+      const backup = parseBackupEntry(result.backup);
+      if (result.status === "ok" && backup) {
+        return { status: "ok", backup };
       }
       return managedFailureFrom(result, sourcePath, "backup-target");
     },
@@ -188,8 +251,20 @@ export function createTauriPersistHost(): PersistHost & SaveManagementHost {
       const result = await invoke<RustManagedResult>("persist_list_backups", {
         sourcePath,
       });
+      if (result.phase !== undefined && !isManagedPhase(result.phase)) {
+        return managedFailureFrom(result, sourcePath, "list-backups");
+      }
       if (result.status === "ok") {
-        return { status: "ok", backups: result.backups ?? [] };
+        const backups = (result.backups ?? []).map(parseBackupEntry);
+        if (backups.every((entry): entry is BackupEntry => entry !== null)) {
+          return { status: "ok", backups };
+        }
+        return {
+          status: "error",
+          phase: "list-backups",
+          path: sourcePath,
+          message: `Managed save operation failed: ${sourcePath}`,
+        };
       }
       return managedFailureFrom(result, sourcePath, "list-backups");
     },
@@ -202,16 +277,20 @@ export function createTauriPersistHost(): PersistHost & SaveManagementHost {
         expectedSourceSha256: options.expectedSourceSha256 ?? null,
         expectedTargetSha256: options.expectedTargetSha256 ?? null,
       });
+      if (result.phase !== undefined && !isManagedPhase(result.phase)) {
+        return managedFailureFrom(result, options.targetPath, "replace-target");
+      }
+      const backup = parseBackupEntry(result.backup);
       if (
         result.status === "ok" &&
         result.path &&
-        result.backup &&
+        backup &&
         result.sha256
       ) {
         return {
           status: "ok",
           path: result.path,
-          backup: result.backup,
+          backup,
           sha256: result.sha256,
         };
       }
