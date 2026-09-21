@@ -32,7 +32,7 @@ describe("localSettings", () => {
   it("loads a legacy custom save root with the default language", () => {
     const storage = memoryStorage();
     const settings: LocalSettings = {
-      customSaveRoot: "%USERPROFILE%\\Documents\\My Games\\NieR_Automata",
+      customSaveRoot: "synthetic/saves/NieR_Automata",
     };
     saveLocalSettings(storage, settings);
     expect(loadLocalSettings(storage)).toEqual({
@@ -55,10 +55,10 @@ describe("localSettings", () => {
   it("clears customSaveRoot when saved as empty/whitespace", () => {
     const storage = memoryStorage();
     saveLocalSettings(storage, {
-      customSaveRoot: "  %USERPROFILE%\\Documents\\My Games\\NieR_Automata  ",
+      customSaveRoot: "  synthetic/saves/NieR_Automata  ",
     });
     expect(loadLocalSettings(storage).customSaveRoot).toBe(
-      "%USERPROFILE%\\Documents\\My Games\\NieR_Automata",
+      "synthetic/saves/NieR_Automata",
     );
     saveLocalSettings(storage, { customSaveRoot: "   " });
     expect(loadLocalSettings(storage)).toEqual({
@@ -68,7 +68,7 @@ describe("localSettings", () => {
   });
 
   it("persists language changes without losing a legacy custom root", () => {
-    const root = "%USERPROFILE%\\Documents\\My Games\\NieR_Automata";
+    const root = "synthetic/saves/NieR_Automata";
     const storage = memoryStorage({
       "nier-save-editor.settings": JSON.stringify({ customSaveRoot: root }),
     });
@@ -98,6 +98,51 @@ describe("localSettings", () => {
     expect(loadLocalSettings(storage)).toEqual({
       language: "en",
       theme: "light",
+    });
+  });
+
+  it("persists a custom backup root beside an existing save root", () => {
+    const storage = memoryStorage();
+    saveLocalSettings(storage, {
+      customSaveRoot: "synthetic/saves/NieR_Automata",
+      customBackupRoot: "  synthetic/backups/custom-root  ",
+    });
+    expect(loadLocalSettings(storage)).toEqual({
+      language: "zh-CN",
+      theme: "dark",
+      customSaveRoot: "synthetic/saves/NieR_Automata",
+      customBackupRoot: "synthetic/backups/custom-root",
+    });
+  });
+
+  it("clears customBackupRoot when saved as empty/whitespace", () => {
+    const storage = memoryStorage();
+    saveLocalSettings(storage, {
+      customBackupRoot: "synthetic/backups/custom-root",
+    });
+    expect(loadLocalSettings(storage).customBackupRoot).toBe(
+      "synthetic/backups/custom-root",
+    );
+    saveLocalSettings(storage, { customBackupRoot: "   " });
+    expect(loadLocalSettings(storage)).toEqual({
+      language: "zh-CN",
+      theme: "dark",
+    });
+  });
+
+  it("persists language changes without losing a custom backup root", () => {
+    const storage = memoryStorage({
+      "nier-save-editor.settings": JSON.stringify({
+        customBackupRoot: "synthetic/backups/custom-root",
+      }),
+    });
+
+    saveLocalSettings(storage, { language: "en" });
+
+    expect(loadLocalSettings(storage)).toEqual({
+      language: "en",
+      theme: "dark",
+      customBackupRoot: "synthetic/backups/custom-root",
     });
   });
 });

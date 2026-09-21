@@ -26,13 +26,13 @@ describe("createTauriPersistHost protocol validation", () => {
     });
 
     const result = await createTauriPersistHost().listBackups(
-      "/saves/SlotData_0.dat",
+      "synthetic/saves/SlotData_0.dat",
     );
 
     expect(result).toMatchObject({
       status: "error",
       phase: "list-backups",
-      path: "/saves/SlotData_0.dat",
+      path: "synthetic/saves/SlotData_0.dat",
     });
   });
 
@@ -44,7 +44,7 @@ describe("createTauriPersistHost protocol validation", () => {
     });
 
     const result = await createTauriPersistHost().safeWriteFile({
-      targetPath: "/saves/SlotData_0.dat",
+      targetPath: "synthetic/saves/SlotData_0.dat",
       bytes: new Uint8Array(235_980),
       reason: "before-save",
     });
@@ -52,7 +52,7 @@ describe("createTauriPersistHost protocol validation", () => {
     expect(result).toEqual({
       status: "error",
       phase: "replace-target",
-      path: "/saves/SlotData_0.dat",
+      path: "synthetic/saves/SlotData_0.dat",
       message: "synthetic protocol mismatch",
     });
   });
@@ -65,12 +65,94 @@ describe("createTauriPersistHost protocol validation", () => {
     });
 
     const result = await createTauriPersistHost().listBackups(
-      "/saves/SlotData_0.dat",
+      "synthetic/saves/SlotData_0.dat",
     );
 
     expect(result).toMatchObject({
       status: "error",
       phase: "list-backups",
+    });
+  });
+
+  it("forwards a configured backup root to create/list/safe-write commands", async () => {
+    invokeMock.mockResolvedValue({
+      status: "ok",
+      backups: [],
+    });
+
+    await createTauriPersistHost().listBackups("synthetic/saves/SlotData_0.dat", {
+      backupRoot: "  synthetic/backups/custom-root  ",
+    });
+
+    expect(invokeMock).toHaveBeenCalledWith("persist_list_backups", {
+      sourcePath: "synthetic/saves/SlotData_0.dat",
+      backupRoot: "synthetic/backups/custom-root",
+    });
+
+    invokeMock.mockResolvedValue({
+      status: "ok",
+      backup: {
+        path: "synthetic/backups/custom-root/SlotData_0/version.dat",
+        slotFileName: "SlotData_0.dat",
+        reason: "manual",
+        size: 235_980,
+        mtimeMs: 1,
+        sha256: "abc",
+        metadataStatus: "ok",
+      },
+    });
+
+    await createTauriPersistHost().createVersionedBackup(
+      "synthetic/saves/SlotData_0.dat",
+      "manual",
+      { backupRoot: "synthetic/backups/custom-root" },
+    );
+
+    expect(invokeMock).toHaveBeenCalledWith("persist_create_versioned_backup", {
+      sourcePath: "synthetic/saves/SlotData_0.dat",
+      reason: "manual",
+      backupRoot: "synthetic/backups/custom-root",
+    });
+
+    invokeMock.mockResolvedValue({
+      status: "ok",
+      path: "synthetic/saves/SlotData_0.dat",
+      sha256: "def",
+      backup: {
+        path: "synthetic/backups/custom-root/SlotData_0/version.dat",
+        slotFileName: "SlotData_0.dat",
+        reason: "before-save",
+        size: 235_980,
+        mtimeMs: 1,
+        sha256: "abc",
+        metadataStatus: "ok",
+      },
+    });
+
+    await createTauriPersistHost().safeWriteFile({
+      targetPath: "synthetic/saves/SlotData_0.dat",
+      bytes: new Uint8Array(235_980),
+      reason: "before-save",
+      backupRoot: "synthetic/backups/custom-root",
+    });
+
+    expect(invokeMock).toHaveBeenCalledWith(
+      "persist_safe_write_file",
+      expect.objectContaining({
+        targetPath: "synthetic/saves/SlotData_0.dat",
+        backupRoot: "synthetic/backups/custom-root",
+      }),
+    );
+  });
+
+  it("sends null backupRoot when unset so the host keeps the beside-save default", async () => {
+    invokeMock.mockResolvedValue({ status: "ok", backups: [] });
+
+    await createTauriPersistHost().listBackups("synthetic/saves/SlotData_0.dat");
+
+    expect(invokeMock).toHaveBeenCalledWith("persist_list_backups", {
+      sourcePath: "synthetic/saves/SlotData_0.dat",
+      backupRoot: null,
     });
   });
 });

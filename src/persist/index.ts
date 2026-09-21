@@ -1,4 +1,9 @@
-export { BACKUP_DIR_NAME, backupTargetPath } from "./backupPath";
+export {
+  BACKUP_DIR_NAME,
+  backupTargetPath,
+  resolveVersionedBackupRoot,
+} from "./backupPath";
+export { bindBackupRoot } from "./bindBackupRoot";
 export {
   overwriteSave,
   managedOverwriteSave,
@@ -20,6 +25,7 @@ export type {
   BackupEntry,
   BackupMetadataStatus,
   BackupReason,
+  BackupRootOptions,
   CreateBackupResult,
   ListBackupsResult,
   ManagedFailure,

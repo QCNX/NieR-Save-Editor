@@ -11,6 +11,8 @@ export type LocalSettings = {
   language?: Language;
   /** Extra SlotData search root (user-entered; not hard-coded private paths). */
   customSaveRoot?: string;
+  /** Optional backup root override (empty restores beside-save default). */
+  customBackupRoot?: string;
   /** Shell color theme. */
   theme?: UiTheme;
 };
@@ -18,6 +20,7 @@ export type LocalSettings = {
 export type ResolvedLocalSettings = {
   language: Language;
   customSaveRoot?: string;
+  customBackupRoot?: string;
   theme: UiTheme;
 };
 
@@ -45,6 +48,20 @@ function normalizeTheme(value: unknown): UiTheme {
   return value === "dark" || value === "light" ? value : DEFAULT_THEME;
 }
 
+function withOptionalRoots(
+  language: Language,
+  theme: UiTheme,
+  customSaveRoot: string | undefined,
+  customBackupRoot: string | undefined,
+): ResolvedLocalSettings {
+  return {
+    language,
+    theme,
+    ...(customSaveRoot ? { customSaveRoot } : {}),
+    ...(customBackupRoot ? { customBackupRoot } : {}),
+  };
+}
+
 export function loadLocalSettings(
   storage: SettingsStorage = globalThis.localStorage,
 ): ResolvedLocalSettings {
@@ -57,16 +74,18 @@ export function loadLocalSettings(
     if (!parsed || typeof parsed !== "object") {
       return { language: DEFAULT_LANGUAGE, theme: DEFAULT_THEME };
     }
-    const root = normalizeRoot(
-      (parsed as { customSaveRoot?: unknown }).customSaveRoot,
+    const record = parsed as {
+      customSaveRoot?: unknown;
+      customBackupRoot?: unknown;
+      language?: unknown;
+      theme?: unknown;
+    };
+    return withOptionalRoots(
+      normalizeLanguage(record.language),
+      normalizeTheme(record.theme),
+      normalizeRoot(record.customSaveRoot),
+      normalizeRoot(record.customBackupRoot),
     );
-    const language = normalizeLanguage(
-      (parsed as { language?: unknown }).language,
-    );
-    const theme = normalizeTheme((parsed as { theme?: unknown }).theme);
-    return root
-      ? { language, customSaveRoot: root, theme }
-      : { language, theme };
   } catch {
     return { language: DEFAULT_LANGUAGE, theme: DEFAULT_THEME };
   }
@@ -79,11 +98,23 @@ export function saveLocalSettings(
   const current = loadLocalSettings(storage);
   const language = normalizeLanguage(settings.language ?? current.language);
   const theme = normalizeTheme(settings.theme ?? current.theme);
-  const root = Object.prototype.hasOwnProperty.call(settings, "customSaveRoot")
+  const customSaveRoot = Object.prototype.hasOwnProperty.call(
+    settings,
+    "customSaveRoot",
+  )
     ? normalizeRoot(settings.customSaveRoot)
     : current.customSaveRoot;
-  const next: ResolvedLocalSettings = root
-    ? { language, customSaveRoot: root, theme }
-    : { language, theme };
+  const customBackupRoot = Object.prototype.hasOwnProperty.call(
+    settings,
+    "customBackupRoot",
+  )
+    ? normalizeRoot(settings.customBackupRoot)
+    : current.customBackupRoot;
+  const next = withOptionalRoots(
+    language,
+    theme,
+    customSaveRoot,
+    customBackupRoot,
+  );
   storage.setItem(LOCAL_SETTINGS_KEY, JSON.stringify(next));
 }

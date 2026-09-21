@@ -232,10 +232,15 @@ export function createTauriPersistHost(): PersistHost & SaveManagementHost {
     async createVersionedBackup(
       sourcePath: string,
       reason: "manual",
+      options?: { backupRoot?: string },
     ): Promise<CreateBackupResult> {
       const result = await invoke<RustManagedResult>(
         "persist_create_versioned_backup",
-        { sourcePath, reason },
+        {
+          sourcePath,
+          reason,
+          backupRoot: options?.backupRoot?.trim() || null,
+        },
       );
       if (result.phase !== undefined && !isManagedPhase(result.phase)) {
         return managedFailureFrom(result, sourcePath, "backup-target");
@@ -247,9 +252,13 @@ export function createTauriPersistHost(): PersistHost & SaveManagementHost {
       return managedFailureFrom(result, sourcePath, "backup-target");
     },
 
-    async listBackups(sourcePath: string): Promise<ListBackupsResult> {
+    async listBackups(
+      sourcePath: string,
+      options?: { backupRoot?: string },
+    ): Promise<ListBackupsResult> {
       const result = await invoke<RustManagedResult>("persist_list_backups", {
         sourcePath,
+        backupRoot: options?.backupRoot?.trim() || null,
       });
       if (result.phase !== undefined && !isManagedPhase(result.phase)) {
         return managedFailureFrom(result, sourcePath, "list-backups");
@@ -276,6 +285,7 @@ export function createTauriPersistHost(): PersistHost & SaveManagementHost {
         reason: options.reason,
         expectedSourceSha256: options.expectedSourceSha256 ?? null,
         expectedTargetSha256: options.expectedTargetSha256 ?? null,
+        backupRoot: options.backupRoot?.trim() || null,
       });
       if (result.phase !== undefined && !isManagedPhase(result.phase)) {
         return managedFailureFrom(result, options.targetPath, "replace-target");

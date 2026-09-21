@@ -5,6 +5,9 @@ type Props = {
   rootDraft: string;
   onRootDraftChange: (value: string) => void;
   onSaveCustomRoot: () => void;
+  backupDraft: string;
+  onBackupDraftChange: (value: string) => void;
+  onSaveCustomBackupRoot: () => void;
 };
 
 export function SettingsPanel({
@@ -12,6 +15,9 @@ export function SettingsPanel({
   rootDraft,
   onRootDraftChange,
   onSaveCustomRoot,
+  backupDraft,
+  onBackupDraftChange,
+  onSaveCustomBackupRoot,
 }: Props) {
   const { t } = useI18n();
 
@@ -23,7 +29,7 @@ export function SettingsPanel({
           <input
             type="text"
             value={rootDraft}
-            placeholder="%USERPROFILE%\Documents\My Games\NieR_Automata"
+            placeholder={t("settings.customSaveRootPlaceholder")}
             disabled={busy}
             onChange={(event) => onRootDraftChange(event.currentTarget.value)}
           />
@@ -32,6 +38,22 @@ export function SettingsPanel({
           {t("settings.saveAndScan")}
         </button>
       </div>
+      <div className="settings-row">
+        <label className="toolbar-field toolbar-field--grow">
+          <span>{t("settings.customBackupRoot")}</span>
+          <input
+            type="text"
+            value={backupDraft}
+            placeholder={t("settings.customBackupRootPlaceholder")}
+            disabled={busy}
+            onChange={(event) => onBackupDraftChange(event.currentTarget.value)}
+          />
+        </label>
+        <button type="button" disabled={busy} onClick={onSaveCustomBackupRoot}>
+          {t("settings.saveBackupRoot")}
+        </button>
+      </div>
+      <p className="settings-help">{t("settings.customBackupRootHelp")}</p>
     </section>
   );
 }

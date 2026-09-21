@@ -1052,6 +1052,14 @@ input[type="text"],
   gap: 8px;
 }
 
+.settings-help {
+  margin: 8px 0 0;
+  color: var(--ui-muted, var(--ui-ink));
+  font-size: 0.9rem;
+  line-height: 1.35;
+  max-width: 52rem;
+}
+
 .panel {
   background: var(--ui-panel);
   border: 1px solid var(--ui-border-soft);

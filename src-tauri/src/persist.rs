@@ -120,7 +120,10 @@ fn file_mtime_ms(path: &Path) -> u64 {
         .unwrap_or(0)
 }
 
-fn source_identity(source: &Path) -> Result<(String, String, PathBuf), String> {
+fn source_identity(
+    source: &Path,
+    backup_root_override: Option<&Path>,
+) -> Result<(String, String, PathBuf), String> {
     if !source.is_file() {
         return Err(format!("Save file not found: {}", source.display()));
     }
@@ -146,7 +149,11 @@ fn source_identity(source: &Path) -> Result<(String, String, PathBuf), String> {
     let parent = source
         .parent()
         .ok_or_else(|| format!("Save path has no parent: {}", source.display()))?;
-    Ok((file_name, safe_stem, parent.join(BACKUP_DIR_NAME)))
+    let backup_root = match backup_root_override {
+        Some(root) if !root.as_os_str().is_empty() => root.to_path_buf(),
+        _ => parent.join(BACKUP_DIR_NAME),
+    };
+    Ok((file_name, safe_stem, backup_root))
 }
 
 fn write_new_synced(path: &Path, bytes: &[u8]) -> std::io::Result<()> {
@@ -158,8 +165,10 @@ fn create_versioned_backup_at(
     source: &Path,
     reason: BackupReason,
     created_at_ms: u64,
+    backup_root_override: Option<&Path>,
 ) -> Result<BackupEntry, String> {
-    let (slot_file_name, safe_stem, backup_root) = source_identity(source)?;
+    let (slot_file_name, safe_stem, backup_root) =
+        source_identity(source, backup_root_override)?;
     let bytes = fs::read(source)
         .map_err(|error| format!("Failed to read save file {}: {error}", source.display()))?;
     let digest = sha256_hex(&bytes);
@@ -315,8 +324,12 @@ fn entry_from_version(path: &Path, slot_file_name: &str) -> Option<BackupEntry> 
     })
 }
 
-fn list_backups_impl(source: &Path) -> Result<Vec<BackupEntry>, String> {
-    let (slot_file_name, safe_stem, backup_root) = source_identity(source)?;
+fn list_backups_impl(
+    source: &Path,
+    backup_root_override: Option<&Path>,
+) -> Result<Vec<BackupEntry>, String> {
+    let (slot_file_name, safe_stem, backup_root) =
+        source_identity(source, backup_root_override)?;
     let mut entries = Vec::new();
     let version_dir = backup_root.join(safe_stem);
     match fs::read_dir(&version_dir) {
@@ -511,6 +524,7 @@ fn safe_write_with<F>(
     bytes: &[u8],
     reason: BackupReason,
     expected_target_sha256: Option<&str>,
+    backup_root_override: Option<&Path>,
     commit: F,
 ) -> SafeWriteResult
 where
@@ -521,6 +535,7 @@ where
         bytes,
         reason,
         expected_target_sha256,
+        backup_root_override,
         |_checkpoint, _target| {},
         commit,
     )
@@ -531,6 +546,7 @@ fn safe_write_with_checkpoint<H, F>(
     bytes: &[u8],
     reason: BackupReason,
     expected_target_sha256: Option<&str>,
+    backup_root_override: Option<&Path>,
     mut checkpoint: H,
     mut commit: F,
 ) -> SafeWriteResult
@@ -591,7 +607,12 @@ where
     }
 
     checkpoint(SafeWriteCheckpoint::BeforeBackupRead, target);
-    let backup = match create_versioned_backup_at(target, reason, now_ms()) {
+    let backup = match create_versioned_backup_at(
+        target,
+        reason,
+        now_ms(),
+        backup_root_override,
+    ) {
         Ok(value) => value,
         Err(message) => {
             return safe_failure("backup", "backup-target", target, message);
@@ -933,6 +954,7 @@ pub fn persist_save_as_dialog(
 pub fn persist_create_versioned_backup(
     source_path: String,
     reason: String,
+    backup_root: Option<String>,
 ) -> Result<BackupResult, String> {
     let parsed_reason = match BackupReason::try_from(reason.as_str()) {
         Ok(value) => value,
@@ -946,7 +968,13 @@ pub fn persist_create_versioned_backup(
             });
         }
     };
-    match create_versioned_backup_at(Path::new(&source_path), parsed_reason, now_ms()) {
+    let override_root = normalize_backup_root_arg(backup_root.as_deref());
+    match create_versioned_backup_at(
+        Path::new(&source_path),
+        parsed_reason,
+        now_ms(),
+        override_root.as_deref(),
+    ) {
         Ok(backup) => Ok(BackupResult {
             status: "ok".to_string(),
             backup: Some(backup),
@@ -971,8 +999,12 @@ pub fn persist_create_versioned_backup(
 
 /// List immutable versions for one slot, including the read-only legacy copy.
 #[tauri::command]
-pub fn persist_list_backups(source_path: String) -> Result<BackupListResult, String> {
-    match list_backups_impl(Path::new(&source_path)) {
+pub fn persist_list_backups(
+    source_path: String,
+    backup_root: Option<String>,
+) -> Result<BackupListResult, String> {
+    let override_root = normalize_backup_root_arg(backup_root.as_deref());
+    match list_backups_impl(Path::new(&source_path), override_root.as_deref()) {
         Ok(backups) => Ok(BackupListResult {
             status: "ok".to_string(),
             backups: Some(backups),
@@ -1003,6 +1035,7 @@ pub fn persist_safe_write_file(
     reason: String,
     expected_source_sha256: Option<String>,
     expected_target_sha256: Option<String>,
+    backup_root: Option<String>,
 ) -> Result<SafeWriteResult, String> {
     let parsed_reason = match BackupReason::try_from(reason.as_str()) {
         Ok(BackupReason::Manual) | Err(_) => {
@@ -1031,13 +1064,22 @@ pub fn persist_safe_write_file(
             }
         }
     }
+    let override_root = normalize_backup_root_arg(backup_root.as_deref());
     Ok(safe_write_with(
         Path::new(&target_path),
         &bytes,
         parsed_reason,
         expected_target_sha256.as_deref(),
+        override_root.as_deref(),
         platform_replace,
     ))
+}
+
+fn normalize_backup_root_arg(value: Option<&str>) -> Option<PathBuf> {
+    value
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(PathBuf::from)
 }
 
 #[cfg(test)]
@@ -1076,15 +1118,65 @@ mod tests {
         fs::write(&source, &first_bytes).unwrap();
 
         let first =
-            create_versioned_backup_at(&source, BackupReason::Manual, 1_700_000_000_123).unwrap();
+            create_versioned_backup_at(&source, BackupReason::Manual, 1_700_000_000_123, None).unwrap();
         let second_bytes = synthetic(9);
         fs::write(&source, &second_bytes).unwrap();
         let second =
-            create_versioned_backup_at(&source, BackupReason::Manual, 1_700_000_000_123).unwrap();
+            create_versioned_backup_at(&source, BackupReason::Manual, 1_700_000_000_123, None).unwrap();
 
         assert_ne!(first.path, second.path);
         assert_eq!(fs::read(first.path).unwrap(), first_bytes);
         assert_eq!(fs::read(second.path).unwrap(), second_bytes);
+    }
+
+    #[test]
+    fn custom_backup_root_stores_versions_outside_the_save_folder() {
+        let temp = tempdir().unwrap();
+        let saves = temp.path().join("saves");
+        let backups = temp.path().join("backups").join("custom-root");
+        fs::create_dir_all(&saves).unwrap();
+        let source = saves.join("SlotData_0.dat");
+        let bytes = synthetic(21);
+        fs::write(&source, &bytes).unwrap();
+
+        let backup = create_versioned_backup_at(
+            &source,
+            BackupReason::Manual,
+            1_700_000_000_400,
+            Some(backups.as_path()),
+        )
+        .unwrap();
+        let listed = list_backups_impl(&source, Some(backups.as_path())).unwrap();
+
+        assert!(Path::new(&backup.path).starts_with(&backups));
+        assert!(!saves.join(BACKUP_DIR_NAME).exists());
+        assert_eq!(listed.len(), 1);
+        assert_eq!(listed[0].path, backup.path);
+        assert_eq!(fs::read(&backup.path).unwrap(), bytes);
+    }
+
+    #[test]
+    fn unwritable_custom_backup_root_fails_without_mutating_the_target() {
+        let temp = tempdir().unwrap();
+        let target = temp.path().join("SlotData_0.dat");
+        let original = synthetic(22);
+        fs::write(&target, &original).unwrap();
+        let blocked = temp.path().join("blocked-root");
+        fs::write(&blocked, b"not a directory").unwrap();
+
+        let result = safe_write_with(
+            &target,
+            &synthetic(23),
+            BackupReason::BeforeSave,
+            Some(&sha256_hex(&original)),
+            Some(blocked.as_path()),
+            platform_replace,
+        );
+
+        assert_eq!(result.status, "backup");
+        assert_eq!(result.phase.as_deref(), Some("backup-target"));
+        assert_eq!(fs::read(&target).unwrap(), original);
+        assert!(!temp.path().join(BACKUP_DIR_NAME).exists());
     }
 
     #[test]
@@ -1093,9 +1185,9 @@ mod tests {
         let source = temp.path().join("SlotData_1.dat");
         fs::write(&source, synthetic(1)).unwrap();
         let older =
-            create_versioned_backup_at(&source, BackupReason::Manual, 9_000_000_000_100).unwrap();
+            create_versioned_backup_at(&source, BackupReason::Manual, 9_000_000_000_100, None).unwrap();
         let newer =
-            create_versioned_backup_at(&source, BackupReason::BeforeSave, 9_000_000_000_200)
+            create_versioned_backup_at(&source, BackupReason::BeforeSave, 9_000_000_000_200, None)
                 .unwrap();
         let legacy = temp
             .path()
@@ -1110,7 +1202,7 @@ mod tests {
         )
         .unwrap();
 
-        let history = list_backups_impl(&source).unwrap();
+        let history = list_backups_impl(&source, None).unwrap();
 
         assert_eq!(history.len(), 3);
         assert_eq!(history[0].path, newer.path);
@@ -1125,14 +1217,14 @@ mod tests {
         let source = temp.path().join("SlotData_0.dat");
         fs::write(&source, synthetic(1)).unwrap();
         let backup =
-            create_versioned_backup_at(&source, BackupReason::Manual, 1_700_000_000_300).unwrap();
+            create_versioned_backup_at(&source, BackupReason::Manual, 1_700_000_000_300, None).unwrap();
         let sidecar = Path::new(&backup.path).with_extension("json");
         let mut metadata: serde_json::Value =
             serde_json::from_slice(&fs::read(&sidecar).unwrap()).unwrap();
         metadata["reason"] = serde_json::Value::String("../../unsafe".to_string());
         fs::write(&sidecar, serde_json::to_vec(&metadata).unwrap()).unwrap();
 
-        let listed = list_backups_impl(&source).unwrap();
+        let listed = list_backups_impl(&source, None).unwrap();
 
         assert_eq!(listed[0].metadata_status, BackupMetadataStatus::Invalid);
         assert_eq!(listed[0].reason, BackupReason::Manual);
@@ -1157,7 +1249,7 @@ mod tests {
             .open(&candidate)
             .unwrap();
 
-        let listed = list_backups_impl(&source).unwrap();
+        let listed = list_backups_impl(&source, None).unwrap();
 
         assert_eq!(listed.len(), 1);
         assert_eq!(listed[0].path, candidate.to_string_lossy());
@@ -1176,6 +1268,7 @@ mod tests {
             &target,
             &[1, 2, 3],
             BackupReason::BeforeSave,
+            None,
             None,
             platform_replace,
         );
@@ -1199,6 +1292,7 @@ mod tests {
             "before-import".to_string(),
             Some("wrong-source-hash".to_string()),
             Some(sha256_hex(&original)),
+            None,
         )
         .unwrap();
 
@@ -1220,6 +1314,7 @@ mod tests {
             &synthetic(6),
             BackupReason::BeforeSave,
             Some("not-the-current-hash"),
+            None,
             platform_replace,
         );
 
@@ -1242,6 +1337,7 @@ mod tests {
             &synthetic(6),
             BackupReason::BeforeSave,
             Some(&sha256_hex(&original)),
+            None,
             |checkpoint, target| {
                 if checkpoint == SafeWriteCheckpoint::BeforeReplace {
                     fs::write(target, &external).unwrap();
@@ -1277,6 +1373,7 @@ mod tests {
             &synthetic(13),
             BackupReason::BeforeSave,
             Some(&sha256_hex(&original)),
+            None,
             |checkpoint, target| {
                 if checkpoint == SafeWriteCheckpoint::BeforeBackupRead {
                     fs::write(target, &external).unwrap();
@@ -1309,6 +1406,7 @@ mod tests {
             &synthetic(6),
             BackupReason::BeforeSave,
             Some(&sha256_hex(&original)),
+            None,
             platform_replace,
         );
 
@@ -1330,6 +1428,7 @@ mod tests {
             &intended,
             BackupReason::BeforeSave,
             Some(&sha256_hex(&original)),
+            None,
             platform_replace,
         );
 
@@ -1353,6 +1452,7 @@ mod tests {
             &intended,
             BackupReason::BeforeSave,
             None,
+            None,
             platform_replace,
         );
 
@@ -1374,6 +1474,7 @@ mod tests {
             &synthetic(8),
             BackupReason::BeforeImport,
             Some(&sha256_hex(&original)),
+            None,
             |_staged, _target| Err(std::io::Error::other("forced commit failure")),
         );
 
@@ -1398,6 +1499,7 @@ mod tests {
             &intended,
             BackupReason::BeforeRestore,
             Some(&sha256_hex(&original)),
+            None,
             |staged, target| {
                 commits += 1;
                 if commits == 1 {

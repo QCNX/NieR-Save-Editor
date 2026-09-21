@@ -25,6 +25,7 @@ import {
   PermissionDeniedError,
 } from "./discovery";
 import {
+  bindBackupRoot,
   createTauriPersistHost,
   overwriteSave,
   reloadSave,
@@ -189,12 +190,19 @@ function AppContent({
     return storage ? (loadLocalSettings(storage).customSaveRoot ?? "") : "";
   });
   const [rootDraft, setRootDraft] = useState(customSaveRoot);
+  const [customBackupRoot, setCustomBackupRoot] = useState(() => {
+    const storage = defaultStorage();
+    return storage ? (loadLocalSettings(storage).customBackupRoot ?? "") : "";
+  });
+  const [backupDraft, setBackupDraft] = useState(customBackupRoot);
 
   const tauri = useMemo(() => isTauriRuntime(), []);
-  const persistHost: (PersistHost & SaveManagementHost) | null = useMemo(
-    () => (tauri ? createTauriPersistHost() : null),
-    [tauri],
-  );
+  const persistHost: (PersistHost & SaveManagementHost) | null = useMemo(() => {
+    if (!tauri) {
+      return null;
+    }
+    return bindBackupRoot(createTauriPersistHost(), customBackupRoot);
+  }, [tauri, customBackupRoot]);
 
   const currentFileName = state.currentPath
     ? fileNameFromPath(state.currentPath)
@@ -768,6 +776,23 @@ function AppContent({
     });
   }
 
+  function onSaveCustomBackupRoot() {
+    const storage = defaultStorage();
+    if (!storage) {
+      setErrorMessage({ key: "errors.settingsUnavailable" });
+      return;
+    }
+    const next = backupDraft.trim();
+    saveLocalSettings(storage, { customBackupRoot: next });
+    setCustomBackupRoot(next);
+    setBackupDraft(next);
+    setStatusMessage({
+      key: next
+        ? "status.customBackupRootSaved"
+        : "status.customBackupRootCleared",
+    });
+  }
+
   const busy = discoverBusy || ioBusy;
   const canPathIo = Boolean(persistHost && state.currentPath && state.slotData);
   const canSaveAs = Boolean(persistHost && state.slotData);
@@ -868,6 +893,9 @@ function AppContent({
             rootDraft={rootDraft}
             onRootDraftChange={setRootDraft}
             onSaveCustomRoot={onSaveCustomRoot}
+            backupDraft={backupDraft}
+            onBackupDraftChange={setBackupDraft}
+            onSaveCustomBackupRoot={onSaveCustomBackupRoot}
           />
         }
         empty={

@@ -111,6 +111,13 @@ export type SafeWriteOptions = {
   reason: Exclude<BackupReason, "manual">;
   expectedSourceSha256?: string;
   expectedTargetSha256?: string;
+  /** Optional versioned backup root override (empty/undefined = beside-save default). */
+  backupRoot?: string;
+};
+
+export type BackupRootOptions = {
+  /** Optional versioned backup root override (empty/undefined = beside-save default). */
+  backupRoot?: string;
 };
 
 /** Injectable boundary for versioned history and verified target mutation. */
@@ -119,8 +126,12 @@ export interface SaveManagementHost {
   createVersionedBackup(
     sourcePath: string,
     reason: "manual",
+    options?: BackupRootOptions,
   ): Promise<CreateBackupResult>;
-  listBackups(sourcePath: string): Promise<ListBackupsResult>;
+  listBackups(
+    sourcePath: string,
+    options?: BackupRootOptions,
+  ): Promise<ListBackupsResult>;
   safeWriteFile(options: SafeWriteOptions): Promise<SafeWriteResult>;
 }
 
