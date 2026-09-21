@@ -25,3 +25,30 @@ describe("responsive editor layout", () => {
     expect(css).toMatch(/:root\s*\{[^}]*--ui-panel:/s);
   });
 });
+
+describe("chip loadout three-column layout CSS", () => {
+  it("defines a three-track chip loadout grid for wide viewports", () => {
+    expect(css).toMatch(
+      /\.panel-split--chip-loadout\s*\{[^}]*grid-template-columns:\s*[^;]*minmax[^;]*minmax[^;]*minmax/s,
+    );
+  });
+
+  it("collapses the chip loadout grid at Deck-ish width without page overflow", () => {
+    expect(css).toMatch(
+      /@media \(max-width: 1280px\)[\s\S]*\.panel-split--chip-loadout\s*\{[^}]*grid-template-columns:\s*[^}]*1fr/s,
+    );
+    expect(css).toMatch(
+      /\.panel-split--chip-loadout\s*\{[^}]*min-width:\s*0/s,
+    );
+  });
+
+  it("right-aligns wrapped stats values and shrinks level/cost columns", () => {
+    expect(css).toMatch(/\.chip-stats-value\s*\{[^}]*text-align:\s*right/s);
+    expect(css).toMatch(
+      /\.panel-split--chip-loadout[\s\S]*?\.col-level[\s\S]*?max-width:\s*[0-9.]+rem/s,
+    );
+    expect(css).toMatch(
+      /\.panel-split--chip-loadout[\s\S]*?\.col-weight[\s\S]*?max-width:\s*[0-9.]+rem/s,
+    );
+  });
+});

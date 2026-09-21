@@ -650,7 +650,7 @@ export function ChipLoadoutPanel({
         </label>
       </div>
 
-      <div className="panel-split">
+      <div className="panel-split panel-split--chip-loadout">
         <div className="panel-split__side">
           <h3>{t("chips.fromLibrary")}</h3>
           <div className="list-toolbar">
@@ -826,117 +826,117 @@ export function ChipLoadoutPanel({
             </table>
           </div>
         </div>
-      </div>
 
-      <section
-        className="chip-loadout-stats"
-        data-testid="chip-loadout-stats"
-        aria-label={t("chips.statsPanel")}
-      >
-        <h3>{t("chips.statsPanel")}</h3>
-        {stats.stackable.length === 0 &&
-        stats.bestOf.length === 0 &&
-        stats.listed.length === 0 ? (
-          <p className="chip-stats-empty">{t("chips.stats.empty")}</p>
-        ) : (
-          <ul className="chip-stats-list">
-            {stats.stackable.map((line) => {
-              const baseId =
-                VANILLA_PLUGIN_CHIP_IDS.find((id) => id.type === line.type)
-                  ?.baseId ?? line.type;
-              return (
-                <li
-                  key={`stack-${line.type}`}
-                  className={
-                    line.overflow > 0
-                      ? "chip-stats-row chip-stats-row--overflow"
-                      : "chip-stats-row"
-                  }
-                  data-testid="chip-stats-stackable"
-                  data-chip-type={line.type}
-                  data-overflow={line.overflow > 0 ? "true" : "false"}
-                  data-cap-known={line.capKnown ? "true" : "false"}
-                  data-cap-pending={line.capPendingConfirm ? "true" : "false"}
-                >
-                  <span className="chip-stats-name">
-                    {lookupChipName(baseId, language)}
-                    {line.estimate ? (
-                      <span className="chip-stats-estimate">
-                        {" "}
-                        ({t("chips.stats.estimate")})
-                      </span>
-                    ) : null}
-                    {line.capPendingConfirm ? (
-                      <span className="chip-stats-pending">
-                        {" "}
-                        ({t("chips.stats.pendingConfirm")})
-                      </span>
-                    ) : null}
-                  </span>
-                  <span className="chip-stats-value">
-                    {formatStackableStatLine(line, language)}
-                  </span>
-                </li>
-              );
-            })}
-            {stats.bestOf.map((line) => {
-              const baseId =
-                VANILLA_PLUGIN_CHIP_IDS.find((id) => id.type === line.type)
-                  ?.baseId ?? line.type;
-              return (
-                <li
-                  key={`best-${line.type}`}
-                  className="chip-stats-row"
-                  data-testid="chip-stats-bestof"
-                  data-chip-type={line.type}
-                >
-                  <span className="chip-stats-name">
-                    {lookupChipName(baseId, language)}
-                    {line.estimate ? (
-                      <span className="chip-stats-estimate">
-                        {" "}
-                        ({t("chips.stats.estimate")})
-                      </span>
-                    ) : null}
-                  </span>
-                  <span className="chip-stats-value">
-                    {formatBestOfStatLine(line)}
-                  </span>
-                </li>
-              );
-            })}
-            {stats.listed.map((line, index) => {
-              const baseId =
-                VANILLA_PLUGIN_CHIP_IDS.find((id) => id.type === line.type)
-                  ?.baseId ?? line.type;
-              return (
-                <li
-                  key={`list-${line.type}-${line.level}-${index}`}
-                  className="chip-stats-row"
-                  data-testid="chip-stats-listed"
-                  data-chip-type={line.type}
-                  data-role={line.role}
-                >
-                  <span className="chip-stats-name">
-                    {lookupChipName(baseId, language)}
-                    {line.estimate ? (
-                      <span className="chip-stats-estimate">
-                        {" "}
-                        ({t("chips.stats.estimate")})
-                      </span>
-                    ) : null}
-                  </span>
-                  <span className="chip-stats-value">
-                    {line.role === "system"
-                      ? t("chips.stats.enabled")
-                      : `Lv.${line.level}`}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
+        <section
+          className="chip-loadout-stats panel-split__stats"
+          data-testid="chip-loadout-stats"
+          aria-label={t("chips.statsPanel")}
+        >
+          <h3>{t("chips.statsPanel")}</h3>
+          {stats.stackable.length === 0 &&
+          stats.bestOf.length === 0 &&
+          stats.listed.length === 0 ? (
+            <p className="chip-stats-empty">{t("chips.stats.empty")}</p>
+          ) : (
+            <ul className="chip-stats-list">
+              {stats.stackable.map((line) => {
+                const baseId =
+                  VANILLA_PLUGIN_CHIP_IDS.find((id) => id.type === line.type)
+                    ?.baseId ?? line.type;
+                return (
+                  <li
+                    key={`stack-${line.type}`}
+                    className={
+                      line.overflow > 0
+                        ? "chip-stats-row chip-stats-row--overflow"
+                        : "chip-stats-row"
+                    }
+                    data-testid="chip-stats-stackable"
+                    data-chip-type={line.type}
+                    data-overflow={line.overflow > 0 ? "true" : "false"}
+                    data-cap-known={line.capKnown ? "true" : "false"}
+                    data-cap-pending={line.capPendingConfirm ? "true" : "false"}
+                  >
+                    <span className="chip-stats-name">
+                      {lookupChipName(baseId, language)}
+                      {line.estimate ? (
+                        <span className="chip-stats-estimate">
+                          {" "}
+                          ({t("chips.stats.estimate")})
+                        </span>
+                      ) : null}
+                      {line.capPendingConfirm ? (
+                        <span className="chip-stats-pending">
+                          {" "}
+                          ({t("chips.stats.pendingConfirm")})
+                        </span>
+                      ) : null}
+                    </span>
+                    <span className="chip-stats-value">
+                      {formatStackableStatLine(line, language)}
+                    </span>
+                  </li>
+                );
+              })}
+              {stats.bestOf.map((line) => {
+                const baseId =
+                  VANILLA_PLUGIN_CHIP_IDS.find((id) => id.type === line.type)
+                    ?.baseId ?? line.type;
+                return (
+                  <li
+                    key={`best-${line.type}`}
+                    className="chip-stats-row"
+                    data-testid="chip-stats-bestof"
+                    data-chip-type={line.type}
+                  >
+                    <span className="chip-stats-name">
+                      {lookupChipName(baseId, language)}
+                      {line.estimate ? (
+                        <span className="chip-stats-estimate">
+                          {" "}
+                          ({t("chips.stats.estimate")})
+                        </span>
+                      ) : null}
+                    </span>
+                    <span className="chip-stats-value">
+                      {formatBestOfStatLine(line)}
+                    </span>
+                  </li>
+                );
+              })}
+              {stats.listed.map((line, index) => {
+                const baseId =
+                  VANILLA_PLUGIN_CHIP_IDS.find((id) => id.type === line.type)
+                    ?.baseId ?? line.type;
+                return (
+                  <li
+                    key={`list-${line.type}-${line.level}-${index}`}
+                    className="chip-stats-row"
+                    data-testid="chip-stats-listed"
+                    data-chip-type={line.type}
+                    data-role={line.role}
+                  >
+                    <span className="chip-stats-name">
+                      {lookupChipName(baseId, language)}
+                      {line.estimate ? (
+                        <span className="chip-stats-estimate">
+                          {" "}
+                          ({t("chips.stats.estimate")})
+                        </span>
+                      ) : null}
+                    </span>
+                    <span className="chip-stats-value">
+                      {line.role === "system"
+                        ? t("chips.stats.enabled")
+                        : `Lv.${line.level}`}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+      </div>
     </section>
   );
 }

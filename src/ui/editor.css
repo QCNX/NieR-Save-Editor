@@ -384,6 +384,25 @@ input[type="text"],
   align-items: stretch;
 }
 
+.panel-split--chip-loadout {
+  min-width: 0;
+  grid-template-columns: minmax(11rem, 0.72fr) minmax(0, 1.15fr) minmax(11rem, 0.9fr);
+}
+
+.panel-split--chip-loadout .slot-table .col-level,
+.panel-split--chip-loadout .slot-table .col-weight {
+  width: 3.25rem;
+  max-width: 3.5rem;
+  padding-inline: 4px;
+}
+
+.panel-split--chip-loadout .slot-table .col-level input,
+.panel-split--chip-loadout .slot-table .col-weight input {
+  width: 100%;
+  min-width: 0;
+  max-width: 3.25rem;
+}
+
 .chip-loadout-toolbar {
   flex-wrap: wrap;
   align-items: end;
@@ -401,9 +420,12 @@ input[type="text"],
 }
 
 .chip-loadout-stats {
-  margin-top: 12px;
-  padding-top: 8px;
-  border-top: 1px solid var(--ui-border-soft);
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid var(--ui-border-soft);
+  background: var(--ui-panel-soft);
+  padding: 8px 10px;
 }
 
 .chip-loadout-stats h3,
@@ -426,7 +448,7 @@ input[type="text"],
 .chip-stats-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 16px;
+  gap: 2px 12px;
   justify-content: space-between;
   align-items: baseline;
   font-size: 0.95rem;
@@ -438,7 +460,15 @@ input[type="text"],
 }
 
 .chip-stats-name {
-  min-width: 8rem;
+  flex: 1 1 7rem;
+  min-width: 0;
+}
+
+.chip-stats-value {
+  flex: 1 1 7rem;
+  margin-left: auto;
+  text-align: right;
+  max-width: 100%;
 }
 
 .chip-stats-estimate {
@@ -454,7 +484,8 @@ input[type="text"],
 }
 
 .panel-split__side,
-.panel-split__main {
+.panel-split__main,
+.panel-split__stats {
   min-width: 0;
   min-height: 0;
   display: flex;
@@ -501,9 +532,27 @@ input[type="text"],
   margin-top: 4px;
 }
 
+@media (max-width: 1280px) {
+  .panel-split--chip-loadout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  }
+
+  .panel-split--chip-loadout .panel-split__stats {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 900px) {
   .panel-split {
     grid-template-columns: 1fr;
+  }
+
+  .panel-split--chip-loadout {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-split--chip-loadout .panel-split__stats {
+    grid-column: auto;
   }
 }
 
