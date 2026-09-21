@@ -105,9 +105,10 @@ describe("overwriteSave", () => {
       metadataStatus: "ok",
     };
     let usedLegacyBackup = false;
+    let expectedTargetSha256: string | undefined;
     const host: PersistHost & SaveManagementHost = {
       async readFile() {
-        return { status: "ok", bytes };
+        return { status: "ok", bytes, sha256: "new-sha" };
       },
       async backupFile() {
         usedLegacyBackup = true;
@@ -127,6 +128,7 @@ describe("overwriteSave", () => {
       },
       async safeWriteFile(options) {
         expect(options.reason).toBe("before-save");
+        expectedTargetSha256 = options.expectedTargetSha256;
         return {
           status: "ok",
           path: options.targetPath,
@@ -137,12 +139,19 @@ describe("overwriteSave", () => {
     };
 
     await expect(
-      overwriteSave(host, "/saves/SlotData_0.dat", slotFromSynthetic()),
+      overwriteSave(
+        host,
+        "/saves/SlotData_0.dat",
+        slotFromSynthetic(),
+        "loaded-target-sha",
+      ),
     ).resolves.toEqual({
       status: "ok",
       path: "/saves/SlotData_0.dat",
       backupPath: backup.path,
+      sha256: "new-sha",
     });
+    expect(expectedTargetSha256).toBe("loaded-target-sha");
     expect(usedLegacyBackup).toBe(false);
   });
 

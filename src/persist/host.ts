@@ -59,7 +59,12 @@ export async function managedOverwriteSave(
       message: `Written save did not match the intended bytes: ${path}`,
     };
   }
-  return { status: "ok", path, backupPath: written.backup.path };
+  return {
+    status: "ok",
+    path,
+    backupPath: written.backup.path,
+    sha256: readback.sha256 ?? written.sha256,
+  };
 }
 
 /** Reload raw bytes from the current path (callers discard dirty SlotData). */
@@ -78,9 +83,15 @@ export async function overwriteSave(
   host: PersistHost,
   path: string,
   slot: SlotData,
+  expectedTargetSha256?: string,
 ): Promise<OverwriteResult> {
   if ("safeWriteFile" in host) {
-    return managedOverwriteSave(host as PersistHost & SaveManagementHost, path, slot);
+    return managedOverwriteSave(
+      host as PersistHost & SaveManagementHost,
+      path,
+      slot,
+      expectedTargetSha256,
+    );
   }
   const backupPath = backupTargetPath(path);
   const backup = await host.backupFile(path, backupPath);

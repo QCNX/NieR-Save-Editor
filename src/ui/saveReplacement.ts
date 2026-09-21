@@ -1,4 +1,5 @@
 import type {
+  ManagedFailure,
   ManagedPhase,
   SaveManagementHost,
 } from "../persist";
@@ -48,6 +49,7 @@ export type PrepareSaveReplacementInput =
     };
 
 export type ReplacementUiPhase = ManagedPhase | "read-backup";
+export type ReplacementFailureStatus = ManagedFailure["status"];
 
 export type PreparedSaveReplacement = {
   status: "ready";
@@ -60,7 +62,12 @@ export type PreparedSaveReplacement = {
 
 export type PrepareSaveReplacementResult =
   | PreparedSaveReplacement
-  | { status: "error"; phase: ReplacementUiPhase; message: string };
+  | {
+      status: "error";
+      phase: ReplacementUiPhase;
+      failureStatus: ReplacementFailureStatus;
+      message: string;
+    };
 
 export type SaveReplacementResult =
   | {
@@ -68,10 +75,12 @@ export type SaveReplacementResult =
       path: string;
       backupPath: string;
       bytes: Uint8Array;
+      sha256?: string;
     }
   | {
       status: "error";
       phase: ManagedPhase;
+      failureStatus: ReplacementFailureStatus;
       message: string;
       verification?: SaveByteVerification;
     };
@@ -97,6 +106,7 @@ export async function prepareSaveReplacement(
       return {
         status: "error",
         phase: "read-backup",
+        failureStatus: sourceRead.status,
         message: sourceRead.message,
       };
     }
@@ -107,6 +117,7 @@ export async function prepareSaveReplacement(
       return {
         status: "error",
         phase: "validate-source",
+        failureStatus: "integrity",
         message: "replacement.error.sourceChanged",
       };
     }
@@ -118,6 +129,7 @@ export async function prepareSaveReplacement(
       return {
         status: "error",
         phase: "validate-source",
+        failureStatus: "invalid-size",
         message: "replacement.error.invalidSource",
       };
     }
@@ -133,6 +145,7 @@ export async function prepareSaveReplacement(
     return {
       status: "error",
       phase: "validate-source",
+      failureStatus: "invalid-size",
       message: "replacement.error.invalidSource",
     };
   }
@@ -142,6 +155,7 @@ export async function prepareSaveReplacement(
     return {
       status: "error",
       phase: "check-target",
+      failureStatus: targetRead.status,
       message: targetRead.message,
     };
   }
@@ -155,6 +169,7 @@ export async function prepareSaveReplacement(
     return {
       status: "error",
       phase: "check-target",
+      failureStatus: "invalid-size",
       message: "replacement.error.invalidTarget",
     };
   }
@@ -183,6 +198,7 @@ export async function executeSaveReplacement(
     return {
       status: "error",
       phase: "validate-source",
+      failureStatus: "invalid-size",
       message: "replacement.error.invalidSource",
     };
   }
@@ -198,6 +214,7 @@ export async function executeSaveReplacement(
     return {
       status: "error",
       phase: written.phase,
+      failureStatus: written.status,
       message: written.message,
     };
   }
@@ -207,6 +224,7 @@ export async function executeSaveReplacement(
     return {
       status: "error",
       phase: "verify-target",
+      failureStatus: reread.status,
       message: reread.message,
     };
   }
@@ -215,6 +233,7 @@ export async function executeSaveReplacement(
     return {
       status: "error",
       phase: "verify-target",
+      failureStatus: "verify",
       message: "replacement.error.verificationMismatch",
       verification,
     };
@@ -224,5 +243,6 @@ export async function executeSaveReplacement(
     path: input.targetPath,
     backupPath: written.backup.path,
     bytes: reread.bytes,
+    sha256: reread.sha256 ?? written.sha256,
   };
 }

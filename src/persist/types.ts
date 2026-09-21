@@ -19,7 +19,7 @@ export type PickSaveAsResult =
 export type ReloadResult = ReadFileResult;
 
 export type OverwriteResult =
-  | { status: "ok"; path: string; backupPath: string }
+  | { status: "ok"; path: string; backupPath: string; sha256?: string }
   | { status: "backup"; path: string; backupPath: string; message: string }
   | PersistIoFailure
   | ManagedFailure;
@@ -125,5 +125,5 @@ export interface SaveManagementHost {
 }
 
 export type ManagedOverwriteResult =
-  | { status: "ok"; path: string; backupPath: string }
+  | { status: "ok"; path: string; backupPath: string; sha256?: string }
   | ManagedFailure;

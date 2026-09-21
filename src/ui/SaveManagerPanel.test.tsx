@@ -205,6 +205,16 @@ describe("SaveManagerPanel", () => {
     expect(empty).toContain("No backups yet");
   });
 
+  it("warns that manual backups exclude every dirty in-memory edit", () => {
+    const html = renderPanel({
+      dirty: true,
+      currentPath: readySlot.path,
+      historyTargetPath: "~/saves/SlotData_2.dat",
+    });
+
+    expect(html).toContain("Unsaved editor changes are not included");
+  });
+
   it("renders restore/import entry points and a structured directional preview", () => {
     const backupHistory: BackupHistoryItem[] = [
       {

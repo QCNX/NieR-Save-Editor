@@ -357,7 +357,7 @@ export function SaveManagerPanel({
             {replacementError}
           </p>
         ) : null}
-        {dirty && currentPath && currentPath === historyTargetPath ? (
+        {dirty ? (
           <p className="save-backup-dirty-note">
             {t("saveManager.backupExcludesUnsaved")}
           </p>

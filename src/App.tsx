@@ -45,9 +45,11 @@ import {
 import {
   executeSaveReplacement,
   prepareSaveReplacement,
+  sha256SaveBytes,
   type PreparedSaveReplacement,
   type SaveReplacementPreview,
 } from "./ui/saveReplacement";
+import { formatManagedError } from "./ui/managedError";
 import { SettingsPanel } from "./ui/SettingsPanel";
 import {
   loadLocalSettings,
@@ -171,6 +173,9 @@ function AppContent({
   const [statusMessage, setStatusMessage] = useState<AppMessage | null>(null);
   const [errorMessage, setErrorMessage] = useState<AppMessage | null>(null);
   const [openedFileName, setOpenedFileName] = useState<string | null>(null);
+  const [currentTargetSha256, setCurrentTargetSha256] = useState<string | null>(
+    null,
+  );
   const [discoverBusy, setDiscoverBusy] = useState(false);
   const [ioBusy, setIoBusy] = useState(false);
   const [customSaveRoot, setCustomSaveRoot] = useState(() => {
@@ -219,7 +224,12 @@ function AppContent({
           async (path) => {
             const result = await persistHost.readFile(path);
             if (result.status !== "ok") {
-              throw new Error(result.message);
+              throw new Error(
+                formatManagedError(
+                  { phase: "check-target", status: result.status },
+                  t,
+                ),
+              );
             }
             return result.bytes;
           },
@@ -281,9 +291,7 @@ function AppContent({
         if (requestId !== historyRequestId.current) return;
         if (listed.status !== "ok") {
           setBackupHistory([]);
-          setHistoryError(
-            `${t(`saveManager.phase.${listed.phase}`)}: ${listed.message}`,
-          );
+          setHistoryError(formatManagedError(listed, t));
           return;
         }
         const history = await summarizeBackupHistory(
@@ -291,9 +299,10 @@ function AppContent({
           async (path) => {
             const read = await persistHost.readFile(path);
             if (read.status !== "ok") {
-              throw new Error(
-                `${t("saveManager.phase.read-backup")}: ${read.message}`,
-              );
+              throw new Error(formatManagedError({
+                phase: "read-backup",
+                status: read.status,
+              }, t));
             }
             return read.bytes;
           },
@@ -304,7 +313,12 @@ function AppContent({
         if (requestId !== historyRequestId.current) return;
         setBackupHistory([]);
         setHistoryError(
-          error instanceof Error ? error.message : t("errors.scanFailed"),
+          error instanceof Error
+            ? error.message
+            : formatManagedError(
+                { phase: "list-backups", status: "error" },
+                t,
+              ),
         );
       } finally {
         if (requestId === historyRequestId.current) {
@@ -348,7 +362,7 @@ function AppContent({
     try {
       const result = await reloadSave(persistHost, path);
       if (result.status !== "ok") {
-        setErrorMessage({ key: "errors.loadFailed", detail: result.message });
+        setErrorMessage({ key: "errors.loadFailed" });
         return false;
       }
       if (result.bytes.length !== SAVEFILE_SIZE_BYTES) {
@@ -363,6 +377,9 @@ function AppContent({
       }
       const slot = load(result.bytes);
       setState((prev) => applyLoadedSlot(prev, path, slot));
+      setCurrentTargetSha256(
+        result.sha256 ?? (await sha256SaveBytes(result.bytes)),
+      );
       setOpenedFileName(fileNameFromPath(path));
       setHistoryTargetPath(path);
       setStatusMessage({
@@ -370,12 +387,8 @@ function AppContent({
         values: { name: fileNameFromPath(path) },
       });
       return true;
-    } catch (err) {
-      setErrorMessage(
-        err instanceof Error
-          ? { key: "errors.loadFailed", detail: err.message }
-          : { key: "errors.loadFailed" },
-      );
+    } catch {
+      setErrorMessage({ key: "errors.loadFailed" });
       return false;
     } finally {
       setIoBusy(false);
@@ -430,8 +443,18 @@ function AppContent({
         persistHost,
         state.currentPath,
         state.slotData,
+        currentTargetSha256 ?? undefined,
       );
       if (result.status === "ok") {
+        let nextSha256 = result.sha256 ?? null;
+        if (!nextSha256) {
+          const readback = await persistHost.readFile(result.path);
+          if (readback.status === "ok") {
+            nextSha256 =
+              readback.sha256 ?? (await sha256SaveBytes(readback.bytes));
+          }
+        }
+        setCurrentTargetSha256(nextSha256);
         setState((prev) => applyOverwriteSuccess(prev));
         if (historyTargetPath === state.currentPath) {
           await refreshBackupHistory(state.currentPath);
@@ -444,23 +467,24 @@ function AppContent({
         });
         return;
       }
+      if ("phase" in result) {
+        setErrorMessage({
+          key: "errors.overwriteFailed",
+          detail: formatManagedError(result, t),
+        });
+        return;
+      }
       if (result.status === "backup") {
         setErrorMessage({
           key: "errors.backupFailed",
-          detail: result.message,
         });
         return;
       }
       setErrorMessage({
         key: "errors.overwriteFailed",
-        detail: result.message,
       });
     } catch (err) {
-      setErrorMessage(
-        err instanceof Error
-          ? { key: "errors.overwriteFailed", detail: err.message }
-          : { key: "errors.overwriteFailed" },
-      );
+      setErrorMessage({ key: "errors.overwriteFailed" });
     } finally {
       setIoBusy(false);
     }
@@ -485,6 +509,12 @@ function AppContent({
         return;
       }
       if (result.status === "ok") {
+        const readback = await persistHost.readFile(result.path);
+        setCurrentTargetSha256(
+          readback.status === "ok"
+            ? readback.sha256 ?? (await sha256SaveBytes(readback.bytes))
+            : await sha256SaveBytes(serialize(state.slotData)),
+        );
         setState((prev) => applySaveAsSuccess(prev, result.path));
         setOpenedFileName(fileNameFromPath(result.path));
         setStatusMessage({
@@ -493,13 +523,9 @@ function AppContent({
         });
         return;
       }
-      setErrorMessage({ key: "errors.saveAsFailed", detail: result.message });
+      setErrorMessage({ key: "errors.saveAsFailed" });
     } catch (err) {
-      setErrorMessage(
-        err instanceof Error
-          ? { key: "errors.saveAsFailed", detail: err.message }
-          : { key: "errors.saveAsFailed" },
-      );
+      setErrorMessage({ key: "errors.saveAsFailed" });
     } finally {
       setIoBusy(false);
     }
@@ -526,9 +552,7 @@ function AppContent({
         "manual",
       );
       if (result.status !== "ok") {
-        setHistoryError(
-          `${t(`saveManager.phase.${result.phase}`)}: ${result.message}`,
-        );
+        setHistoryError(formatManagedError(result, t));
         return;
       }
       await refreshBackupHistory(historyTargetPath);
@@ -536,25 +560,22 @@ function AppContent({
         key: "status.manualBackupSuccess",
         values: { name: fileNameFromPath(result.backup.path) },
       });
-    } catch (error) {
-      setHistoryError(
-        `${t("saveManager.phase.backup-target")}: ${
-          error instanceof Error
-            ? error.message
-            : t("errors.manualBackupFailed")
-        }`,
-      );
+    } catch {
+      setHistoryError(formatManagedError({
+        phase: "backup-target",
+        status: "error",
+      }, t));
     } finally {
       manualBackupBusy.current = false;
       setIoBusy(false);
     }
   }
 
-  function replacementFailure(phase: string, message: string) {
-    const detail = message.startsWith("replacement.error.")
-      ? t(message)
-      : message;
-    setReplacementError(`${t(`saveManager.phase.${phase}`)}: ${detail}`);
+  function replacementFailure(
+    phase: Parameters<typeof formatManagedError>[0]["phase"],
+    status: Parameters<typeof formatManagedError>[0]["status"],
+  ) {
+    setReplacementError(formatManagedError({ phase, status }, t));
   }
 
   async function prepareRestore(item: BackupHistoryItem) {
@@ -586,17 +607,12 @@ function AppContent({
         targetMtimeMs: target.mtimeMs,
       });
       if (result.status === "error") {
-        replacementFailure(result.phase, result.message);
+        replacementFailure(result.phase, result.failureStatus);
         return;
       }
       setPreparedReplacement(result);
-    } catch (error) {
-      replacementFailure(
-        "validate-source",
-        error instanceof Error
-          ? error.message
-          : t("replacement.error.prepareFailed"),
-      );
+    } catch {
+      replacementFailure("validate-source", "error");
     } finally {
       replacementBusy.current = false;
       setIoBusy(false);
@@ -634,17 +650,12 @@ function AppContent({
         targetMtimeMs: target.mtimeMs,
       });
       if (result.status === "error") {
-        replacementFailure(result.phase, result.message);
+        replacementFailure(result.phase, result.failureStatus);
         return;
       }
       setPreparedReplacement(result);
-    } catch (error) {
-      replacementFailure(
-        "validate-source",
-        error instanceof Error
-          ? error.message
-          : t("replacement.error.prepareFailed"),
-      );
+    } catch {
+      replacementFailure("validate-source", "error");
     } finally {
       replacementBusy.current = false;
       setIoBusy(false);
@@ -675,12 +686,15 @@ function AppContent({
         expectedTargetSha256: preparedReplacement.expectedTargetSha256,
       });
       if (result.status === "error") {
-        replacementFailure(result.phase, result.message);
+        replacementFailure(result.phase, result.failureStatus);
         return;
       }
 
       if (state.currentPath === targetPath) {
         const replacedSlot = load(result.bytes);
+        setCurrentTargetSha256(
+          result.sha256 ?? (await sha256SaveBytes(result.bytes)),
+        );
         setState((previous) =>
           applyLoadedSlot(previous, targetPath, replacedSlot),
         );
@@ -697,13 +711,8 @@ function AppContent({
             : "status.importSuccess",
         values: { name: fileNameFromPath(targetPath) },
       });
-    } catch (error) {
-      replacementFailure(
-        "verify-target",
-        error instanceof Error
-          ? error.message
-          : t("replacement.error.writeFailed"),
-      );
+    } catch {
+      replacementFailure("verify-target", "error");
     } finally {
       replacementBusy.current = false;
       setIoBusy(false);
@@ -735,6 +744,7 @@ function AppContent({
       const slot = load(bytes);
       // Browser file input has no absolute path — overwrite/reload need discovery or Save As.
       setState((prev) => applyLoadedSlot(prev, null, slot));
+      setCurrentTargetSha256(null);
       setOpenedFileName(file.name);
       setStatusMessage({
         key: "status.openedFileNoPath",
@@ -760,6 +770,7 @@ function AppContent({
     }
     setState(applyClosed(state));
     setOpenedFileName(null);
+    setCurrentTargetSha256(null);
     clearAlerts();
   }
 

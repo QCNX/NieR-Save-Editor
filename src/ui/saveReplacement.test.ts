@@ -103,7 +103,11 @@ describe("executeSaveReplacement", () => {
         expectedSourceSha256: "backup-sha",
         expectedTargetSha256: "target-sha",
       }),
-    ).resolves.toMatchObject({ status: "ok", bytes: intended });
+    ).resolves.toMatchObject({
+      status: "ok",
+      bytes: intended,
+      sha256: "written-sha",
+    });
     expect(safeWriteFile).toHaveBeenCalledWith({
       targetPath: "~/saves/SlotData_0.dat",
       bytes: intended,
@@ -139,6 +143,7 @@ describe("executeSaveReplacement", () => {
     expect(result).toMatchObject({
       status: "error",
       phase: "check-target",
+      failureStatus: "conflict",
       message: "target changed",
     });
     expect(readFile).not.toHaveBeenCalled();
@@ -191,6 +196,7 @@ describe("executeSaveReplacement", () => {
     expect(result).toEqual({
       status: "error",
       phase: "verify-target",
+      failureStatus: "permission",
       message: "synthetic readback denial",
     });
   });
@@ -315,7 +321,11 @@ describe("prepareSaveReplacement", () => {
         targetPath: "~/saves/SlotData_0.dat",
         targetMtimeMs: 20,
       }),
-    ).resolves.toMatchObject({ status: "error", phase: "read-backup" });
+    ).resolves.toMatchObject({
+      status: "error",
+      phase: "read-backup",
+      failureStatus: "permission",
+    });
 
     const targetDenied = fakeHost({
       readFile: vi.fn(async (): Promise<ReadFileResult> => ({
