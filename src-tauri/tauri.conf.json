@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "nier-save-editor",
+        "title": "NieR Save Editor",
         "width": 1180,
         "height": 720,
         "minWidth": 820,

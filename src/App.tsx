@@ -71,13 +71,19 @@ import {
   needsConfirm,
   type EditorAppState,
 } from "./ui/workflow";
-import { formatWindowTitle } from "./ui/windowTitle";
+import { applyWindowTitle } from "./ui/windowTitle";
 import "./ui/editor.css";
 
 function isTauriRuntime(): boolean {
   return (
     typeof window !== "undefined" &&
     ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)
+  );
+}
+
+function setNativeWindowTitle(title: string): Promise<void> {
+  return import("@tauri-apps/api/window").then(({ getCurrentWindow }) =>
+    getCurrentWindow().setTitle(title),
   );
 }
 
@@ -210,11 +216,12 @@ function AppContent({
     : openedFileName;
 
   useEffect(() => {
-    document.title = formatWindowTitle({
+    applyWindowTitle({
       dirty: state.dirty,
       fileName: currentFileName,
+      setNativeTitle: tauri ? setNativeWindowTitle : undefined,
     });
-  }, [currentFileName, state.dirty]);
+  }, [currentFileName, state.dirty, tauri]);
 
   const refreshSlots = useCallback(async () => {
     setErrorMessage(null);
