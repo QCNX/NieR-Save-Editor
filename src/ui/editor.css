@@ -706,9 +706,9 @@ input[type="text"],
 
 .save-current-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(15rem, 19rem);
+  grid-template-columns: minmax(0, 1fr) minmax(28.5rem, 35rem);
   gap: 14px;
-  align-items: stretch;
+  align-items: start;
 }
 
 .save-current-card {
@@ -716,6 +716,12 @@ input[type="text"],
   padding: 10px 12px;
   border: 1px solid var(--ui-border-table);
   background: var(--ui-surface);
+}
+
+.save-current-card--empty {
+  display: flex;
+  align-items: center;
+  min-height: 0;
 }
 
 .save-current-title-row,
@@ -734,7 +740,7 @@ input[type="text"],
 
 .save-actions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   align-content: start;
 }
@@ -757,7 +763,6 @@ input[type="text"],
 }
 
 .save-action--primary {
-  grid-column: 1 / -1;
   background: var(--ui-primary-bg);
   border-color: var(--ui-primary-border);
   color: var(--ui-primary-ink);
@@ -1093,6 +1098,24 @@ input[type="text"],
   .replacement-dialog {
     max-height: calc(100vh - 20px);
   }
+}
+
+.settings-panel {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  max-width: 70rem;
+}
+
+.settings-card {
+  padding: 14px;
+  border: 1px solid var(--ui-border-table);
+  background: var(--ui-surface);
+}
+
+.settings-card h2 {
+  margin: 0 0 12px;
+  font-size: 1.05rem;
 }
 
 .settings-row {

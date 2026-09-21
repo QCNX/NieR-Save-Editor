@@ -242,7 +242,14 @@ export function SaveManagerPanel({
       >
         <h2 id="save-manager-current">{t("saveManager.currentHeading")}</h2>
         <div className="save-current-layout">
-          <div className="save-current-card" title={currentPath ?? undefined}>
+          <div
+            className={
+              current
+                ? "save-current-card"
+                : "save-current-card save-current-card--empty"
+            }
+            title={currentPath ?? undefined}
+          >
             {current ? (
               <>
                 <div className="save-current-title-row">
@@ -394,7 +401,10 @@ export function SaveManagerPanel({
               </p>
             ) : null}
           </div>
-          <div className="save-history-actions">
+          <div
+            className="save-history-actions"
+            aria-label={t("saveManager.backupActions")}
+          >
             <button
               type="button"
               className="save-action"

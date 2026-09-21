@@ -26,6 +26,16 @@ function renderSettings(
 }
 
 describe("SettingsPanel", () => {
+  it("groups save discovery and backup location into labelled settings cards", () => {
+    const html = renderSettings();
+
+    expect(html).toContain('class="settings-card"');
+    expect(html).toContain("Save discovery");
+    expect(html).toContain("Backup location");
+    expect(html).toContain(">Save and rescan</button>");
+    expect(html).toContain(">Save backup location</button>");
+  });
+
   it("offers open backup folder beside the backup-root field", () => {
     const html = renderSettings({ canRevealBackupFolder: true });
     const openButton = html.match(

@@ -237,6 +237,7 @@ describe("SaveManagerPanel", () => {
   it("shows brief backup help near history and manual-backup actions", () => {
     const html = renderPanel({ dirty: false });
 
+    expect(html).toContain('aria-label="Backup actions"');
     expect(html).toContain('class="save-backup-help"');
     expect(html).toContain("snapshots the save on disk");
     expect(html).toContain("before save, import, and restore");
