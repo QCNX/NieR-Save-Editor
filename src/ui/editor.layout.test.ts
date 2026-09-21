@@ -37,6 +37,20 @@ describe("responsive editor layout", () => {
   });
 });
 
+describe("save summary density", () => {
+  it("packs save-slot meta as same-row label/value pairs", () => {
+    expect(css).toMatch(
+      /\.save-summary-details\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/s,
+    );
+    expect(css).toMatch(
+      /\.save-summary-details\s*>\s*div\s*\{[^}]*display:\s*flex/s,
+    );
+    expect(css).toMatch(
+      /\.save-summary-details\s*dd\s*\{[^}]*margin:\s*0/s,
+    );
+  });
+});
+
 describe("content-width collection tables", () => {
   it("keeps collection-table scrollbars beside their columns", () => {
     expect(css).toMatch(
@@ -47,10 +61,10 @@ describe("content-width collection tables", () => {
 
 describe("chip loadout three-column layout CSS", () => {
   it("opens wide enough that the default window keeps three columns", () => {
-    // After stats/gutter hug, default sits just above collapse without right-side chrome.
+    // Default sized for the wider locale (English chrome); collapse stays ~900.
     expect(defaultWindow.width).toBeGreaterThan(900);
-    expect(defaultWindow.width).toBeGreaterThanOrEqual(920);
-    expect(defaultWindow.width).toBeLessThanOrEqual(960);
+    expect(defaultWindow.width).toBeGreaterThanOrEqual(960);
+    expect(defaultWindow.width).toBeLessThanOrEqual(1000);
     expect(defaultWindow.height).toBe(720);
     expect(chipLoadoutCollapsePx).toBeLessThan(defaultWindow.width);
     // Prefer ~900 (align with other splits); must stay clearly below default.

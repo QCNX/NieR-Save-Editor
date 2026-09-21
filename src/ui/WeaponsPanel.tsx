@@ -171,7 +171,6 @@ export function WeaponsPanel({ slot, onSlotChange }: Props) {
         </aside>
 
         <div className="panel-split__main">
-          <h3>{t("fields.name")}</h3>
           <div className="list-toolbar">
             <label>
               <span>{t("list.search")}</span>

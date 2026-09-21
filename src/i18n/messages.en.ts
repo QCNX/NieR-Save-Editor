@@ -166,6 +166,7 @@ export const messagesEn: Record<MessageKey, string> = {
   "inventory.main": "Main inventory",
   "inventory.corpse": "Corpse inventory",
   "fields.name": "Name",
+  "fields.program": "Program",
   "fields.quantity": "Quantity",
   "fields.level": "Level",
   "fields.weight": "Cost",

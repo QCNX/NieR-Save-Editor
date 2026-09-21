@@ -81,6 +81,8 @@ describe("ticket 11 Pod Config editor seam", () => {
     );
 
     expect(english).toContain("Pod Config");
+    expect(english).toContain("<span>Program</span>");
+    expect(english).not.toContain("<span>Pod A Program</span>");
     expect(english).toContain('aria-label="Pod A Program"');
     expect(english).toContain('aria-label="Pod B Level"');
     expect(english).toContain('aria-label="Pod C Program"');
@@ -89,6 +91,8 @@ describe("ticket 11 Pod Config editor seam", () => {
     expect(english).toContain("R020: Mirage");
     expect(english).toContain("(Empty)");
     expect(chinese).toContain("Pod 配置");
+    expect(chinese).toContain("<span>程序</span>");
+    expect(chinese).not.toContain("<span>Pod A 程序</span>");
     expect(chinese).toContain('aria-label="Pod A 程序"');
     expect(chinese).toContain('aria-label="Pod B 等级"');
     expect(chinese).toContain("R020：幻象");

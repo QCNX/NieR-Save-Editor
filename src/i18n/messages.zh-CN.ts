@@ -164,6 +164,7 @@ export const messagesZhCN = {
   "inventory.main": "主背包",
   "inventory.corpse": "尸体背包",
   "fields.name": "名称",
+  "fields.program": "程序",
   "fields.quantity": "数量",
   "fields.level": "等级",
   "fields.weight": "占用",

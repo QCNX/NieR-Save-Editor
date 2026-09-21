@@ -178,10 +178,8 @@ export function PodsPanel({ slot, onSlotChange }: PanelProps) {
           <div className="pod-config-stack">
             {(["A", "B", "C"] as const).map((podName) => {
               const pod = podConfig[`pod${podName}`];
-              const programLabel =
-                language === "zh-CN"
-                  ? `Pod ${podName} 程序`
-                  : `Pod ${podName} Program`;
+              const programFieldLabel = t("fields.program");
+              const programAriaLabel = `Pod ${podName} ${programFieldLabel}`;
               const levelLabel = `Pod ${podName} ${t("fields.level")}`;
               const unknownProgramValue =
                 Number.MAX_SAFE_INTEGER - (pod.program.ordinal >>> 0);
@@ -191,14 +189,14 @@ export function PodsPanel({ slot, onSlotChange }: PanelProps) {
                 <fieldset key={podName} className="pod-config-card">
                   <legend>{`Pod ${podName}`}</legend>
                   <label>
-                    <span>{programLabel}</span>
+                    <span>{programFieldLabel}</span>
                     <IdChoiceControl
                       value={programValue}
                       emptyValue={EMPTY_POD_CONFIG_PROGRAM_ID}
                       choices={configChoices}
                       selectWidthCh={podSelectWidthCh}
                       labels={{
-                        select: programLabel,
+                        select: programAriaLabel,
                         clear: t("actions.clear"),
                         empty: t("list.empty"),
                         unknown: () =>

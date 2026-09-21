@@ -114,6 +114,10 @@ describe("ticket 09 weapon equipment editor seam", () => {
     expect(english).toContain("panel-split__side--ungrouped");
     expect(english).toContain("pod-config-card");
     expect(english).not.toContain("collection-workspace");
+    expect(english).not.toMatch(
+      /panel-split__main">\s*<h3>Name<\/h3>/,
+    );
+    expect(english).toContain('<th class="col-name">Name</th>');
     expect(chinese).toContain("装备组 1");
     expect(chinese).toContain('aria-label="装备组 2 重攻击"');
     expect(chinese).toContain("纯白契约");
