@@ -37,6 +37,14 @@ describe("responsive editor layout", () => {
   });
 });
 
+describe("content-width collection tables", () => {
+  it("keeps collection-table scrollbars beside their columns", () => {
+    expect(css).toMatch(
+      /\.table-wrap--content-width\s*\{[^}]*align-self:\s*flex-start[^}]*width:\s*max-content[^}]*max-width:\s*100%/s,
+    );
+  });
+});
+
 describe("chip loadout three-column layout CSS", () => {
   it("opens wide enough that the default window keeps three columns", () => {
     // Library is content-sized; equipped takes a flexible share — keep 3-col at default.

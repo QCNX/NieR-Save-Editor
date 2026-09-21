@@ -137,7 +137,7 @@ export function InventoryPanel({ slot, onSlotChange }: Props) {
           <span>{t("list.occupiedOnly")}</span>
         </label>
       </div>
-      <div className="table-wrap">
+      <div className="table-wrap table-wrap--content-width">
         <table className="slot-table">
           <thead>
             <tr>

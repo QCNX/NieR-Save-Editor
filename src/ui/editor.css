@@ -1183,6 +1183,12 @@ input[type="text"],
   margin: 0;
 }
 
+.table-wrap--content-width {
+  align-self: flex-start;
+  width: max-content;
+  max-width: 100%;
+}
+
 .table-wrap--compact {
   flex: 0 1 auto;
   max-height: 40vh;

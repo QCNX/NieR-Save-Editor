@@ -97,6 +97,7 @@ describe("SkillsPanel public behavior", () => {
     expect(html).toContain("◆");
     expect(html.indexOf("Level")).toBeLessThan(html.indexOf("Cost"));
     expect(html).not.toContain(`Unknown (0x${(EMPTY_PLUGIN_CHIP_ID.baseId >>> 0).toString(16)})`);
+    expect(html.match(/table-wrap--content-width/g)).toHaveLength(2);
   });
 
   it("renders chip cost as 占用 in zh-CN", () => {

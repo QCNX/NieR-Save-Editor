@@ -106,6 +106,7 @@ describe("ticket 09 weapon equipment editor seam", () => {
     expect(english).toContain("Virtuous Contract");
     expect(english).toContain("Cruel Oath");
     expect(english).toContain("(Empty)");
+    expect(english).toContain('class="table-wrap table-wrap--content-width"');
     expect(chinese).toContain("装备组 1");
     expect(chinese).toContain('aria-label="装备组 2 重攻击"');
     expect(chinese).toContain("纯白契约");

@@ -262,7 +262,7 @@ export function PodsPanel({ slot, onSlotChange }: PanelProps) {
               {t("list.occupiedOnly")}
             </label>
           </div>
-          <div className="table-wrap">
+          <div className="table-wrap table-wrap--content-width">
             <table className="slot-table">
               <thead>
                 <tr>
@@ -1007,7 +1007,7 @@ export function ChipsPanel({ slot, onSlotChange }: PanelProps) {
         </label>
       </div>
 
-      <div className="table-wrap">
+      <div className="table-wrap table-wrap--content-width">
         <table className="slot-table">
           <thead>
             <tr>

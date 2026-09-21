@@ -154,5 +154,6 @@ describe("ticket 05 inventory editor seam", () => {
     expect(html).toContain("Show occupied only");
     expect(html).toContain("Medium Recovery");
     expect(html).toContain("Clear");
+    expect(html).toContain('class="table-wrap table-wrap--content-width"');
   });
 });

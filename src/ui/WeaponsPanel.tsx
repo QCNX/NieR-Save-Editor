@@ -193,7 +193,7 @@ export function WeaponsPanel({ slot, onSlotChange }: Props) {
               {t("list.occupiedOnly")}
             </label>
           </div>
-          <div className="table-wrap">
+          <div className="table-wrap table-wrap--content-width">
             <table className="slot-table slot-table--weapons">
               <thead>
                 <tr>
