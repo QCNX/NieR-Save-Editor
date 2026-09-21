@@ -124,9 +124,28 @@ export function pluginChipChoices(language: Language): IdChoice<number>[] {
 }
 
 export function podConfigProgramChoices(
+  programs: readonly PodProgram[],
   language: Language,
+  currentId: number = EMPTY_POD_CONFIG_PROGRAM_ID,
 ): IdChoice<number>[] {
-  return [EMPTY_POD_CONFIG_PROGRAM_ID, ...POD_PROGRAM_IDS].map((id) => ({
+  const owned = new Set(
+    programs
+      .map((program) => program.id)
+      .filter((id) => id !== EMPTY_POD_PROGRAM_ID && id !== 0),
+  );
+  if (
+    currentId !== EMPTY_POD_CONFIG_PROGRAM_ID &&
+    Number.isFinite(currentId)
+  ) {
+    owned.add(currentId);
+  }
+
+  const ids = [
+    EMPTY_POD_CONFIG_PROGRAM_ID,
+    ...[...owned].sort((left, right) => left - right),
+  ];
+
+  return ids.map((id) => ({
     id,
     label:
       id === EMPTY_POD_CONFIG_PROGRAM_ID
@@ -156,10 +175,9 @@ export function PodsPanel({ slot, onSlotChange }: PanelProps) {
   const allPods = parsePodPrograms(slot.podPrograms);
   const podConfig = parsePodConfig(slot.podConfig);
   const pods = filterPodProgramRows(allPods, query, occupiedOnly, language);
-  const configChoices = podConfigProgramChoices(language);
   const podSelectWidthCh = estimateSelectWidthCh([
     t("list.empty"),
-    ...POD_PROGRAM_IDS.map((id) => lookupPodName(id, language)),
+    ...podConfigProgramChoices(allPods, language).map((choice) => choice.label),
   ]);
   const choiceLabels = {
     clear: t("actions.clear"),
@@ -184,6 +202,13 @@ export function PodsPanel({ slot, onSlotChange }: PanelProps) {
               const unknownProgramValue =
                 Number.MAX_SAFE_INTEGER - (pod.program.ordinal >>> 0);
               const programValue = pod.program.id ?? unknownProgramValue;
+              const configChoices = podConfigProgramChoices(
+                allPods,
+                language,
+                typeof pod.program.id === "number"
+                  ? pod.program.id
+                  : EMPTY_POD_CONFIG_PROGRAM_ID,
+              );
 
               return (
                 <fieldset key={podName} className="pod-config-card">
