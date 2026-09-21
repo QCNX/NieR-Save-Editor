@@ -6,16 +6,26 @@ Built with **Tauri 2**, **React**, and **TypeScript**. Save parsing/serializatio
 
 > Back up your saves before editing.
 
-## Features (MVP)
+## Features
 
-- Read / write PC `.dat` saves  
-- Slot picker (Windows + Steam Proton paths)  
-- Reload current file / overwrite (with backup) / Save As  
-- Edit money, EXP/level, inventory, weapons, plug-in chips, POD programs  
-- Chinese UI and item names via localization ID maps  
-- Plug-in chip row order: **Level**, then **Weight**
+- Read and write fixed-size NieR:Automata PC `.dat` saves with byte-identical round trips for untouched data.
+- Discover save slots from Windows and Steam Proton locations, or configure a custom save folder.
+- A dedicated **Save** page with three responsive regions:
+  - **Current save** — summary plus Save changes, Reload, Save As, Open, Close, and Rescan actions.
+  - **Save slots** — valid, invalid, and unreadable slots are isolated and shown as individual cards.
+  - **Backup history** — newest-first version history with parsed summaries, integrity state, and restore actions.
+- Create immutable, versioned backups under `nier-save-editor-backup/<slot>/` beside the save directory. Manual backup snapshots the file currently on disk and does not include unsaved editor changes.
+- Create safety backups automatically before managed mutations: `before-save`, `before-import`, and `before-restore`.
+- Restore a selected backup or replace a selected slot from an external PC save only after a directional preview and confirmation.
+- Detect target changes with size and SHA-256 checks, commit through a same-directory safe replacement, then re-read and compare the complete file. A failed backup, conflict, commit, or verification does not report success.
+- Edit SteamID, character name, play time, money, EXP/level, Debug Flag, Play Records, cosmetics, inventory and corpse inventory, weapons and equipment sets, plug-in chips, POD programs, and POD configuration.
+- Search and filter slot-based editors, fill empty entries, change IDs, and clear entries.
+- Simplified Chinese and English UI/entity names, persistent light/dark theme, and a dirty marker in the localized window title.
+- Plug-in chip row order: **Level**, then **Weight**.
 
-Out of scope for MVP: macOS, WAX mods, PS4 conversion, SteamID / Advanced tabs.
+Out of scope: macOS, WAX mods, Advanced save fields, PS4 saves/conversion, cloud backup, and automatic backup deletion.
+
+> Backup history is a recovery aid, not a substitute for keeping a separate copy of important saves.
 
 ## Develop
 
