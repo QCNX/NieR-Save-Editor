@@ -302,6 +302,9 @@ describe("chip library dual-column density CSS", () => {
     expect(css).toMatch(
       /\.panel--inventory[\s\S]*?\.col-qty input[\s\S]*?width:\s*4\.75ch/s,
     );
+    expect(css).toMatch(
+      /\.dual-column-pair__col\s*\{[^}]*overflow:\s*hidden/s,
+    );
   });
 
   it("keeps dual-column virtual overflow-x:hidden after shared .table-wrap", () => {

@@ -1314,11 +1314,15 @@ input[type="text"],
   width: 1px;
   background: var(--ui-border);
   justify-self: stretch;
+  position: relative;
+  z-index: 1;
 }
 
 .dual-column-pair__col {
   min-width: 0;
-  overflow: visible;
+  max-width: 100%;
+  /* Clip selects/buttons so they cannot paint over the mid rule. */
+  overflow: hidden;
 }
 
 .dual-column-pair__col--empty {
@@ -1327,11 +1331,13 @@ input[type="text"],
 
 .dual-column-cell-table {
   width: 100%;
+  max-width: 100%;
   table-layout: fixed;
 }
 
 .dual-column-cell-table .col-name {
   width: auto;
+  overflow: hidden;
 }
 
 .panel--dual-column .slot-id-choice {
@@ -1415,21 +1421,34 @@ input[type="text"],
 
 /* Inventory: Clear + Quantity columns; compact centered qty. */
 .panel--inventory .dual-column-cell-table .col-clear {
-  width: 1%;
+  width: 4.25em;
+  max-width: 4.25em;
   white-space: nowrap;
+  overflow: hidden;
+  padding-inline: 2px;
 }
 
 .panel--inventory .dual-column-cell-table .col-qty {
   width: 5.5ch;
+  max-width: 5.5ch;
   padding-inline: 2px;
   white-space: nowrap;
   text-align: center;
+  overflow: hidden;
+}
+
+.panel--inventory .slot-clear-button {
+  max-width: 100%;
+  padding-inline: 0.4em;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .panel--inventory .slot-table .col-qty input {
   width: 4.75ch;
-  min-width: 4.75ch;
-  max-width: none;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 0 0.15em;
   text-align: center;
   -moz-appearance: textfield;
