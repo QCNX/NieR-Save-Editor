@@ -1,4 +1,10 @@
-import { useState } from "react";
+import {
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 import { translate, useI18n, type Language } from "../i18n";
 import {
@@ -46,6 +52,13 @@ import {
   showsChipDiamond,
   type ChipLibraryCategory,
 } from "../names";
+import {
+  CHIP_LIBRARY_DEFAULT_ROW_HEIGHT,
+  CHIP_LIBRARY_DEFAULT_VIEWPORT_HEIGHT,
+  CHIP_LIBRARY_OVERSCAN,
+  chipLibraryRowPairs,
+  visibleRowWindow,
+} from "./chipLibraryVirtual";
 import {
   filterSlots,
   IdChoiceControl,
@@ -991,11 +1004,34 @@ export function ChipLoadoutPanel({
   );
 }
 
+function chipLibraryColumnHeaders(t: (key: string) => string): ReactNode {
+  return (
+    <table className="slot-table chip-library-cell-table">
+      <thead>
+        <tr>
+          <th className="col-name">{t("fields.name")}</th>
+          <th className="col-level">{t("fields.level")}</th>
+          <th className="col-weight">{t("fields.weight")}</th>
+          <th className="diamond-cell" aria-label="◆" />
+        </tr>
+      </thead>
+    </table>
+  );
+}
+
 export function ChipsPanel({ slot, onSlotChange }: PanelProps) {
   const { language, t } = useI18n();
   const [query, setQuery] = useState("");
   const [occupiedOnly, setOccupiedOnly] = useState(false);
   const [category, setCategory] = useState<ChipLibraryCategory>("all");
+  const [scrollTop, setScrollTop] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState(
+    CHIP_LIBRARY_DEFAULT_VIEWPORT_HEIGHT,
+  );
+  const [rowHeight, setRowHeight] = useState(CHIP_LIBRARY_DEFAULT_ROW_HEIGHT);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const measureRowRef = useRef<HTMLDivElement>(null);
+
   const allChips = parsePluginChips(slot.pluginChips);
   const chips = filterPluginChipRows(
     allChips,
@@ -1004,19 +1040,159 @@ export function ChipsPanel({ slot, onSlotChange }: PanelProps) {
     language,
     category,
   );
+  const pairs = useMemo(() => chipLibraryRowPairs(chips), [chips]);
   const chipChoices = pluginChipChoices(language);
-  const chipSelectWidthCh = estimateSelectWidthCh([
-    t("list.empty"),
-    ...chipChoices.map((choice) => choice.label),
-  ]);
+  // Slightly lower cap so two name selects fit the default 980 window.
+  const chipSelectWidthCh = estimateSelectWidthCh(
+    [t("list.empty"), ...chipChoices.map((choice) => choice.label)],
+    8,
+    22,
+  );
   const choiceLabels = {
     clear: t("actions.clear"),
     empty: t("list.empty"),
     unknown: (id: number) => `${t("entity.unknown")} (T${id})`,
   };
 
+  // Defaults match initialVisibleRowWindow so SSR/first paint is never blank.
+  const rowWindow = visibleRowWindow(
+    scrollTop,
+    rowHeight,
+    viewportHeight,
+    CHIP_LIBRARY_OVERSCAN,
+    pairs.length,
+  );
+
+  useLayoutEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport || typeof ResizeObserver === "undefined") return;
+    const measure = () => {
+      setViewportHeight(
+        viewport.clientHeight || CHIP_LIBRARY_DEFAULT_VIEWPORT_HEIGHT,
+      );
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(viewport);
+    return () => observer.disconnect();
+  }, []);
+
+  useLayoutEffect(() => {
+    const row = measureRowRef.current;
+    if (!row) return;
+    const height = row.getBoundingClientRect().height;
+    if (height > 0 && Math.abs(height - rowHeight) > 0.5) {
+      setRowHeight(height);
+    }
+  }, [rowWindow.start, rowWindow.end, pairs.length, rowHeight]);
+
+  function renderChipCell(chip: PluginChip | undefined): ReactNode {
+    if (!chip) {
+      return (
+        <div
+          className="chip-library-pair__col chip-library-pair__col--empty"
+          aria-hidden="true"
+        />
+      );
+    }
+    return (
+      <div className="chip-library-pair__col">
+        <table className="slot-table chip-library-cell-table">
+          <tbody>
+            <tr>
+              <td className="col-name">
+                <IdChoiceControl
+                  value={chip.id.type}
+                  emptyValue={EMPTY_PLUGIN_CHIP_ID.type}
+                  choices={chipChoices}
+                  selectWidthCh={chipSelectWidthCh}
+                  labels={{
+                    ...choiceLabels,
+                    select: `${t("skills.pluginChips")} ${chip.position + 1}`,
+                  }}
+                  onChange={(type) => {
+                    const id =
+                      type === EMPTY_PLUGIN_CHIP_ID.type
+                        ? EMPTY_PLUGIN_CHIP_ID
+                        : VANILLA_PLUGIN_CHIP_IDS.find(
+                            (candidate) => candidate.type === type,
+                          );
+                    if (!id) return;
+                    const next = replacePluginChipType(
+                      parsePluginChips(slot.pluginChips),
+                      chip.position,
+                      id,
+                    );
+                    onSlotChange({
+                      ...slot,
+                      pluginChips: serializePluginChips(next),
+                    });
+                  }}
+                />
+              </td>
+              <td className="col-level">
+                {chipIsOccupied(chip) && chip.id.hasLevels ? (
+                  <input
+                    aria-label={`${t("fields.level")} ${chip.position + 1}`}
+                    type="number"
+                    min={0}
+                    max={8}
+                    value={chip.level}
+                    onChange={(e) => {
+                      const level = Number(e.currentTarget.value);
+                      if (!Number.isFinite(level)) return;
+                      const all = parsePluginChips(slot.pluginChips);
+                      const next = setPluginChip(all, chip.position, {
+                        level: Math.min(8, Math.max(0, level | 0)),
+                      });
+                      onSlotChange({
+                        ...slot,
+                        pluginChips: serializePluginChips(next),
+                      });
+                    }}
+                  />
+                ) : null}
+              </td>
+              <td className="col-weight">
+                {chipIsOccupied(chip) ? (
+                  <input
+                    aria-label={`${t("fields.weight")} ${chip.position + 1}`}
+                    type="number"
+                    min={0}
+                    value={chip.weight}
+                    onChange={(e) => {
+                      const weight = Number(e.currentTarget.value);
+                      if (!Number.isFinite(weight)) return;
+                      const all = parsePluginChips(slot.pluginChips);
+                      const next = setPluginChip(all, chip.position, {
+                        weight: Math.max(0, weight | 0),
+                      });
+                      onSlotChange({
+                        ...slot,
+                        pluginChips: serializePluginChips(next),
+                      });
+                    }}
+                  />
+                ) : null}
+              </td>
+              <td className="diamond-cell">
+                {chipIsOccupied(chip) &&
+                chip.id.hasLevels &&
+                showsChipDiamond(chip)
+                  ? "◆"
+                  : ""}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  const visiblePairs = pairs.slice(rowWindow.start, rowWindow.end);
+
   return (
-    <section className="panel panel--fill">
+    <section className="panel panel--fill panel--chip-library">
       <div className="list-toolbar">
         <label>
           <span>{t("list.search")}</span>
@@ -1057,113 +1233,56 @@ export function ChipsPanel({ slot, onSlotChange }: PanelProps) {
         </label>
       </div>
 
-      <div className="table-wrap table-wrap--content-width">
-        <table className="slot-table">
-          <thead>
-            <tr>
-              <th className="col-name">{t("fields.name")}</th>
-              <th className="col-level">{t("fields.level")}</th>
-              <th className="col-weight">{t("fields.weight")}</th>
-              <th className="diamond-cell" aria-label="◆" />
-            </tr>
-          </thead>
-          <tbody>
-            {chips.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="empty-row">
-                  {t("list.empty")}
-                </td>
-              </tr>
-            ) : (
-              chips.map((chip) => (
-                <tr key={chip.position}>
-                  <td className="col-name">
-                    <IdChoiceControl
-                      value={chip.id.type}
-                      emptyValue={EMPTY_PLUGIN_CHIP_ID.type}
-                      choices={chipChoices}
-                      selectWidthCh={chipSelectWidthCh}
-                      labels={{
-                        ...choiceLabels,
-                        select: `${t("skills.pluginChips")} ${chip.position + 1}`,
-                      }}
-                      onChange={(type) => {
-                        const id =
-                          type === EMPTY_PLUGIN_CHIP_ID.type
-                            ? EMPTY_PLUGIN_CHIP_ID
-                            : VANILLA_PLUGIN_CHIP_IDS.find(
-                                (candidate) => candidate.type === type,
-                              );
-                        if (!id) return;
-                        const next = replacePluginChipType(
-                          parsePluginChips(slot.pluginChips),
-                          chip.position,
-                          id,
-                        );
-                        onSlotChange({
-                          ...slot,
-                          pluginChips: serializePluginChips(next),
-                        });
-                      }}
-                    />
-                  </td>
-                  <td className="col-level">
-                    {chipIsOccupied(chip) && chip.id.hasLevels ? (
-                      <input
-                        aria-label={`${t("fields.level")} ${chip.position + 1}`}
-                        type="number"
-                        min={0}
-                        max={8}
-                        value={chip.level}
-                        onChange={(e) => {
-                          const level = Number(e.currentTarget.value);
-                          if (!Number.isFinite(level)) return;
-                          const all = parsePluginChips(slot.pluginChips);
-                          const next = setPluginChip(all, chip.position, {
-                            level: Math.min(8, Math.max(0, level | 0)),
-                          });
-                          onSlotChange({
-                            ...slot,
-                            pluginChips: serializePluginChips(next),
-                          });
-                        }}
-                      />
-                    ) : null}
-                  </td>
-                  <td className="col-weight">
-                    {chipIsOccupied(chip) ? (
-                      <input
-                        aria-label={`${t("fields.weight")} ${chip.position + 1}`}
-                        type="number"
-                        min={0}
-                        value={chip.weight}
-                        onChange={(e) => {
-                          const weight = Number(e.currentTarget.value);
-                          if (!Number.isFinite(weight)) return;
-                          const all = parsePluginChips(slot.pluginChips);
-                          const next = setPluginChip(all, chip.position, {
-                            weight: Math.max(0, weight | 0),
-                          });
-                          onSlotChange({
-                            ...slot,
-                            pluginChips: serializePluginChips(next),
-                          });
-                        }}
-                      />
-                    ) : null}
-                  </td>
-                  <td className="diamond-cell">
-                    {chipIsOccupied(chip) &&
-                    chip.id.hasLevels &&
-                    showsChipDiamond(chip)
-                      ? "◆"
-                      : ""}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+      <div className="chip-library-shell">
+        <div className="chip-library-virtual__head">
+          <div className="chip-library-pair chip-library-pair--head">
+            <div className="chip-library-pair__col">
+              {chipLibraryColumnHeaders(t)}
+            </div>
+            <div className="chip-library-pair__col" aria-hidden="true">
+              {chipLibraryColumnHeaders(t)}
+            </div>
+          </div>
+        </div>
+        <div
+          className="table-wrap chip-library-virtual"
+          ref={viewportRef}
+          onScroll={(event) => {
+            setScrollTop(event.currentTarget.scrollTop);
+          }}
+        >
+          {chips.length === 0 ? (
+            <div className="empty-row chip-library-empty">{t("list.empty")}</div>
+          ) : (
+            <div
+              className="chip-library-virtual__spacer"
+              style={{ height: pairs.length * rowHeight }}
+            >
+              <div
+                className="chip-library-virtual__window"
+                style={{
+                  transform: `translateY(${rowWindow.start * rowHeight}px)`,
+                }}
+              >
+                {visiblePairs.map((pair, index) => {
+                  const [left, right] = pair;
+                  const rowIndex = rowWindow.start + index;
+                  return (
+                    <div
+                      key={left.position}
+                      className="chip-library-pair chip-library-pair--row"
+                      ref={index === 0 ? measureRowRef : undefined}
+                      data-row-index={rowIndex}
+                    >
+                      {renderChipCell(left)}
+                      {renderChipCell(right)}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );

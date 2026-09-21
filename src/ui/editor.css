@@ -1254,6 +1254,120 @@ input[type="text"],
   min-height: 0;
 }
 
+/* Chip Library: dual-column density + one outer virtual scrollbar. */
+.panel--chip-library > .chip-library-shell {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chip-library-virtual__head {
+  flex: 0 0 auto;
+  border: 1px solid var(--ui-border-table);
+  border-bottom: none;
+  background: var(--ui-th);
+  padding: 0 4px;
+}
+
+.chip-library-virtual {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  padding: 0 4px;
+}
+
+.chip-library-virtual__spacer {
+  position: relative;
+  width: 100%;
+}
+
+.chip-library-virtual__window {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  will-change: transform;
+}
+
+.chip-library-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 6px;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.chip-library-pair__col {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.chip-library-pair__col--empty {
+  visibility: hidden;
+}
+
+.chip-library-cell-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.chip-library-cell-table .col-name {
+  width: auto;
+}
+
+.panel--chip-library .slot-id-choice {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.panel--chip-library .slot-id-choice select {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.panel--chip-library .slot-table .col-level,
+.panel--chip-library .slot-table .col-weight {
+  width: 1%;
+  max-width: none;
+  padding-inline: 4px;
+  white-space: nowrap;
+}
+
+.panel--chip-library .slot-table .col-level input {
+  width: 3.5ch;
+  min-width: 0;
+  max-width: none;
+  padding: 0 0.15em;
+}
+
+.panel--chip-library .slot-table .col-weight input {
+  width: 4.75ch;
+  min-width: 0;
+  max-width: none;
+  padding: 0 0.15em;
+}
+
+.chip-library-empty {
+  padding: 8px;
+}
+
+@media (max-width: 760px) {
+  .chip-library-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* Weapons / POD: content-hugging split without an intermediate workspace frame. */
 .panel-split--collection {
   align-self: flex-start;

@@ -266,3 +266,25 @@ describe("editor status bar chrome height", () => {
     );
   });
 });
+
+describe("chip library dual-column density CSS", () => {
+  it("keeps the default window at 980×720 (do not widen for dual columns)", () => {
+    expect(defaultWindow.width).toBe(980);
+    expect(defaultWindow.height).toBe(720);
+  });
+
+  it("defines dual-column pair grid with minmax(0, 1fr) and compact number inputs", () => {
+    expect(css).toMatch(
+      /\.chip-library-pair\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+minmax\(0,\s*1fr\)/s,
+    );
+    expect(css).toMatch(
+      /\.panel--chip-library[\s\S]*?\.col-level input[\s\S]*?width:\s*3\.5ch/s,
+    );
+    expect(css).toMatch(
+      /\.panel--chip-library[\s\S]*?\.col-weight input[\s\S]*?width:\s*4\.75ch/s,
+    );
+    expect(css).toMatch(
+      /\.panel--chip-library[\s\S]*?\.slot-id-choice select[\s\S]*?max-width:\s*100%/s,
+    );
+  });
+});
