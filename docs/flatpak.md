@@ -1,64 +1,15 @@
 # Steam Deck / Flatpak
 
-This app’s **Steam Deck** delivery path is a **Flatpak** package (Desktop Mode). Windows and Steam Deck Flatpak are both supported delivery paths.
+[中文](./flatpak.zh-CN.md)
 
-> Back up your saves before editing.  
-> Do **not** commit real `.dat` saves (they can contain private Steam progress). Prefer synthetic fixtures for tests and CI.
+Steam Deck delivery is a **Flatpak** (Desktop Mode). Smoke-tested on Deck (Proton / Flatpak Steam saves, overwrite with backup).
 
-## Manifest and runtime
+> Back up your saves before editing. Do not commit real `.dat` files.
 
-In-repo Flatpak manifest (x86_64):
-
-- [`flatpak/com.niersaveeditor.desktop.yml`](../flatpak/com.niersaveeditor.desktop.yml)
-
-| Pin | Value | Why |
-| --- | --- | --- |
-| App id | `com.niersaveeditor.desktop` | Matches Tauri `identifier` in `src-tauri/tauri.conf.json` |
-| Runtime / SDK | `org.gnome.Platform` / `org.gnome.Sdk` **47** | GNOME 47 (Freedesktop **24.08** base) ships **WebKitGTK 4.1**, which Tauri 2 needs on Linux |
-| SDK extensions | `org.freedesktop.Sdk.Extension.node20`, `org.freedesktop.Sdk.Extension.rust-stable` | Node + Rust toolchains for the in-sandbox Tauri build |
-| Arch | **x86_64** | Steam Deck Desktop Mode |
-
-**finish-args (sandbox):** Wayland + X11 fallback (`--socket=wayland`, `--socket=fallback-x11`, `--share=ipc`, `--device=dri`). Save access prefers portals for file dialogs / Save As, plus precise filesystem grants for SlotData discovery (Documents + Proton `compatdata/524220` roots, including Flatpak Steam)—not blanket home write.
-
-Supporting files next to the manifest: `.desktop` launcher and AppStream `metainfo.xml`.
-
-## Build a local `.flatpak` (Linux x86_64)
-
-Run these on a **Linux x86_64** machine (Steam Deck Desktop Mode, or any builder with Flatpak). Do **not** put LAN hostnames, SSH targets, usernames, or machine-specific paths into the repo.
-
-1. Install Flatpak tooling and add Flathub (once per user):
-   ```bash
-   # Distro package names vary; examples: flatpak, flatpak-builder
-   flatpak remote-add --if-not-exists --user flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-   ```
-2. From the **repository root**:
-   ```bash
-   flatpak-builder --user --force-clean --install-deps-from=flathub \
-     build-dir flatpak/com.niersaveeditor.desktop.yml
-   ```
-3. Export a single-file bundle (optional but handy for copying to a Deck):
-   ```bash
-   flatpak-builder --user --force-clean --repo=repo \
-     build-dir flatpak/com.niersaveeditor.desktop.yml
-   flatpak build-bundle repo nier-save-editor.flatpak com.niersaveeditor.desktop --arch=x86_64
-   ```
-4. Install and run:
-   ```bash
-   flatpak install --user ./nier-save-editor.flatpak
-   flatpak run com.niersaveeditor.desktop
-   ```
-   Or, after a successful `--install` build with flatpak-builder, launch with `flatpak run com.niersaveeditor.desktop` without a separate bundle step.
-
-Do not commit `build-dir/`, `repo/`, `.flatpak-builder/`, or `.flatpak` bundles.
-
-**Validation:** Built and smoke-tested on Steam Deck Desktop Mode (open Proton / Flatpak Steam saves, overwrite with backup).
-
-## Install and run (end user)
-
-When a local `.flatpak` bundle (or a Flathub/remote listing) exists:
+## Install and run
 
 1. Switch the Deck to **Desktop Mode**.
-2. Install the package for your user, for example:
+2. Install a local bundle (when you have one), for example:
    ```bash
    flatpak install --user ./nier-save-editor.flatpak
    ```
@@ -67,29 +18,43 @@ When a local `.flatpak` bundle (or a Flathub/remote listing) exists:
    flatpak run com.niersaveeditor.desktop
    ```
 
-## Save discovery (Desktop Mode + Proton)
+App id: `com.niersaveeditor.desktop` · Manifest: [`flatpak/com.niersaveeditor.desktop.yml`](../flatpak/com.niersaveeditor.desktop.yml)
 
-On Steam Deck (and Linux generally), NieR:Automata PC saves are often under **Steam Proton** `compatdata` for Steam app id **`524220`**, not only under a plain `~/Documents` tree.
+## Where saves are
 
-The editor probes candidate folders under your home (`~/...`), including:
+NieR:Automata PC slots are often under Steam Proton `compatdata` for app id **`524220`**, not only under `~/Documents`.
 
-| Kind | Pattern (user-facing) |
+| Kind | Pattern |
 | --- | --- |
-| Native Documents | `~/Documents/My Games/NieR_Automata/` |
+| Documents | `~/Documents/My Games/NieR_Automata/` |
 | Native Steam Proton | `~/.local/share/Steam/steamapps/compatdata/524220/pfx/drive_c/users/steamuser/Documents/My Games/NieR_Automata/` |
 | Alternate Steam root | `~/.steam/steam/steamapps/compatdata/524220/pfx/drive_c/users/steamuser/Documents/My Games/NieR_Automata/` |
 | **Flatpak Steam** | `~/.var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps/compatdata/524220/pfx/drive_c/users/steamuser/Documents/My Games/NieR_Automata/` |
 
-Slot files look like `SlotData_0.dat`, `SlotData_1.dat`, and so on inside those folders.
+Files look like `SlotData_0.dat`, `SlotData_1.dat`, …
 
-Notes:
+- Prefer Desktop Mode for install, run, and file dialogs.
+- If Steam is Flatpak (`com.valvesoftware.Steam`), use the **Flatpak Steam** row—native `~/.local/share/Steam/...` alone will miss those saves.
+- `steamuser` is Proton’s Windows profile name inside the prefix, not your login name.
+- Missing folders are normal; only existing slots appear after scan. Use Settings → custom folder + Rescan if needed.
 
-- Prefer **Desktop Mode** when installing or running the Flatpak and when browsing saves with a file dialog.
-- If Steam itself is installed as Flatpak (`com.valvesoftware.Steam`), use the **Flatpak Steam** path pattern above—native `~/.local/share/Steam/...` alone will miss those saves.
-- The `steamuser` segment is Proton’s Windows profile name inside the prefix, not a login username you configure.
-- Missing directories are normal; the slot picker only lists folders/files that exist.
+More on backups: [user/backup-and-safety.md](./user/backup-and-safety.md).
 
-## Privacy
+## Build a local `.flatpak` (optional)
 
-- Do not commit real `.dat` fixtures or private Steam data.
-- Do not put LAN IPs, SSH hosts, usernames, or private remotes in public docs or Flatpak build notes.
+On Linux x86_64 (Deck Desktop Mode or any Flatpak builder). Do not put private hostnames or paths in the repo.
+
+```bash
+flatpak remote-add --if-not-exists --user flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+# from repository root
+flatpak-builder --user --force-clean --install-deps-from=flathub \
+  build-dir flatpak/com.niersaveeditor.desktop.yml
+
+# optional single-file bundle
+flatpak-builder --user --force-clean --repo=repo \
+  build-dir flatpak/com.niersaveeditor.desktop.yml
+flatpak build-bundle repo nier-save-editor.flatpak com.niersaveeditor.desktop --arch=x86_64
+```
+
+Runtime pin: GNOME Platform/Sdk **47** (WebKitGTK 4.1 for Tauri 2). Do not commit `build-dir/`, `repo/`, `.flatpak-builder/`, or `.flatpak` bundles.

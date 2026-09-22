@@ -1,67 +1,61 @@
 # NieR Save Editor
 
+[中文](./README.zh-CN.md)
+
 A NieR:Automata **PC** save editor for **Windows** and **Steam Deck** (Flatpak).
 
-Built with **Tauri 2**, **React**, and **TypeScript**. Save parsing/serialization lives in pure TypeScript with round-trip tests so unedited saves stay byte-identical.
+Built with Tauri 2, React, and TypeScript. Unedited saves stay byte-identical on round trip.
 
-> Back up your saves before editing.
+> **Back up your saves before editing.** App backups help recovery; they are not a substitute for your own copy of important slots.
 
-## Features
+## What you can do
 
-- Read and write fixed-size NieR:Automata PC `.dat` saves with byte-identical round trips for untouched data.
-- Discover save slots from Windows and Steam Proton locations, or configure a custom save folder.
-- A dedicated **Save** page with three responsive regions:
-  - **Current save** — summary plus Save changes, Reload, Save As, Open, Close, and Rescan actions.
-  - **Save slots** — valid, invalid, and unreadable slots are isolated and shown as individual cards.
-  - **Backup history** — newest-first version history with parsed summaries, integrity state, and restore actions.
-- Create immutable, versioned backups under `nier-save-editor-backup/<slot>/` beside the save directory. Manual backup snapshots the file currently on disk and does not include unsaved editor changes.
-- Create safety backups automatically before managed mutations: `before-save`, `before-import`, and `before-restore`.
-- Restore a selected backup or replace a selected slot from an external PC save only after a directional preview and confirmation.
-- Detect target changes with size and SHA-256 checks, commit through a same-directory safe replacement, then re-read and compare the complete file. A failed backup, conflict, commit, or verification does not report success.
-- Edit SteamID, character name, play time, money, EXP/level, Debug Flag, Play Records, cosmetics, inventory and corpse inventory, weapons and equipment sets, plug-in chips, POD programs, and POD configuration.
-- Search and filter slot-based editors, fill empty entries, change IDs, and clear entries.
-- Simplified Chinese and English UI/entity names, persistent light/dark theme, and a dirty marker in the localized window title.
-- Plug-in chips split into **Chip Library** and **Chip Loadout** tabs: browse/filter owned chips by category; edit loadout sets A/B/C with Cost/占用, purchased capacity (40…128), optional overload, and a Stats Panel summarizing equipped bonuses. Switch the in-game active loadout set (★) independently of which set you are editing.
-- Chip Library row order: **Level**, then **Cost** (占用).
+- Open PC `SlotData_*.dat` saves (fixed size), edit, and write back safely.
+- Find slots on Windows and Steam Proton paths, or point Settings at a custom folder.
+- **Save** tab: current file actions, slot cards, and versioned backup history with restore.
+- Edit SteamID, name, play time, money, EXP/level, Debug Flag, Play Records, cosmetics, inventory / corpse inventory, weapons & equipment, plug-in chips, POD programs, and POD config.
+- **Chip Library** and **Chip Loadout** (sets A/B/C, capacity, overload, Stats Panel, in-game active set ★).
+- UI in Simplified Chinese and English; light/dark theme.
 
-Out of scope: macOS, WAX mods, Advanced save fields, PS4 saves/conversion, cloud backup, and automatic backup deletion.
+**Not in scope:** macOS, WAX mods, Advanced fields, PS4 saves, cloud backup, automatic backup deletion.
 
-> Backup history is a recovery aid, not a substitute for keeping a separate copy of important saves.
+## Backup and safety
 
-## Develop
+Versioned backups live under `nier-save-editor-backup/<slot>/` (beside the save folder, or a custom backup root in Settings). The app snapshots disk before managed writes (`before-save`, `before-import`, `before-restore`). Manual backup does **not** include unsaved editor changes.
 
-Requirements: Node.js (LTS), Rust (stable), platform C/C++ toolchain, WebView2 on Windows.
+Details: **[docs/user/backup-and-safety.md](./docs/user/backup-and-safety.md)**.
 
-```bash
-npm install
-npm run tauri dev
-```
+## Windows
 
-```bash
-npm test
-```
+Install from a Release build when available (NSIS/MSI), or build locally (see Develop). Typical save folder:
 
-```bash
-npm run tauri build
-```
+`Documents\My Games\NieR_Automata\` (`SlotData_0.dat`, …)
 
-On Windows this produces an NSIS installer and an MSI under:
-
-- `src-tauri/target/release/bundle/nsis/` (e.g. `*_x64-setup.exe`)
-- `src-tauri/target/release/bundle/msi/` (e.g. `*_x64_*.msi`)
-
-The release binary is also at `src-tauri/target/release/` (do not commit `src-tauri/target/`).
-
-Do **not** commit real `.dat` files under `fixtures/` (gitignored). Use synthetic fixtures in CI when possible.
+If slots are missing, set a custom folder in **Settings** and Rescan.
 
 ## Steam Deck (Flatpak)
 
-Steam Deck delivery is via **Flatpak** in Desktop Mode. Save discovery and overwrite-with-backup have been smoke-tested on Deck. See **[docs/flatpak.md](./docs/flatpak.md)** for install/run, Proton save paths (Steam app id `524220`, including Flatpak Steam under `~/.var/app/com.valvesoftware.Steam/...`), and Linux build notes. Manifest: [`flatpak/com.niersaveeditor.desktop.yml`](./flatpak/com.niersaveeditor.desktop.yml) (app id `com.niersaveeditor.desktop`).
+Use **Desktop Mode**. Save discovery (including Flatpak Steam / Proton `524220`) is documented here:
+
+**[docs/flatpak.md](./docs/flatpak.md)** · Manifest: [`flatpak/com.niersaveeditor.desktop.yml`](./flatpak/com.niersaveeditor.desktop.yml)
+
+## Develop
+
+Node.js (LTS), Rust (stable), platform toolchain; WebView2 on Windows.
+
+```bash
+npm install
+npm run tauri dev   # app
+npm test            # tests
+npm run tauri build # Windows: NSIS + MSI under src-tauri/target/release/bundle/
+```
+
+Do not commit real `.dat` files (`fixtures/` is gitignored).
 
 ## Credits
 
-- Save layout reference: [NieREdit](https://codeberg.org/mxNieR/NieREdit) by mxNieR  
-- Chinese display names derived from [龙版汉化 / nier_chinese](https://gitee.com/WLongWLong/nier_chinese) string tables  
+- Save layout reference: [NieREdit](https://codeberg.org/mxNieR/NieREdit) by mxNieR
+- Chinese display names derived from [龙版汉化 / nier_chinese](https://gitee.com/WLongWLong/nier_chinese) string tables
 
 ## License
 
