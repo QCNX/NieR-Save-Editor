@@ -7,3 +7,8 @@ commands.allow = ["discovery_env"]
 identifier = "allow-discovery-list-dir"
 description = "Allows listing a candidate NieR Automata save directory with mtime metadata."
 commands.allow = ["discovery_list_dir"]
+
+[[permission]]
+identifier = "allow-discovery-canonicalize"
+description = "Allows resolving symlinks so duplicate Steam/Proton discovery roots collapse to one path."
+commands.allow = ["discovery_canonicalize"]

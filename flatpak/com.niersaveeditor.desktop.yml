@@ -49,7 +49,7 @@ modules:
         . /usr/lib/sdk/node20/enable.sh
         . /usr/lib/sdk/rust-stable/enable.sh
         npm ci
-        npm run tauri build -- --bundles none
+        npm run tauri build -- --no-bundle
       - install -Dm755 src-tauri/target/release/nier-save-editor /app/bin/nier-save-editor
       - install -Dm644 flatpak/com.niersaveeditor.desktop.desktop /app/share/applications/com.niersaveeditor.desktop.desktop
       - install -Dm644 flatpak/com.niersaveeditor.desktop.metainfo.xml /app/share/metainfo/com.niersaveeditor.desktop.metainfo.xml

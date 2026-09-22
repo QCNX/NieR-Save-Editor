@@ -45,6 +45,9 @@ export function createTauriDiscoveryHost(): DiscoveryHost {
       const env = await invoke<RustDiscoveryEnv>("discovery_env");
       return { home: env.home, platform: mapPlatform(env.platform) };
     },
+    async canonicalize(path: string): Promise<string> {
+      return invoke<string>("discovery_canonicalize", { path });
+    },
     async listDir(path: string): Promise<DirListResult> {
       const result = await invoke<RustListDirResult>("discovery_list_dir", {
         path,

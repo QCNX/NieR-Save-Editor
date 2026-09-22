@@ -15,6 +15,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             greet,
             discovery::discovery_env,
+            discovery::discovery_canonicalize,
             discovery::discovery_list_dir,
             persist::persist_read_file,
             persist::persist_backup_file,

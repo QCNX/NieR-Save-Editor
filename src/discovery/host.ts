@@ -11,6 +11,11 @@ export interface DiscoveryEnv {
 export interface DiscoveryHost {
   env(): Promise<DiscoveryEnv>;
   listDir(path: string): Promise<DirListResult>;
+  /**
+   * Resolve symlinks for root dedupe. Optional — when omitted, roots are
+   * compared by string only (tests / browser preview).
+   */
+  canonicalize?(path: string): Promise<string>;
 }
 
 export type DirListResult =
@@ -39,6 +44,35 @@ export type DiscoverHostSlotDataFilesOptions = {
 };
 
 /**
+ * Drop later roots that resolve to the same directory (e.g. Deck
+ * `~/.steam/steam` → `~/.local/share/Steam`), keeping the first path so
+ * SlotData cards are not listed twice.
+ */
+export async function uniqueDiscoveryRoots(
+  roots: string[],
+  canonicalize?: (path: string) => Promise<string>,
+): Promise<string[]> {
+  const seen = new Set<string>();
+  const unique: string[] = [];
+  for (const root of roots) {
+    let key = root;
+    if (canonicalize) {
+      try {
+        key = await canonicalize(root);
+      } catch {
+        key = root;
+      }
+    }
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    unique.push(root);
+  }
+  return unique;
+}
+
+/**
  * Discover SlotData files on the real host using injected env + fs commands.
  */
 export async function discoverHostSlotDataFiles(
@@ -49,6 +83,9 @@ export async function discoverHostSlotDataFiles(
   const extras = (options?.extraRoots ?? [])
     .map((r) => r.trim())
     .filter((r) => r.length > 0);
-  const roots = [...candidateSaveDirs({ home, platform }), ...extras];
+  const roots = await uniqueDiscoveryRoots(
+    [...candidateSaveDirs({ home, platform }), ...extras],
+    host.canonicalize?.bind(host),
+  );
   return discoverSlotDataFiles({ roots, fs: hostFs(host) });
 }

@@ -9,6 +9,11 @@ description = "Allows copying a SlotData file into the sibling nier-save-editor-
 commands.allow = ["persist_backup_file"]
 
 [[permission]]
+identifier = "allow-persist-reveal-backup-folder"
+description = "Allows creating and opening the resolved backup folder in the system file manager."
+commands.allow = ["persist_reveal_backup_folder"]
+
+[[permission]]
 identifier = "allow-persist-write-file"
 description = "Allows writing serialized SlotData bytes to an explicit path."
 commands.allow = ["persist_write_file"]

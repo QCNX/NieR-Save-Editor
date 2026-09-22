@@ -66,6 +66,16 @@ pub fn discovery_env() -> Result<DiscoveryEnv, String> {
     })
 }
 
+/// Resolve symlinks for discovery dedupe (`.steam/steam` → `.local/share/Steam` on Deck).
+/// Missing paths return the input unchanged so callers can still probe candidates.
+#[tauri::command]
+pub fn discovery_canonicalize(path: String) -> Result<String, String> {
+    match fs::canonicalize(&path) {
+        Ok(resolved) => Ok(resolved.to_string_lossy().into_owned()),
+        Err(_) => Ok(path),
+    }
+}
+
 /// List a candidate save directory. Missing dirs → `missing`; ACL failures → `permission`.
 #[tauri::command]
 pub fn discovery_list_dir(path: String) -> Result<ListDirResult, String> {
