@@ -56,7 +56,7 @@ Do **not** commit real `.dat` files under `fixtures/` (gitignored). Use syntheti
 
 ## Steam Deck (Flatpak)
 
-Steam Deck delivery is via **Flatpak** in Desktop Mode. See **[docs/flatpak.md](./docs/flatpak.md)** for install/run, Proton save paths (Steam app id `524220`, including Flatpak Steam under `~/.var/app/com.valvesoftware.Steam/...`), and Linux build notes. Manifest: [`flatpak/com.niersaveeditor.desktop.yml`](./flatpak/com.niersaveeditor.desktop.yml) (app id `com.niersaveeditor.desktop`).
+Steam Deck delivery is via **Flatpak** in Desktop Mode. Save discovery and overwrite-with-backup have been smoke-tested on Deck. See **[docs/flatpak.md](./docs/flatpak.md)** for install/run, Proton save paths (Steam app id `524220`, including Flatpak Steam under `~/.var/app/com.valvesoftware.Steam/...`), and Linux build notes. Manifest: [`flatpak/com.niersaveeditor.desktop.yml`](./flatpak/com.niersaveeditor.desktop.yml) (app id `com.niersaveeditor.desktop`).
 
 ## Credits
 

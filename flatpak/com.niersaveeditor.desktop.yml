@@ -4,8 +4,7 @@
 # Runtime: org.gnome.Platform/Sdk 47 (Freedesktop 24.08 base) — ships
 # WebKitGTK 4.1 required by Tauri 2 on Linux. Build notes: docs/flatpak.md
 #
-# Validation of `flatpak-builder` is deferred to a Linux/x86_64 host
-# (e.g. Steam Deck Desktop Mode). This file is authored for that builder.
+# Validated on Steam Deck Desktop Mode (flatpak-builder + Proton save smoke).
 
 id: com.niersaveeditor.desktop
 runtime: org.gnome.Platform

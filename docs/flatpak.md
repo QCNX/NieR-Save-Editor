@@ -1,6 +1,6 @@
 # Steam Deck / Flatpak
 
-This app’s **Steam Deck** delivery path is a **Flatpak** package (Desktop Mode). Windows remains the primary MVP packaging path; Flatpak follows once the Windows build is solid.
+This app’s **Steam Deck** delivery path is a **Flatpak** package (Desktop Mode). Windows and Steam Deck Flatpak are both supported delivery paths.
 
 > Back up your saves before editing.  
 > Do **not** commit real `.dat` saves (they can contain private Steam progress). Prefer synthetic fixtures for tests and CI.
@@ -51,7 +51,7 @@ Run these on a **Linux x86_64** machine (Steam Deck Desktop Mode, or any builder
 
 Do not commit `build-dir/`, `repo/`, `.flatpak-builder/`, or `.flatpak` bundles.
 
-**Validation note:** Authoring happened on Windows; `flatpak-builder` success and Deck Desktop Mode smoke (open Proton saves, overwrite with backup) are deferred to a Linux builder.
+**Validation:** Built and smoke-tested on Steam Deck Desktop Mode (open Proton / Flatpak Steam saves, overwrite with backup).
 
 ## Install and run (end user)
 
